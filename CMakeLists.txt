@@ -18,6 +18,7 @@ add_definitions(${KDE4_DEFINITIONS})
 
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
+    kwebnetworkinterface.cpp
 )
 
 kde4_automoc(${webkitkde_LIB_SRCS})
