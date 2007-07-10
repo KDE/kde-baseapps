@@ -21,7 +21,6 @@ set(webkitkde_LIB_SRCS
     kwebnetworkinterface.cpp
 )
 
-kde4_automoc(${webkitkde_LIB_SRCS})
 
 kde4_add_plugin(webkitkde WITH_PREFIX ${webkitkde_LIB_SRCS})
 
