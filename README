@@ -2,6 +2,7 @@ Basic build instructions:
 
 - Build WebKit using 'build-webkit' as described on http://webkit.org/
 - WebKitTools may fail to build at the end, safe to ignore
+- cd into the WebKit/WebKitBuild/Release folder 'cd WebKit/WebKitBuild/Release'
 - Run 'make install' to install WebKit into $QTDIR/lib, etc.
 - Build this project the usual cmake way, it tries to locate QtWebKit using pkg-config.
 
