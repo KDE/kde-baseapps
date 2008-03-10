@@ -12,6 +12,8 @@ add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
+    webkitview.cpp
+    webkitpage.cpp
 #     kwebnetworkinterface.cpp
 )
 
