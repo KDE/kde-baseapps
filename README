@@ -1,8 +1,8 @@
 Basic build instructions:
 
-- Build WebKit using 'build-webkit' as described on http://webkit.org/
-- WebKitTools may fail to build at the end, safe to ignore
-- cd into the WebKit/WebKitBuild/Release folder 'cd WebKit/WebKitBuild/Release'
-- Run 'make install' to install WebKit into $QTDIR/lib, etc.
-- Build this project the usual cmake way, it tries to locate QtWebKit using pkg-config.
+Recent Qt 4.4 snapshot or qt-copy is required for building the QtWebkKit
+KPart.
 
+If Konqueror takes KHTML instead of WebKit, run 'kbuildsycoca4' before
+starting Konqueror. You can also switch between the different engines:
+View -> View Mode -> {KHTML, WebKit} (Website needs to be opened)
