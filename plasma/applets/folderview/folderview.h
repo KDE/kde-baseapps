@@ -1,0 +1,86 @@
+/*
+ *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *
+ *   This library is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Library General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2 of the License, or (at your option) any later version.
+ *
+ *   This library is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *   Library General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Library General Public License
+ *   along with this library; see the file COPYING.LIB.  If not, write to
+ *   the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ *   Boston, MA 02110-1301, USA.
+ */
+
+#ifndef FOLDERVIEW_H
+#define FOLDERVIEW_H
+
+#include <QPersistentModelIndex>
+#include <QStyleOption>
+
+#include <plasma/applet.h>
+
+class KDirModel;
+class KFileItemDelegate;
+class QItemSelectionModel;
+
+struct ViewItem
+{
+    QRect rect;
+};
+
+class FolderView : public Plasma::Applet
+{
+    Q_OBJECT
+
+public:
+    FolderView(QObject *parent, const QVariantList &args);
+    ~FolderView();
+
+    void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
+    void setPath(const QString&);
+    Qt::Orientations expandingDirections() const;
+    QSizeF contentSizeHint() const;
+
+public slots:
+    void showConfigurationInterface();
+
+private slots:    
+    void rowsInserted(const QModelIndex &parent, int first, int last);
+    void rowsRemoved(const QModelIndex &parent, int first, int last);
+    void modelReset();
+    void layoutChanged();
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+
+private:
+    int columnsForWidth(qreal width) const;
+    void layoutItems() const;
+    QModelIndex indexAt(const QPointF &point) const;
+    QRectF visualRect(const QModelIndex &index) const;
+    QStyleOptionViewItemV4 styleOption() const;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+
+private:
+    KFileItemDelegate *m_delegate;
+    KDirModel *m_model;
+    QItemSelectionModel *m_selectionModel;
+    mutable QVector<ViewItem> m_items;
+    mutable int m_columns;
+    mutable bool m_layoutValid;
+    QPersistentModelIndex m_hoveredIndex;
+    QPersistentModelIndex m_pressedIndex;
+    bool m_updatesDisabled;
+};
+
+K_EXPORT_PLASMA_APPLET(folderview, FolderView)
+
+#endif
