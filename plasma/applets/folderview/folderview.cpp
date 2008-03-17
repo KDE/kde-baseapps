@@ -54,6 +54,8 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     m_model->setDirLister(lister);
 
     m_delegate = new KFileItemDelegate(this);
+    m_delegate->setShadowColor(Qt::black);    
+
     m_selectionModel = new QItemSelectionModel(m_model, this);
     m_layoutValid = false;
 }
