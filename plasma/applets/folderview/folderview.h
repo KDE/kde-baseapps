@@ -62,12 +62,14 @@ private:
     void layoutItems() const;
     QModelIndex indexAt(const QPointF &point) const;
     QRectF visualRect(const QModelIndex &index) const;
-    QStyleOptionViewItemV4 styleOption() const;
+    void initStyleOption(QStyleOption *option) const;
+    QStyleOptionViewItemV4 viewOptions() const;
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
 private:
     KFileItemDelegate *m_delegate;
@@ -78,6 +80,7 @@ private:
     mutable bool m_layoutValid;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
+    QRect m_rubberBand;
     bool m_updatesDisabled;
 };
 

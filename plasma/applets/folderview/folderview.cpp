@@ -121,7 +121,7 @@ int FolderView::columnsForWidth(qreal width) const
 
 void FolderView::layoutItems() const
 {
-    QStyleOptionViewItemV4 option = styleOption();
+    QStyleOptionViewItemV4 option = viewOptions();
     m_items.resize(m_model->rowCount());
 
     int spacing = 10;
@@ -158,7 +158,7 @@ void FolderView::layoutItems() const
 
 void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentRect)
 {
-    QStyleOptionViewItemV4 opt = styleOption();
+    QStyleOptionViewItemV4 opt = viewOptions();
     opt.palette.setColor(QPalette::All, QPalette::Text, Qt::white);
 
     if (!m_layoutValid || columnsForWidth(contentRect.width()) != m_columns)
@@ -190,6 +190,16 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
             opt.state |= QStyle::State_HasFocus;
 
         m_delegate->paint(painter, opt, index);
+    }
+
+    if (m_rubberBand.isValid()) {
+        QStyleOptionRubberBand opt;
+        initStyleOption(&opt);
+        opt.rect   = m_rubberBand;
+        opt.shape  = QRubberBand::Rectangle;
+        opt.opaque = false;
+
+        QApplication::style()->drawControl(QStyle::CE_RubberBand, &opt, painter);
     }
 
     painter->restore();
@@ -253,7 +263,10 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
         const QModelIndex index = indexAt(event->pos());
-        if (index.isValid()) {
+
+        // If an icon was pressed
+        if (index.isValid())
+        {
             if (event->modifiers() & Qt::ControlModifier) {
                 m_selectionModel->select(index, QItemSelectionModel::Toggle);
                 update(visualRect(index));
@@ -263,11 +276,20 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 update();
             }
             m_pressedIndex = index;
-        } else {
+            event->accept();
+            return;
+        }
+
+        // If empty space was pressed
+        if (contentRect().contains(event->pos()))
+        {
+            m_pressedIndex = QModelIndex();
             if (m_selectionModel->hasSelection()) {
                 m_selectionModel->clearSelection();
                 update();
             }
+            event->accept();
+            return;
         }
     }
 
@@ -276,7 +298,14 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton)
+    {
+        if (m_rubberBand.isValid()) {
+            update(m_rubberBand);
+            m_rubberBand = QRect();
+            return;
+        }
+
         const QModelIndex index = indexAt(event->pos());
         if (index.isValid()) {
             if (index == m_pressedIndex) {
@@ -286,8 +315,52 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 
     m_pressedIndex = QModelIndex();
-
     Plasma::Applet::mouseReleaseEvent(event);
+}
+
+void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (m_pressedIndex.isValid())
+        return;
+
+    const QRectF rubberBand = QRectF(event->buttonDownPos(Qt::LeftButton), event->pos()).normalized();
+    const QRect r = QRectF(rubberBand & contentRect()).toAlignedRect();
+
+    if (r != m_rubberBand)
+    {
+        QRectF dirtyRect = m_rubberBand | r;
+        m_rubberBand = r;
+
+        dirtyRect |= visualRect(m_hoveredIndex);
+        m_hoveredIndex = QModelIndex();
+
+        foreach (const QModelIndex &index, m_selectionModel->selectedIndexes())
+            dirtyRect |= visualRect(index);
+
+        // Select the indexes inside the rubber band
+        QItemSelection selection;
+        for (int i = 0; i < m_items.size(); i++)
+        {
+            if (!m_items[i].rect.intersects(m_rubberBand))
+                continue;
+
+            int start = i;
+            int end = i;
+
+            while (i < m_items.size() && m_items[i].rect.intersects(m_rubberBand)) {
+                dirtyRect |= m_items[i].rect;
+                if (m_items[i].rect.contains(event->pos().toPoint()))
+                    m_hoveredIndex = m_model->index(i, 0);
+                end = i++;
+            }
+
+            selection.select(m_model->index(start, 0), m_model->index(end, 0));
+        }
+        m_selectionModel->select(selection, QItemSelectionModel::ClearAndSelect);
+        update(dirtyRect);
+    }
+
+    event->accept();
 }
 
 Qt::Orientations FolderView::expandingDirections() const
@@ -299,15 +372,21 @@ void FolderView::showConfigurationInterface()
 {
 }
 
-QStyleOptionViewItemV4 FolderView::styleOption() const
+void FolderView::initStyleOption(QStyleOption *option) const
+{
+    option->direction   = QApplication::layoutDirection();
+    option->fontMetrics = QApplication::fontMetrics();
+    option->palette     = QApplication::palette();
+    option->rect        = QRect();
+    option->state       = QStyle::State_Enabled | QStyle::State_Active;
+}
+
+QStyleOptionViewItemV4 FolderView::viewOptions() const
 {
     QStyleOptionViewItemV4 option;
-    option.direction           = QApplication::layoutDirection();
+    initStyleOption(&option);
+
     option.font                = QApplication::font();
-    option.fontMetrics         = QFontMetrics(option.font);
-    option.palette             = QApplication::palette();
-    option.rect                = QRect();
-    option.state               = QStyle::State_Enabled | QStyle::State_Active;
     option.decorationAlignment = Qt::AlignTop | Qt::AlignHCenter;
     option.decorationPosition  = QStyleOptionViewItem::Top;
     option.decorationSize      = QSize(48, 48);
