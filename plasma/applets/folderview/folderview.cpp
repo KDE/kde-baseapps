@@ -33,6 +33,8 @@
 #include <KFileItemDelegate>
 #include <KGlobalSettings>
 
+#include "proxymodel.h"
+
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args)
@@ -42,7 +44,14 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     //setDrawStandardBackground(false);
     //setContentSize(600, 400);
 
-    m_model = new KDirModel(this);
+    m_dirModel = new KDirModel(this);
+
+    m_model = new ProxyModel(this);
+    m_model->setSourceModel(m_dirModel);
+    m_model->setSortLocaleAware(true);
+    m_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    m_model->sort(0, Qt::AscendingOrder);
+
     connect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(rowsInserted(QModelIndex,int,int)));
     connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(rowsRemoved(QModelIndex,int,int)));
     connect(m_model, SIGNAL(modelReset()), SLOT(modelReset()));
@@ -52,10 +61,10 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     KDirLister *lister = new KDirLister(this);
     lister->openUrl(KUrl(QDir::homePath()));
 
-    m_model->setDirLister(lister);
+    m_dirModel->setDirLister(lister);
 
     m_delegate = new KFileItemDelegate(this);
-    m_delegate->setShadowColor(Qt::black);    
+    m_delegate->setShadowColor(Qt::black);
 
     m_selectionModel = new QItemSelectionModel(m_model, this);
     m_layoutValid = false;

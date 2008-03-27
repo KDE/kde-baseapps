@@ -28,6 +28,7 @@
 class KDirModel;
 class KFileItemDelegate;
 class QItemSelectionModel;
+class ProxyModel;
 
 struct ViewItem
 {
@@ -74,7 +75,8 @@ private:
 
 private:
     KFileItemDelegate *m_delegate;
-    KDirModel *m_model;
+    KDirModel *m_dirModel;
+    ProxyModel *m_model;
     QItemSelectionModel *m_selectionModel;
     mutable QVector<ViewItem> m_items;
     mutable int m_columns;
