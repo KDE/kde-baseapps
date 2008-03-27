@@ -69,6 +69,7 @@ private:
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
 private:
@@ -81,7 +82,9 @@ private:
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QRect m_rubberBand;
+    QTime m_pressTime;
     bool m_updatesDisabled;
+    bool m_doubleClick;
 };
 
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)

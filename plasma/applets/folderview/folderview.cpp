@@ -31,6 +31,7 @@
 #include <KDirLister>
 #include <KDirModel>
 #include <KFileItemDelegate>
+#include <KGlobalSettings>
 
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
@@ -58,6 +59,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
     m_selectionModel = new QItemSelectionModel(m_model, this);
     m_layoutValid = false;
+    m_doubleClick = false;
 }
 
 FolderView::~FolderView()
@@ -307,15 +309,45 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         }
 
         const QModelIndex index = indexAt(event->pos());
-        if (index.isValid()) {
-            if (index == m_pressedIndex) {
-                // This is where we activate the item (if it isn't being dragged)
+        if (index.isValid() && index == m_pressedIndex) {
+            if (!m_doubleClick && KGlobalSettings::singleClick()) {
+                const KFileItem item = m_model->itemForIndex(index);
+                item.run();
             }
+            event->accept();
+            m_doubleClick = false;
+            return;
         }
     }
 
+    m_doubleClick = false;
     m_pressedIndex = QModelIndex();
     Plasma::Applet::mouseReleaseEvent(event);
+}
+
+void FolderView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() != Qt::LeftButton)
+    {
+        Plasma::Applet::mouseDoubleClickEvent(event);
+        return;
+    }
+
+    // So we don't activate the item again on the release event
+    m_doubleClick = true;
+
+    // We don't want to invoke default implementation in this case, since it
+    // calls mousePressEvent().
+    if (KGlobalSettings::singleClick())
+        return;
+
+    const QModelIndex index = indexAt(event->pos());
+    if (!index.isValid())
+        return;
+
+    // Activate the item
+    const KFileItem item = m_model->itemForIndex(index);
+    item.run();
 }
 
 void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
