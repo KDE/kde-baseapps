@@ -43,4 +43,4 @@ install(TARGETS webkitkdepart DESTINATION ${PLUGIN_INSTALL_DIR})
 
 install(FILES webkitpart.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 
-install( FILES webkitpart.rc DESTINATION  ${DATA_INSTALL_DIR}/konqueror )
+install( FILES webkitpart.rc DESTINATION  ${DATA_INSTALL_DIR}/webkitpart )
