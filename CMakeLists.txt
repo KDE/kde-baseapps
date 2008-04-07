@@ -10,6 +10,8 @@ include(MacroLibrary)
 include_directories(${KDE4_INCLUDES})
 add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 
+add_subdirectory(cmake)
+
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
     webkitview.cpp
@@ -20,11 +22,24 @@ set(webkitkde_LIB_SRCS
 
 kde4_add_ui_files(webkitkde_LIB_SRCS searchwidget.ui )
 
-kde4_add_plugin(webkitkde ${webkitkde_LIB_SRCS})
+kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
 
 target_link_libraries(webkitkde ${KDE4_KPARTS_LIBS} ${QT_QTWEBKIT_LIBRARY})
 
-install(TARGETS webkitkde DESTINATION ${PLUGIN_INSTALL_DIR})
+set_target_properties(webkitkde PROPERTIES VERSION 1.0.0 SOVERSION 1 )
+
+install(TARGETS webkitkde DESTINATION ${LIB_INSTALL_DIR})
+
+install( FILES webkitkde_export.h webkitpart.h webkitview.h DESTINATION  ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
+
+
+
+kde4_add_plugin(webkitkdepart webkitpart_factory.cpp)
+
+target_link_libraries(webkitkdepart webkitkde)
+
+install(TARGETS webkitkdepart DESTINATION ${PLUGIN_INSTALL_DIR})
+
 
 install(FILES webkitpart.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 
