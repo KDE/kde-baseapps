@@ -10,6 +10,8 @@ include(MacroLibrary)
 include_directories(${KDE4_INCLUDES})
 add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 
+add_subdirectory(cmake)
+
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
     webkitview.cpp
