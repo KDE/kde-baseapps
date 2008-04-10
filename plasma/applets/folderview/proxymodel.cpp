@@ -31,7 +31,13 @@ ProxyModel::~ProxyModel()
 {
 }
 
-KFileItem ProxyModel::itemForIndex(const QModelIndex &index)
+QModelIndex ProxyModel::indexForUrl(const KUrl &url) const
+{
+    const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
+    return mapFromSource(dirModel->indexForUrl(url));
+}
+
+KFileItem ProxyModel::itemForIndex(const QModelIndex &index) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
     return dirModel->itemForIndex(mapToSource(index));

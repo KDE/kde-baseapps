@@ -65,6 +65,7 @@ private:
     QRectF visualRect(const QModelIndex &index) const;
     void initStyleOption(QStyleOption *option) const;
     QStyleOptionViewItemV4 viewOptions() const;
+    void startDrag(const QPointF &pos, QWidget *widget);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
@@ -72,6 +73,9 @@ private:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+    void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
+    void dropEvent(QGraphicsSceneDragDropEvent *event);
 
 private:
     KFileItemDelegate *m_delegate;
@@ -84,9 +88,11 @@ private:
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QRect m_rubberBand;
+    QPointF m_buttonDownPos;
     QTime m_pressTime;
     bool m_updatesDisabled;
     bool m_doubleClick;
+    bool m_dragInProgress;
 };
 
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)

@@ -23,6 +23,7 @@
 #include <QSortFilterProxyModel>
 
 class KFileItem;
+class KUrl;
 
 class ProxyModel : public QSortFilterProxyModel
 {
@@ -30,7 +31,8 @@ public:
     ProxyModel(QObject *parent = 0);
     ~ProxyModel();
 
-    KFileItem itemForIndex(const QModelIndex &index);
+    QModelIndex indexForUrl(const KUrl &url) const;
+    KFileItem itemForIndex(const QModelIndex &index) const;
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
 };
 

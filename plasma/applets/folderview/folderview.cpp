@@ -22,6 +22,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QDrag>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QItemSelectionModel>
@@ -41,6 +42,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 {
     setHasConfigurationInterface(false);
     setAcceptHoverEvents(true);
+    setAcceptDrops(true);
     //setDrawStandardBackground(false);
     //setContentSize(600, 400);
 
@@ -69,6 +71,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     m_selectionModel = new QItemSelectionModel(m_model, this);
     m_layoutValid = false;
     m_doubleClick = false;
+    m_dragInProgress = false;
 }
 
 FolderView::~FolderView()
@@ -281,12 +284,13 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             if (event->modifiers() & Qt::ControlModifier) {
                 m_selectionModel->select(index, QItemSelectionModel::Toggle);
                 update(visualRect(index));
-            } else {
+            } else if (!m_selectionModel->isSelected(index)) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 update();
             }
             m_pressedIndex = index;
+            m_buttonDownPos = event->pos();
             event->accept();
             return;
         }
@@ -322,6 +326,16 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             if (!m_doubleClick && KGlobalSettings::singleClick()) {
                 const KFileItem item = m_model->itemForIndex(index);
                 item.run();
+            }
+            // We don't clear and update the selection and current index in
+            // mousePressEvent() if the item is already selected when it's pressed,
+            // so we need to do that here.
+            if (m_selectionModel->currentIndex() != index ||
+                m_selectionModel->selectedIndexes().count() > 1)
+            {
+                m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
+                m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+                update();
             }
             event->accept();
             m_doubleClick = false;
@@ -361,8 +375,18 @@ void FolderView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+    // If an item is pressed
     if (m_pressedIndex.isValid())
+    {
+        const QPointF point = event->pos() - event->buttonDownPos(Qt::LeftButton);
+
+        if (point.toPoint().manhattanLength() >= QApplication::startDragDistance())
+        {
+            startDrag(event->buttonDownPos(Qt::LeftButton), event->widget());
+        }
+        event->accept();
         return;
+    }
 
     const QRectF rubberBand = QRectF(event->buttonDownPos(Qt::LeftButton), event->pos()).normalized();
     const QRect r = QRectF(rubberBand & contentRect()).toAlignedRect();
@@ -402,6 +426,83 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     event->accept();
+}
+
+void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+{
+    event->setAccepted(event->mimeData()->hasUrls());
+}
+
+void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
+{
+    event->accept();
+}
+
+void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
+{
+    // Check if the drop event originated from this applet.
+    // Normally we'd do this by checking if the source widget matches the target widget
+    // in the drag and drop operation, but since two QGraphicsItems can be part of the
+    // same widget, we can't use that method here.
+    if (!m_dragInProgress) {
+        m_model->dropMimeData(event->mimeData(), event->dropAction(), -1, -1, QModelIndex());
+        return;
+    }
+
+    // ### We should check if the items were dropped on a child item that
+    //     accepts drops.
+
+    // If we get to this point, the drag was started from within the applet,
+    // so instead of moving/copying/linking the dropped URL's to the folder,
+    // we'll move the items in the view.
+    const QPoint delta = (event->pos() - m_buttonDownPos).toPoint();
+    foreach (const QUrl &url, event->mimeData()->urls()) {
+        const QModelIndex index = m_model->indexForUrl(url);
+        if (index.isValid()) {
+            m_items[index.row()].rect.translate(delta);
+        }
+    }
+
+    update();
+}
+
+// pos is the position where the mouse was clicked in the applet.
+// widget is the widget that sent the mouse event that triggered the drag.
+void FolderView::startDrag(const QPointF &pos, QWidget *widget)
+{
+    QModelIndexList indexes = m_selectionModel->selectedIndexes();
+    QRectF boundingRect;
+    foreach (const QModelIndex &index, indexes) {
+        boundingRect |= visualRect(index);
+    }
+
+    QPixmap pixmap(boundingRect.toAlignedRect().size());
+    pixmap.fill(Qt::transparent);
+
+    QStyleOptionViewItemV4 option = viewOptions(); 
+    option.state |= QStyle::State_Selected;
+
+    QPainter p(&pixmap);
+    foreach (const QModelIndex &index, indexes)
+    {
+        option.rect = visualRect(index).translated(-boundingRect.topLeft()).toAlignedRect();
+        if (index == m_hoveredIndex)
+            option.state |= QStyle::State_MouseOver;
+        else
+            option.state &= ~QStyle::State_MouseOver;
+        m_delegate->paint(&p, option, index);
+    }
+    p.end();
+
+    m_dragInProgress = true;
+
+    QDrag *drag = new QDrag(widget);
+    drag->setMimeData(m_model->mimeData(indexes));
+    drag->setPixmap(pixmap);
+    drag->setHotSpot((pos - boundingRect.topLeft()).toPoint());
+    drag->exec(m_model->supportedDragActions());
+
+    m_dragInProgress = false;
 }
 
 Qt::Orientations FolderView::expandingDirections() const
