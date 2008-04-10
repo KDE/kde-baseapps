@@ -5,7 +5,7 @@ Name[et]=Kataloogivaade
 Name[sv]=Katalogvy
 Type=Service
 Icon=folder
-ServiceTypes=Plasma/Applet
+X-KDE-ServiceTypes=Plasma/Applet
 
 X-KDE-Library=plasma_applet_folderview
 X-KDE-PluginInfo-Author=Fredrik Höglund
