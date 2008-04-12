@@ -18,6 +18,7 @@ set(webkitkde_LIB_SRCS
     webkitview.cpp
     webkitpage.cpp
     searchwidget.cpp
+    webkitglobal.cpp
 #     kwebnetworkinterface.cpp
 )
 
