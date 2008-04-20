@@ -17,12 +17,11 @@ set(webkitkde_LIB_SRCS
     webkitpart.cpp
     webkitview.cpp
     webkitpage.cpp
-    searchwidget.cpp
     webkitglobal.cpp
+    webkitpageview.cpp
+    webkitsearchbar.cpp
 #     kwebnetworkinterface.cpp
 )
-
-kde4_add_ui_files(webkitkde_LIB_SRCS searchwidget.ui )
 
 kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
 
