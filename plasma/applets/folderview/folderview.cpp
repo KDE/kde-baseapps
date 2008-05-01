@@ -40,11 +40,11 @@
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args)
 {
+    setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setHasConfigurationInterface(false);
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
-    //setDrawStandardBackground(false);
-    //setContentSize(600, 400);
+    resize(600, 400);
 
     m_dirModel = new KDirModel(this);
 
@@ -76,11 +76,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
 FolderView::~FolderView()
 {
-}
-
-QSizeF FolderView::contentSizeHint() const
-{
-    return QSizeF(600, 400);
 }
 
 void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -138,14 +133,15 @@ void FolderView::layoutItems() const
     QStyleOptionViewItemV4 option = viewOptions();
     m_items.resize(m_model->rowCount());
 
+    const QRectF rect = contentsRect();
     int spacing = 10;
     int margin = 10;
-    int x = margin; 
-    int y = margin;
+    int x = rect.x() + margin; 
+    int y = rect.y() + margin;
 
     QSize gridSize(92, 92);
     int rowHeight = 0;
-    int maxColumns = columnsForWidth(contentRect().width());
+    int maxColumns = columnsForWidth(rect.width());
     int column = 0;
 
     for (int i = 0; i < m_items.size(); i++) {
@@ -162,7 +158,7 @@ void FolderView::layoutItems() const
             y += rowHeight + spacing;
             rowHeight = 0;
             column = 0;
-            x = margin;
+            x = rect.x() + margin;
         }
     }
 
@@ -175,7 +171,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     QStyleOptionViewItemV4 opt = viewOptions();
     opt.palette.setColor(QPalette::All, QPalette::Text, Qt::white);
 
-    if (!m_layoutValid || columnsForWidth(contentRect.width()) != m_columns)
+    if (!m_layoutValid)
         layoutItems();
 
     const QRect clipRect = contentRect & option->exposedRect.toAlignedRect();
@@ -224,7 +220,7 @@ QModelIndex FolderView::indexAt(const QPointF &point) const
     if (!m_layoutValid)
         layoutItems();
 
-    if (!contentRect().contains(point))
+    if (!contentsRect().contains(point))
         return QModelIndex();
 
     for (int i = 0; i < m_items.size(); i++) {
@@ -244,6 +240,26 @@ QRectF FolderView::visualRect(const QModelIndex &index) const
         return QRectF();
 
     return m_items[index.row()].rect;
+}
+
+QRectF FolderView::contentsRect() const
+{
+    qreal left, top, right, bottom;
+    getContentsMargins(&left, &top, &right, &bottom);
+    return rect().adjusted(left, top, -right, -bottom);
+}
+
+void FolderView::constraintsEvent(Plasma::Constraints constraints)
+{
+    // We should probably only do this when acting as the desktop containment
+    //if (constraints & Plasma::FormFactorConstraint)
+    //    setBackgroundHints(Applet::NoBackground);
+
+    if ((constraints & Plasma::SizeConstraint) &&
+        columnsForWidth(contentsRect().width()) != m_columns)
+    {
+        m_layoutValid = false;
+    }
 }
 
 void FolderView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -296,7 +312,7 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
 
         // If empty space was pressed
-        if (contentRect().contains(event->pos()))
+        if (contentsRect().contains(event->pos()))
         {
             m_pressedIndex = QModelIndex();
             if (m_selectionModel->hasSelection()) {
@@ -389,7 +405,7 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     const QRectF rubberBand = QRectF(event->buttonDownPos(Qt::LeftButton), event->pos()).normalized();
-    const QRect r = QRectF(rubberBand & contentRect()).toAlignedRect();
+    const QRect r = QRectF(rubberBand & contentsRect()).toAlignedRect();
 
     if (r != m_rubberBand)
     {
@@ -503,11 +519,6 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     drag->exec(m_model->supportedDragActions());
 
     m_dragInProgress = false;
-}
-
-Qt::Orientations FolderView::expandingDirections() const
-{
-    return Qt::Vertical | Qt::Horizontal;
 }
 
 void FolderView::showConfigurationInterface()

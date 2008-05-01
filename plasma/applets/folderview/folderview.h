@@ -45,8 +45,6 @@ public:
 
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
-    Qt::Orientations expandingDirections() const;
-    QSizeF contentSizeHint() const;
 
 public slots:
     void showConfigurationInterface();
@@ -63,9 +61,11 @@ private:
     void layoutItems() const;
     QModelIndex indexAt(const QPointF &point) const;
     QRectF visualRect(const QModelIndex &index) const;
+    QRectF contentsRect() const;
     void initStyleOption(QStyleOption *option) const;
     QStyleOptionViewItemV4 viewOptions() const;
     void startDrag(const QPointF &pos, QWidget *widget);
+    void constraintsEvent(Plasma::Constraints constraints);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
