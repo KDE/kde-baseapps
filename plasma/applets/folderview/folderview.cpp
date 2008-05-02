@@ -600,7 +600,7 @@ QStyleOptionViewItemV4 FolderView::viewOptions() const
     option.decorationSize      = iconSize();
     option.displayAlignment    = Qt::AlignHCenter;
     option.textElideMode       = Qt::ElideRight;
-    //option.features            = QStyleOptionViewItemV2::WrapText;
+    option.features            = QStyleOptionViewItemV2::WrapText;
     option.locale              = QLocale::system();
     option.widget              = 0;
     option.viewItemPosition    = QStyleOptionViewItemV4::OnlyOne;
