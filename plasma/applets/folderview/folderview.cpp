@@ -29,6 +29,7 @@
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 
+#include <KConfigDialog>
 #include <KDirLister>
 #include <KDirModel>
 #include <KFileItemDelegate>
@@ -41,7 +42,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
-    setHasConfigurationInterface(false);
+    setHasConfigurationInterface(true);
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
     resize(600, 400);
@@ -60,22 +61,72 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     connect(m_model, SIGNAL(layoutChanged()), SLOT(layoutChanged()));
     connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), SLOT(layoutChanged(QModelIndex,QModelIndex)));
 
-    KDirLister *lister = new KDirLister(this);
-    lister->openUrl(KUrl(QDir::homePath()));
-
-    m_dirModel->setDirLister(lister);
-
     m_delegate = new KFileItemDelegate(this);
-    m_delegate->setShadowColor(Qt::black);
-
     m_selectionModel = new QItemSelectionModel(m_model, this);
+
     m_layoutValid = false;
     m_doubleClick = false;
     m_dragInProgress = false;
 }
 
+void FolderView::init()
+{
+    KConfigGroup cg = config();
+    m_url = cg.readEntry("url", KUrl(QDir::homePath()));
+
+    KDirLister *lister = new KDirLister(this);
+    lister->openUrl(m_url);
+
+    m_dirModel->setDirLister(lister);
+    m_delegate->setShadowColor(Qt::black);
+}
+
 FolderView::~FolderView()
 {
+}
+
+void FolderView::createConfigurationInterface(KConfigDialog *parent)
+{
+    QWidget *widget = new QWidget;
+    ui.setupUi(widget);
+    if (m_url == KUrl("desktop:/")) {
+        ui.showDesktopFolder->setChecked(true);
+        ui.selectLabel->setEnabled(false);
+        ui.lineEdit->setEnabled(false);
+    } else {
+        ui.showCustomFolder->setChecked(true);
+        ui.lineEdit->setUrl(m_url);
+    }
+    parent->addPage(widget, parent->windowTitle(), icon());
+    parent->setButtons(KDialog::Ok | KDialog::Cancel | KDialog::Apply);
+    connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
+    connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
+    connect(ui.showCustomFolder, SIGNAL(toggled(bool)), this, SLOT(customFolderToggled(bool)));
+}
+
+void FolderView::configAccepted()
+{
+    KUrl url;
+
+    if (ui.showDesktopFolder->isChecked())
+        url = KUrl("desktop:/");
+    else
+        url = ui.lineEdit->url();
+
+    if (m_url != url) {
+        m_dirModel->dirLister()->openUrl(url);
+        m_url = url;
+ 
+        KConfigGroup cg = config();
+        cg.writeEntry("url", m_url);
+        emit configNeedsSaving();
+    }
+}
+
+void FolderView::customFolderToggled(bool checked)
+{
+    ui.selectLabel->setEnabled(checked);
+    ui.lineEdit->setEnabled(checked);
 }
 
 void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -519,10 +570,6 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     drag->exec(m_model->supportedDragActions());
 
     m_dragInProgress = false;
-}
-
-void FolderView::showConfigurationInterface()
-{
 }
 
 void FolderView::initStyleOption(QStyleOption *option) const

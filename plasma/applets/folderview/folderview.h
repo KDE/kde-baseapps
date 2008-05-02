@@ -24,6 +24,7 @@
 #include <QStyleOption>
 
 #include <plasma/applet.h>
+#include "ui_folderviewConfig.h"
 
 class KDirModel;
 class KFileItemDelegate;
@@ -43,11 +44,12 @@ public:
     FolderView(QObject *parent, const QVariantList &args);
     ~FolderView();
 
+    void init();
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
 
-public slots:
-    void showConfigurationInterface();
+protected:
+    void createConfigurationInterface(KConfigDialog *parent);
 
 private slots:    
     void rowsInserted(const QModelIndex &parent, int first, int last);
@@ -55,6 +57,8 @@ private slots:
     void modelReset();
     void layoutChanged();
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void configAccepted();
+    void customFolderToggled(bool checked);
 
 private:
     int columnsForWidth(qreal width) const;
@@ -82,6 +86,7 @@ private:
     KDirModel *m_dirModel;
     ProxyModel *m_model;
     QItemSelectionModel *m_selectionModel;
+    KUrl m_url;
     mutable QVector<ViewItem> m_items;
     mutable int m_columns;
     mutable bool m_layoutValid;
@@ -90,6 +95,7 @@ private:
     QRect m_rubberBand;
     QPointF m_buttonDownPos;
     QTime m_pressTime;
+    Ui::folderviewConfig ui;
     bool m_updatesDisabled;
     bool m_doubleClick;
     bool m_dragInProgress;
