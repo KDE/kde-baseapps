@@ -262,7 +262,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         opt.shape  = QRubberBand::Rectangle;
         opt.opaque = false;
 
-        QApplication::style()->drawControl(QStyle::CE_RubberBand, &opt, painter);
+        style()->drawControl(QStyle::CE_RubberBand, &opt, painter);
     }
 
     painter->restore();
@@ -589,21 +589,12 @@ QSize FolderView::gridSize() const
     return size;
 }
 
-void FolderView::initStyleOption(QStyleOption *option) const
-{
-    option->direction   = QApplication::layoutDirection();
-    option->fontMetrics = QApplication::fontMetrics();
-    option->palette     = QApplication::palette();
-    option->rect        = QRect();
-    option->state       = QStyle::State_Enabled | QStyle::State_Active;
-}
-
 QStyleOptionViewItemV4 FolderView::viewOptions() const
 {
     QStyleOptionViewItemV4 option;
     initStyleOption(&option);
 
-    option.font                = QApplication::font();
+    option.font                = font();
     option.decorationAlignment = Qt::AlignTop | Qt::AlignHCenter;
     option.decorationPosition  = QStyleOptionViewItem::Top;
     option.decorationSize      = iconSize();
