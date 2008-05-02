@@ -176,7 +176,7 @@ int FolderView::columnsForWidth(qreal width) const
     int margin = 10;
 
     qreal available = width - 2 * margin + spacing;
-    return qFloor(available / (92 + spacing));
+    return qFloor(available / (gridSize().width() + spacing));
 }
 
 void FolderView::layoutItems() const
@@ -190,20 +190,22 @@ void FolderView::layoutItems() const
     int x = rect.x() + margin; 
     int y = rect.y() + margin;
 
-    QSize gridSize(92, 92);
+    QSize grid = gridSize();
     int rowHeight = 0;
     int maxColumns = columnsForWidth(rect.width());
     int column = 0;
 
+    m_delegate->setMaximumSize(grid);
+
     for (int i = 0; i < m_items.size(); i++) {
         const QModelIndex index = m_model->index(i, 0);
-        QSize size = m_delegate->sizeHint(option, index).boundedTo(gridSize);
+        QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
 
-        QPoint pos(x + (gridSize.width() - size.width()) / 2, y);
+        QPoint pos(x + (grid.width() - size.width()) / 2, y);
         m_items[i].rect = QRect(pos, size);
 
         rowHeight = qMax(rowHeight, size.height());
-        x += gridSize.width() + spacing;
+        x += grid.width() + spacing;
 
         if (++column >= maxColumns) {
             y += rowHeight + spacing;
@@ -572,6 +574,21 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     m_dragInProgress = false;
 }
 
+QSize FolderView::iconSize() const
+{
+    KIconTheme *theme = KIconLoader::global()->theme();
+    int size = theme ? theme->defaultSize(KIconLoader::Desktop) : 48;
+    return QSize(size, size);
+}
+
+QSize FolderView::gridSize() const
+{
+    QSize size = iconSize();
+    size.rwidth()  *= 2;
+    size.rheight() *= 2;
+    return size;
+}
+
 void FolderView::initStyleOption(QStyleOption *option) const
 {
     option->direction   = QApplication::layoutDirection();
@@ -589,7 +606,7 @@ QStyleOptionViewItemV4 FolderView::viewOptions() const
     option.font                = QApplication::font();
     option.decorationAlignment = Qt::AlignTop | Qt::AlignHCenter;
     option.decorationPosition  = QStyleOptionViewItem::Top;
-    option.decorationSize      = QSize(48, 48);
+    option.decorationSize      = iconSize();
     option.displayAlignment    = Qt::AlignHCenter;
     option.textElideMode       = Qt::ElideRight;
     //option.features            = QStyleOptionViewItemV2::WrapText;

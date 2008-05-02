@@ -66,6 +66,8 @@ private:
     QModelIndex indexAt(const QPointF &point) const;
     QRectF visualRect(const QModelIndex &index) const;
     QRectF contentsRect() const;
+    QSize iconSize() const;
+    QSize gridSize() const;
     void initStyleOption(QStyleOption *option) const;
     QStyleOptionViewItemV4 viewOptions() const;
     void startDrag(const QPointF &pos, QWidget *widget);
