@@ -88,6 +88,7 @@ private:
     ProxyModel *m_model;
     QItemSelectionModel *m_selectionModel;
     KUrl m_url;
+    QString m_filterFiles;
     mutable QVector<ViewItem> m_items;
     mutable int m_columns;
     mutable bool m_layoutValid;

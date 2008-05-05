@@ -73,9 +73,11 @@ void FolderView::init()
 {
     KConfigGroup cg = config();
     m_url = cg.readEntry("url", KUrl(QDir::homePath()));
+    m_filterFiles = cg.readEntry("filterFiles", "*");
 
     KDirLister *lister = new KDirLister(this);
     lister->openUrl(m_url);
+    lister->setNameFilter(m_filterFiles);
 
     m_dirModel->setDirLister(lister);
     m_delegate->setShadowColor(Qt::black);
@@ -97,6 +99,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         ui.showCustomFolder->setChecked(true);
         ui.lineEdit->setUrl(m_url);
     }
+    
+    ui.filterFiles->setText(m_filterFiles);
+
     parent->addPage(widget, parent->windowTitle(), icon());
     parent->setButtons(KDialog::Ok | KDialog::Cancel | KDialog::Apply);
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
@@ -113,12 +118,16 @@ void FolderView::configAccepted()
     else
         url = ui.lineEdit->url();
 
-    if (m_url != url) {
+    if (m_url != url || m_filterFiles != ui.filterFiles->text()) {
         m_dirModel->dirLister()->openUrl(url);
+        m_dirModel->dirLister()->setNameFilter(ui.filterFiles->text());
         m_url = url;
+        m_filterFiles = ui.filterFiles->text();
  
         KConfigGroup cg = config();
         cg.writeEntry("url", m_url);
+        cg.writeEntry("filterFiles", m_filterFiles);
+
         emit configNeedsSaving();
     }
 }
@@ -306,7 +315,7 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
 {
     // We should probably only do this when acting as the desktop containment
     //if (constraints & Plasma::FormFactorConstraint)
-    //    setBackgroundHints(Applet::NoBackground);
+    //   setBackgroundHints(Applet::NoBackground);
 
     if ((constraints & Plasma::SizeConstraint) &&
         columnsForWidth(contentsRect().width()) != m_columns)
