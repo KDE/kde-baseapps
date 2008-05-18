@@ -65,7 +65,6 @@ private:
     void layoutItems() const;
     QModelIndex indexAt(const QPointF &point) const;
     QRectF visualRect(const QModelIndex &index) const;
-    QRectF contentsRect() const;
     QSize iconSize() const;
     QSize gridSize() const;
     QStyleOptionViewItemV4 viewOptions() const;

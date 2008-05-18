@@ -304,13 +304,6 @@ QRectF FolderView::visualRect(const QModelIndex &index) const
     return m_items[index.row()].rect;
 }
 
-QRectF FolderView::contentsRect() const
-{
-    qreal left, top, right, bottom;
-    getContentsMargins(&left, &top, &right, &bottom);
-    return rect().adjusted(left, top, -right, -bottom);
-}
-
 void FolderView::constraintsEvent(Plasma::Constraints constraints)
 {
     // We should probably only do this when acting as the desktop containment
