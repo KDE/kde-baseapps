@@ -20,7 +20,7 @@ set(webkitkde_LIB_SRCS
     webkitglobal.cpp
     webkitpageview.cpp
     webkitsearchbar.cpp
-#     kwebnetworkinterface.cpp
+    knetworkaccessmanager.cpp
 )
 
 kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
