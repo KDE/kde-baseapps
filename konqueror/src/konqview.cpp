@@ -133,6 +133,9 @@ KonqView::~KonqView()
     delete m_pPart;
   }
 
+  qDeleteAll( m_lstHistory );
+  m_lstHistory.clear();
+
   setRun( 0L );
   //kDebug(1202) << "KonqView::~KonqView " << this << " done";
 }
@@ -1382,7 +1385,7 @@ void KonqView::saveConfig( KConfigGroup& config, const QString &prefix, const Ko
     } else if(options & KonqFrameBase::saveHistoryItems) {
         if (m_pPart)
             updateHistoryEntry(true);
-        QList<HistoryEntry*>::Iterator it = m_lstHistory.begin();
+        QList<HistoryEntry*>::const_iterator it = m_lstHistory.begin();
         for ( uint i = 0; it != m_lstHistory.end(); ++it, ++i ) {
             (*it)->saveConfig(config, QString::fromLatin1( "HistoryItem" ) + QString::number(i).prepend( prefix ));
         }
