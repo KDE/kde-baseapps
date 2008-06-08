@@ -21,26 +21,42 @@
 #include "folderview.moc"
 
 #include <QApplication>
+#include <QClipboard>
 #include <QDebug>
 #include <QDrag>
+#include <QGraphicsView>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QItemSelectionModel>
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
 
+#include <KAction>
+#include <KAuthorized>
+#include <KBookmarkManager>
 #include <KConfigDialog>
 #include <KDirLister>
 #include <KDirModel>
 #include <KFileItemDelegate>
 #include <KGlobalSettings>
+#include <KMenu>
+#include <KStandardShortcut>
+
+#include <kio/fileundomanager.h>
+#include <kio/paste.h>
+#include <KParts/BrowserExtension>
+
+#include <knewmenu.h>
+#include <konqmimedata.h>
+#include <konq_operations.h>
+#include <konq_popupmenu.h>
 
 #include "proxymodel.h"
 #include "plasma/theme.h"
 
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
-    : Plasma::Applet(parent, args)
+    : Plasma::Applet(parent, args), m_actionCollection(this)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
@@ -65,6 +81,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     m_delegate = new KFileItemDelegate(this);
     m_selectionModel = new QItemSelectionModel(m_model, this);
 
+    m_newMenu = 0;
     m_layoutValid = false;
     m_doubleClick = false;
     m_dragInProgress = false;
@@ -94,10 +111,13 @@ void FolderView::init()
     m_model->setFilterFixedString(m_filterFiles);
 
     m_dirModel->setDirLister(lister);
+
+    connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardDataChanged()));
 }
 
 FolderView::~FolderView()
 {
+    delete m_newMenu;
 }
 
 void FolderView::createConfigurationInterface(KConfigDialog *parent)
@@ -191,6 +211,29 @@ void FolderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bott
 
     m_layoutValid = false;
     update();
+}
+
+void FolderView::clipboardDataChanged()
+{
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData();
+    if (KonqMimeData::decodeIsCutSelection(mimeData)) {
+        KUrl::List urls = KUrl::List::fromMimeData(mimeData);
+
+        // TODO Mark the cut icons as cut
+    }
+
+    // Update the paste action
+    if (QAction *action = m_actionCollection.action("paste"))
+    {
+        const QString actionText = KIO::pasteActionText();
+        if (!actionText.isEmpty()) {
+            action->setText(actionText);
+            action->setEnabled(true);
+        } else {
+            action->setText(i18n("&Paste"));
+            action->setEnabled(false);
+        }
+    }
 }
 
 int FolderView::columnsForWidth(qreal width) const
@@ -334,6 +377,245 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
     }
 }
 
+void FolderView::createActions()
+{
+    KIO::FileUndoManager *manager = KIO::FileUndoManager::self();
+
+    // Remove the Shift+Delete shortcut from the cut action, since it's used for deleting files
+    KAction *cut = KStandardAction::cut(this, SLOT(cut()), this);
+    KShortcut cutShortCut = cut->shortcut();
+    cutShortCut.remove(Qt::SHIFT + Qt::Key_Delete);
+    cut->setShortcut(cutShortCut);
+
+    KAction *copy = KStandardAction::copy(this, SLOT(copy()), this);
+
+    KAction *undo = KStandardAction::undo(manager, SLOT(undo()), this);
+    connect(manager, SIGNAL(undoAvailable(bool)), undo, SLOT(setEnabled(bool)));
+    connect(manager, SIGNAL(undoTextChanged(QString)), SLOT(undoTextChanged(QString)));
+    undo->setEnabled(manager->undoAvailable());
+
+    KAction *paste = KStandardAction::paste(this, SLOT(paste()), this);
+    KAction *pasteTo = KStandardAction::paste(this, SLOT(pasteTo()), this);
+    pasteTo->setEnabled(false); // Only enabled during popupMenu()
+
+    QString actionText = KIO::pasteActionText();
+    if (!actionText.isEmpty()) {
+       paste->setText(actionText);
+    } else {
+       paste->setEnabled(false);
+    }
+
+    KAction *reload  = new KAction(i18n("&Reload"), this);
+    reload->setShortcut(KStandardShortcut::reload());
+    connect(reload, SIGNAL(triggered()), SLOT(refreshIcons()));
+
+    KAction *rename = new KAction(KIcon("edit-rename"), i18n("&Rename"), this);
+    rename->setShortcut(Qt::Key_F2);
+    connect(rename, SIGNAL(triggered()), SLOT(renameSelectedIcon()));
+
+    KAction *trash = new KAction(KIcon("user-trash"), i18n("&Move to Trash"), this);
+    trash->setShortcut(Qt::Key_Delete);
+    connect(trash, SIGNAL(triggered(Qt::MouseButtons, Qt::KeyboardModifiers)),
+            SLOT(moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers)));
+
+    KAction *del = new KAction(i18n("&Delete"), this);
+    del->setShortcut(Qt::SHIFT + Qt::Key_Delete);
+    connect(del, SIGNAL(triggered()), SLOT(deleteSelectedIcons()));
+
+    m_actionCollection.addAction("cut", cut);
+    m_actionCollection.addAction("undo", undo);
+    m_actionCollection.addAction("copy", copy);
+    m_actionCollection.addAction("paste", paste);
+    m_actionCollection.addAction("pasteto", pasteTo);
+    m_actionCollection.addAction("reload", reload);
+    m_actionCollection.addAction("rename", rename);
+    m_actionCollection.addAction("trash", trash);
+    m_actionCollection.addAction("del", del);
+
+    // Create the new menu
+    if (KAuthorized::authorize("editable_desktop_icons")) {
+        m_newMenu = new KNewMenu(&m_actionCollection, view(), "new_menu");
+        connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
+    }
+
+    // Note: We have to create our own action collection, because the one Plasma::Applet
+    //       provides can only be manipulated indirectly, and we need to be able to pass
+    //       a pointer to the collection to KNewMenu and KonqPopupMenu.
+    //       But we still have to add all the actions to the collection in Plasma::Applet
+    //       in order for the shortcuts to work.
+    addAction("cut", cut);
+    addAction("undo", undo);
+    addAction("copy", copy);
+    addAction("paste", paste);
+    addAction("reload", reload);
+    addAction("rename", rename);
+    addAction("trash", trash);
+    addAction("del", del);
+}
+
+QList<QAction*> FolderView::contextualActions()
+{
+    QList<QAction*> actions;
+
+    if (KAuthorized::authorize("action/kdesktop_rmb"))
+    {
+        if (m_actionCollection.isEmpty()) {
+            createActions();
+        }
+
+        if (QAction *action = m_actionCollection.action("new_menu")) {
+            actions.append(action);
+            QAction *separator = new QAction(this);
+            separator->setSeparator(true);
+            actions.append(separator);
+        }
+
+        actions.append(m_actionCollection.action("undo"));
+        actions.append(m_actionCollection.action("paste"));
+
+        QAction *separator = new QAction(this);
+        separator->setSeparator(true);
+        actions.append(separator);
+    }
+
+    return actions;
+}
+
+void FolderView::aboutToShowCreateNew()
+{
+    if (m_newMenu) {
+        m_newMenu->slotCheckUpToDate();
+        m_newMenu->setPopupFiles(m_url);
+    }
+}
+
+KUrl::List FolderView::selectedUrls() const
+{
+    KUrl::List urls;
+    foreach (const QModelIndex &index, m_selectionModel->selectedIndexes())
+    {
+        KFileItem item = m_model->itemForIndex(index);
+        // Prefer the local URL if there is one, since we can't trash remote URL's
+        const QString path = item.localPath();
+        if (!path.isEmpty()) {
+            urls.append(path);
+        } else {
+            urls.append(item.url());
+        }
+    }
+    return urls;
+}
+
+void FolderView::copy()
+{
+    QMimeData *mimeData = new QMimeData;
+    KonqMimeData::populateMimeData(mimeData, selectedUrls(), KUrl::List(), false);
+    QApplication::clipboard()->setMimeData(mimeData);
+}
+
+void FolderView::cut()
+{
+    QMimeData *mimeData = new QMimeData;
+    KonqMimeData::populateMimeData(mimeData, selectedUrls(), KUrl::List(), true);
+    QApplication::clipboard()->setMimeData(mimeData);
+}
+
+void FolderView::paste()
+{
+    KonqOperations::doPaste(view(), m_url);
+}
+
+void FolderView::pasteTo()
+{
+    KUrl::List urls = selectedUrls();
+    Q_ASSERT(urls.count() == 1);
+    KonqOperations::doPaste(view(), urls.first());
+}
+
+void FolderView::refreshIcons()
+{
+    // TODO Implement me!
+}
+
+void FolderView::renameSelectedIcon()
+{
+    // TODO Implement me!
+}
+
+void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
+{
+    Q_UNUSED(buttons)    
+
+    KonqOperations::Operation op = (modifiers & Qt::ShiftModifier) ?
+            KonqOperations::DEL : KonqOperations::TRASH;
+
+    KonqOperations::del(view(), op, selectedUrls());
+}
+
+void FolderView::deleteSelectedIcons()
+{
+    KonqOperations::del(view(), KonqOperations::DEL, selectedUrls());
+}
+
+void FolderView::undoTextChanged(const QString &text)
+{
+    if (QAction *action = m_actionCollection.action("undo")) {
+        action->setText(text);
+    }
+}
+
+void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes)
+{
+    if (!KAuthorized::authorize("action/kdesktop_rmb")) {
+        return;
+    }
+
+    if (m_actionCollection.isEmpty()) {
+        createActions();
+    }
+
+    KFileItemList items;
+    bool hasRemoteFiles = false;
+
+    foreach (const QModelIndex &index, indexes) {
+        KFileItem item = m_model->itemForIndex(index);
+        hasRemoteFiles |= item.localPath().isEmpty();
+        items.append(item);
+    }
+
+    QAction* pasteTo = m_actionCollection.action("pasteto");
+    if (pasteTo) {
+        pasteTo->setEnabled(m_actionCollection.action("paste")->isEnabled());
+        pasteTo->setText(m_actionCollection.action("paste")->text());
+    }
+
+    QList<QAction*> editActions;
+    editActions.append(m_actionCollection.action("rename"));
+    if (!hasRemoteFiles) {
+        editActions.append(m_actionCollection.action("trash"));
+    } else {
+        editActions.append(m_actionCollection.action("del"));
+    }
+
+    KParts::BrowserExtension::ActionGroupMap actionGroups;
+    actionGroups.insert("editactions", editActions);
+
+    KParts::BrowserExtension::PopupFlags flags = 
+         KParts::BrowserExtension::ShowUrlOperations | KParts::BrowserExtension::ShowProperties;
+
+    KonqPopupMenu *contextMenu = new KonqPopupMenu(items, m_url, m_actionCollection, m_newMenu,
+                                                   KonqPopupMenu::ShowNewWindow, flags, widget,
+                                                   KBookmarkManager::userBookmarksManager(),
+                                                   actionGroups);
+
+    contextMenu->exec(pos);
+    delete contextMenu;
+
+    if (pasteTo) {
+        pasteTo->setEnabled(false);
+    }
+}
+
 void FolderView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     const QModelIndex index = indexAt(event->pos());
@@ -363,6 +645,28 @@ void FolderView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
 void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    if (!contentsRect().contains(event->pos())) {
+        Plasma::Applet::mousePressEvent(event);
+        return;
+    }
+
+    if (event->button() == Qt::RightButton) {
+        const QModelIndex index = indexAt(event->pos());
+        if (index.isValid()) {
+            if (!m_selectionModel->isSelected(index)) {
+                m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
+                m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+                update();
+            }
+            showContextMenu(event->widget(), event->screenPos(), m_selectionModel->selectedIndexes());
+        } else if (m_selectionModel->hasSelection()) {
+            m_selectionModel->clearSelection();
+            update();
+        }
+        event->accept();
+        return;
+    }
+
     if (event->button() == Qt::LeftButton) {
         const QModelIndex index = indexAt(event->pos());
 
@@ -384,19 +688,14 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
 
         // If empty space was pressed
-        if (contentsRect().contains(event->pos()))
-        {
-            m_pressedIndex = QModelIndex();
-            if (m_selectionModel->hasSelection()) {
-                m_selectionModel->clearSelection();
-                update();
-            }
-            event->accept();
-            return;
+        m_pressedIndex = QModelIndex();
+        if (m_selectionModel->hasSelection()) {
+            m_selectionModel->clearSelection();
+            update();
         }
+        event->accept();
     }
 
-    Plasma::Applet::mousePressEvent(event);
 }
 
 void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)

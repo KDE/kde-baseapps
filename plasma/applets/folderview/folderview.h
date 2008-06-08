@@ -23,11 +23,14 @@
 #include <QPersistentModelIndex>
 #include <QStyleOption>
 
+#include <KActionCollection>
+
 #include <plasma/applet.h>
 #include "ui_folderviewConfig.h"
 
 class KDirModel;
 class KFileItemDelegate;
+class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
 
@@ -50,8 +53,9 @@ public:
 
 protected:
     void createConfigurationInterface(KConfigDialog *parent);
+    QList<QAction*> contextualActions();
 
-private slots:    
+private slots:
     void rowsInserted(const QModelIndex &parent, int first, int last);
     void rowsRemoved(const QModelIndex &parent, int first, int last);
     void modelReset();
@@ -59,8 +63,24 @@ private slots:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void configAccepted();
     void customFolderToggled(bool checked);
+    void aboutToShowCreateNew();
+    void clipboardDataChanged();
+
+    // These slots are for KonqPopupMenu
+    void copy();
+    void cut();
+    void paste();
+    void pasteTo();
+    void refreshIcons();
+    void renameSelectedIcon();
+    void moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers);
+    void deleteSelectedIcons();
+    void undoTextChanged(const QString &text);
 
 private:
+    void createActions();
+    KUrl::List selectedUrls() const;
+    void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     int columnsForWidth(qreal width) const;
     void layoutItems() const;
     QModelIndex indexAt(const QPointF &point) const;
@@ -89,6 +109,8 @@ private:
     KUrl m_url;
     QString m_filterFiles;
     QFont m_font;
+    KNewMenu *m_newMenu;
+    KActionCollection m_actionCollection;
     mutable QVector<ViewItem> m_items;
     mutable int m_columns;
     mutable bool m_layoutValid;
