@@ -56,8 +56,10 @@
 
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
-    : Plasma::Applet(parent, args), m_actionCollection(this)
+    : Plasma::Containment(parent, args),
+      m_actionCollection(this)
 {
+    setContainmentType(DesktopContainment);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
     setAcceptHoverEvents(true);

@@ -25,7 +25,7 @@
 
 #include <KActionCollection>
 
-#include <plasma/applet.h>
+#include <plasma/containment.h>
 #include "ui_folderviewConfig.h"
 
 class KDirModel;
@@ -39,7 +39,7 @@ struct ViewItem
     QRect rect;
 };
 
-class FolderView : public Plasma::Applet
+class FolderView : public Plasma::Containment
 {
     Q_OBJECT
 
