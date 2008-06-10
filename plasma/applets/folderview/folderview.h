@@ -107,6 +107,7 @@ private:
     ProxyModel *m_model;
     QItemSelectionModel *m_selectionModel;
     KUrl m_url;
+    int m_titleHeight;
     QString m_filterFiles;
     QFont m_font;
     KNewMenu *m_newMenu;
