@@ -67,7 +67,7 @@ bool ProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent
     const KFileItem item = dirModel->itemForIndex(dirModel->index(sourceRow, KDirModel::Name, sourceParent));
 
     const QString regExpOrig = filterRegExp().pattern();
-    const QStringList regExps = regExpOrig.split(';');
+    const QStringList regExps = regExpOrig.split(' ');
     foreach (const QString &regExpStr, regExps) {
         QRegExp regExp(regExpStr);
         regExp.setPatternSyntax(QRegExp::Wildcard);
