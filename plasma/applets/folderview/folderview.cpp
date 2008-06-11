@@ -869,13 +869,14 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
         KFileItem item;
         const QModelIndex index = indexAt(event->pos());
         if (index.isValid()) {
-            item == m_model->itemForIndex(index);
+            item = m_model->itemForIndex(index);
         }
 
         QDropEvent ev(event->screenPos(), event->dropAction(), event->mimeData(),
                       event->buttons(), event->modifiers());
-        kDebug() << "dropping to" << m_url << "with" << view();
-        KonqOperations::doDrop(item, m_url, &ev, view()->nativeParentWidget());
+        kDebug() << "dropping to" << m_url << "with" << view() << event->modifiers();
+        KonqOperations::doDrop(item, m_url, &ev, event->widget());
+        kDebug() << "all done!";
         return;
     }
 
