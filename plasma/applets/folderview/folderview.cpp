@@ -856,6 +856,13 @@ void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 
 void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
+    const QModelIndex index = indexAt(event->pos());
+    if (index.isValid()) {
+        QRectF dirtyRect = visualRect(index) | visualRect(m_hoveredIndex);
+        m_hoveredIndex = index;
+        update(dirtyRect);
+    }
+
     event->accept();
 }
 
@@ -870,6 +877,9 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
         const QModelIndex index = indexAt(event->pos());
         if (index.isValid()) {
             item = m_model->itemForIndex(index);
+            if (!item.acceptsDrops()) {
+                item = KFileItem();
+            }
         }
 
         QDropEvent ev(event->screenPos(), event->dropAction(), event->mimeData(),
