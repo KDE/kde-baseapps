@@ -73,6 +73,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     resize(600, 400);
 
     m_dirModel = new KDirModel(this);
+    m_dirModel->setDropsAllowed(KDirModel::DropOnDirectory | KDirModel::DropOnLocalExecutable);
 
     m_model = new ProxyModel(this);
     m_model->setSourceModel(m_dirModel);
@@ -933,11 +934,10 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // in the drag and drop operation, but since two QGraphicsItems can be part of the
     // same widget, we can't use that method here.
     KFileItem item;
-    if (m_hoveredIndex.isValid()) {
+    if (m_hoveredIndex.isValid() &&
+        (m_model->flags(m_hoveredIndex) & Qt::ItemIsDropEnabled))
+    {
         item = m_model->itemForIndex(m_hoveredIndex);
-        if (!item.acceptsDrops()) {
-            item = KFileItem();
-        }
     }
 
     if (!m_dragInProgress || !item.isNull()) {
