@@ -857,12 +857,27 @@ void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
     const QModelIndex index = indexAt(event->pos());
+    QRectF dirtyRect = visualRect(m_hoveredIndex);
+    m_hoveredIndex = QModelIndex();
+
     if (index.isValid()) {
-        QRectF dirtyRect = visualRect(index) | visualRect(m_hoveredIndex);
-        m_hoveredIndex = index;
-        update(dirtyRect);
+        dirtyRect |= visualRect(index);
+        bool onOurself = false;
+
+        foreach (const QModelIndex &selected, m_selectionModel->selectedIndexes()) {
+            if (selected == index) {
+                onOurself = true;
+                break;
+            }
+        }
+
+        if (!onOurself) {
+            m_hoveredIndex = index;
+            dirtyRect |= visualRect(index);
+        }
     }
 
+    update(dirtyRect);
     event->accept();
 }
 
@@ -872,26 +887,22 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // Normally we'd do this by checking if the source widget matches the target widget
     // in the drag and drop operation, but since two QGraphicsItems can be part of the
     // same widget, we can't use that method here.
-    if (!m_dragInProgress) {
-        KFileItem item;
-        const QModelIndex index = indexAt(event->pos());
-        if (index.isValid()) {
-            item = m_model->itemForIndex(index);
-            if (!item.acceptsDrops()) {
-                item = KFileItem();
-            }
+    KFileItem item;
+    if (m_hoveredIndex.isValid()) {
+        item = m_model->itemForIndex(m_hoveredIndex);
+        if (!item.acceptsDrops()) {
+            item = KFileItem();
         }
-
-        QDropEvent ev(event->screenPos(), event->dropAction(), event->mimeData(),
-                      event->buttons(), event->modifiers());
-        kDebug() << "dropping to" << m_url << "with" << view() << event->modifiers();
-        KonqOperations::doDrop(item, m_url, &ev, event->widget());
-        kDebug() << "all done!";
-        return;
     }
 
-    // ### We should check if the items were dropped on a child item that
-    //     accepts drops.
+    if (!m_dragInProgress || !item.isNull()) {
+        QDropEvent ev(event->screenPos(), event->dropAction(), event->mimeData(),
+                      event->buttons(), event->modifiers());
+        //kDebug() << "dropping to" << m_url << "with" << view() << event->modifiers();
+        KonqOperations::doDrop(item, m_url, &ev, event->widget());
+        //kDebug() << "all done!";
+        return;
+    }
 
     // If we get to this point, the drag was started from within the applet,
     // so instead of moving/copying/linking the dropped URL's to the folder,
