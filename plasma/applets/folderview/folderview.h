@@ -121,7 +121,6 @@ private:
     QPointF m_buttonDownPos;
     QTime m_pressTime;
     Ui::folderviewConfig ui;
-    bool m_updatesDisabled;
     bool m_doubleClick;
     bool m_dragInProgress;
 };

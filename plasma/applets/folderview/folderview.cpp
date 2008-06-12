@@ -57,7 +57,13 @@
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
-      m_actionCollection(this)
+      m_titleHeight(0),
+      m_newMenu(0),
+      m_actionCollection(this),
+      m_layoutValid(false),
+      m_doubleClick(false),
+      m_dragInProgress(false)
+
 {
     setContainmentType(DesktopContainment);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -82,12 +88,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
     m_delegate = new KFileItemDelegate(this);
     m_selectionModel = new QItemSelectionModel(m_model, this);
-
-    m_newMenu = 0;
-    m_layoutValid = false;
-    m_titleHeight = 0;
-    m_doubleClick = false;
-    m_dragInProgress = false;
 
     if ( args.count() ) {
         m_url = KUrl(args.value(0).toString());
