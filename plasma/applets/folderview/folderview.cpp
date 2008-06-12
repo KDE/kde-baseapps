@@ -347,8 +347,12 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         if (index == m_hoveredIndex)
             opt.state |= QStyle::State_MouseOver;
 
-        if (m_selectionModel->isSelected(index))
+        if (m_selectionModel->isSelected(index)) {
+            if (m_dragInProgress) {
+                continue;
+            }
             opt.state |= QStyle::State_Selected;
+        }
 
         if (hasFocus() && index == m_selectionModel->currentIndex())
             opt.state |= QStyle::State_HasFocus;
@@ -952,8 +956,18 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     drag->setMimeData(m_model->mimeData(indexes));
     drag->setPixmap(pixmap);
     drag->setHotSpot((pos - boundingRect.topLeft()).toPoint());
-    drag->exec(m_model->supportedDragActions());
+    Qt::DropAction result = drag->exec(m_model->supportedDragActions());
 
+    if (result == Qt::IgnoreAction) {
+        QRectF dirtyRect;
+        foreach (const QModelIndex &selected, m_selectionModel->selectedIndexes()) {
+            dirtyRect |= visualRect(selected);
+        }
+
+        if (!dirtyRect.isEmpty()) {
+            update(dirtyRect);
+        }
+    }
     m_dragInProgress = false;
 }
 
