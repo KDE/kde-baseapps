@@ -87,6 +87,10 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), SLOT(layoutChanged(QModelIndex,QModelIndex)));
 
     m_delegate = new KFileItemDelegate(this);
+    connect(m_delegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
+            SLOT(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));    
+    connect(m_delegate, SIGNAL(commitData(QWidget*)), SLOT(commitData(QWidget*)));
+
     m_selectionModel = new QItemSelectionModel(m_model, this);
 
     if ( args.count() ) {
@@ -577,7 +581,44 @@ void FolderView::refreshIcons()
 
 void FolderView::renameSelectedIcon()
 {
-    // TODO Implement me!
+    QModelIndex index = m_selectionModel->currentIndex();
+    if (!index.isValid())
+        return;
+
+    QStyleOptionViewItemV4 option = viewOptions();
+    option.rect = mapToScene(visualRect(index)).boundingRect().toRect();
+
+    // ### Note that we don't embed the editor in the applet as a
+    // QGraphicsProxyWidget here, because calling setFocus() on the
+    // editor or the proxy doesn't work properly when we do.
+    QWidget *editor = m_delegate->createEditor(view(), option, index);
+    editor->installEventFilter(m_delegate);
+
+    m_delegate->updateEditorGeometry(editor, option, index);
+    m_delegate->setEditorData(editor, index);
+
+    editor->show();
+    editor->setFocus();
+
+    m_editorIndex = index;
+}
+
+void FolderView::commitData(QWidget *editor)
+{
+    m_delegate->setModelData(editor, m_model, m_editorIndex);
+}
+
+void FolderView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint)
+{
+    Q_UNUSED(hint)
+
+    if (editor->hasFocus()) {
+        setFocus();
+    }
+    editor->hide();
+    editor->removeEventFilter(m_delegate);
+    editor->deleteLater();
+    update();
 }
 
 void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)

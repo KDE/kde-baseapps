@@ -77,6 +77,9 @@ private slots:
     void deleteSelectedIcons();
     void undoTextChanged(const QString &text);
 
+    void commitData(QWidget *editor);
+    void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
+
 private:
     void createActions();
     KUrl::List selectedUrls() const;
@@ -117,6 +120,7 @@ private:
     mutable bool m_layoutValid;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
+    QPersistentModelIndex m_editorIndex;
     QRect m_rubberBand;
     QPointF m_buttonDownPos;
     QTime m_pressTime;
