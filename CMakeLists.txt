@@ -19,8 +19,12 @@ set(webkitkde_LIB_SRCS
     webkitpage.cpp
     webkitglobal.cpp
     webkitpageview.cpp
-    webkitsearchbar.cpp
+    searchbar.cpp
     knetworkaccessmanager.cpp
+)
+
+kde4_add_ui_files(webkitkde_LIB_SRCS
+    searchbar.ui
 )
 
 kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
