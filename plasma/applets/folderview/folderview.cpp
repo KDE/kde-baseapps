@@ -1211,11 +1211,15 @@ void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 
 void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
-    const QModelIndex index = indexAt(event->pos());
+    const QModelIndex index = indexAt(mapToViewport(event->pos()));
+    if (index == m_hoveredIndex) {
+        return;
+    }
+
     QRectF dirtyRect = visualRect(m_hoveredIndex);
     m_hoveredIndex = QModelIndex();
 
-    if (index.isValid()) {
+    if (index.isValid() && (m_model->flags(index) & Qt::ItemIsDropEnabled)) {
         dirtyRect |= visualRect(index);
         bool onOurself = false;
 
