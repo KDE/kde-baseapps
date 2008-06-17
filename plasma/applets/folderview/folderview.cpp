@@ -27,8 +27,10 @@
 #include <QGraphicsView>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsProxyWidget>
 #include <QItemSelectionModel>
 #include <QPainter>
+#include <QScrollBar>
 #include <QStyleOptionGraphicsItem>
 
 #include <KAction>
@@ -54,16 +56,52 @@
 #include "proxymodel.h"
 #include "plasma/theme.h"
 
+#include <QX11Info>
+#include <X11/Xlib.h>
+
+#include <limits.h>
+
+
+// Wraps a QScrollBar in a QGraphicsProxyWidget
+class ScrollBar : public QGraphicsProxyWidget
+{
+public:
+    ScrollBar(Qt::Orientation orientation, QGraphicsWidget *parent);
+    void setRange(int min, int max) { static_cast<QScrollBar*>(widget())->setRange(min, max); }
+    void setSingleStep(int val) { static_cast<QScrollBar*>(widget())->setSingleStep(val); }
+    void setPageStep(int val) { static_cast<QScrollBar*>(widget())->setPageStep(val); }
+    void setValue(int val) { static_cast<QScrollBar*>(widget())->setValue(val); }
+    int value() const { return static_cast<QScrollBar*>(widget())->value(); }
+    int minimum() const { return static_cast<QScrollBar*>(widget())->minimum(); }
+    int maximum() const { return static_cast<QScrollBar*>(widget())->maximum(); }
+    QScrollBar *nativeWidget() const { return static_cast<QScrollBar*>(widget()); }
+};
+
+ScrollBar::ScrollBar(Qt::Orientation orientation, QGraphicsWidget *parent)
+        : QGraphicsProxyWidget(parent)
+{
+    QScrollBar *scrollbar = new QScrollBar(orientation);
+    scrollbar->setAttribute(Qt::WA_NoSystemBackground);
+    setWidget(scrollbar);
+}
+
+
+
+// ---------------------------------------------------------------------------
+
+
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
       m_titleHeight(0),
+      m_lastScrollValue(0),
+      m_viewScrolled(false),
       m_newMenu(0),
       m_actionCollection(this),
+      m_columns(0),
       m_layoutValid(false),
       m_doubleClick(false),
       m_dragInProgress(false)
-
 {
     setContainmentType(DesktopContainment);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -93,6 +131,9 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     connect(m_delegate, SIGNAL(commitData(QWidget*)), SLOT(commitData(QWidget*)));
 
     m_selectionModel = new QItemSelectionModel(m_model, this);
+    m_scrollBar = new ScrollBar(Qt::Vertical, this);
+    m_scrollBar->hide();
+    connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
 
     if ( args.count() ) {
         m_url = KUrl(args.value(0).toString());
@@ -103,6 +144,9 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
 void FolderView::init()
 {
+    // We handle the caching ourselves
+    setCacheMode(NoCache);
+
     // TODO Update the font when the global font settings change.
     KConfigGroup cg(KGlobal::config(), "General");
     m_font = cg.readEntry("desktopFont", QFont("Sans Serif", 10));
@@ -140,7 +184,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         ui.showCustomFolder->setChecked(true);
         ui.lineEdit->setUrl(m_url);
     }
-    
+
     ui.lineEdit->setMode(KFile::Directory); 
     ui.filterFiles->setText(m_filterFiles);
 
@@ -168,7 +212,7 @@ void FolderView::configAccepted()
         m_model->setFilterFixedString(ui.filterFiles->text());
         m_url = url;
         m_filterFiles = ui.filterFiles->text();
- 
+
         KConfigGroup cg = config();
         cg.writeEntry("url", m_url);
         cg.writeEntry("filterFiles", m_filterFiles);
@@ -247,6 +291,17 @@ void FolderView::clipboardDataChanged()
     }
 }
 
+void FolderView::scrollBarValueChanged(int value)
+{
+    Q_UNUSED(value)
+
+    // TODO We should save the scrollbar value in the config file
+    //      so we can restore it with the session.
+
+    m_viewScrolled = true;
+    update();
+}
+
 int FolderView::columnsForWidth(qreal width) const
 {
     int spacing = 10;
@@ -256,7 +311,27 @@ int FolderView::columnsForWidth(qreal width) const
     return qFloor(available / (gridSize().width() + spacing));
 }
 
-void FolderView::layoutItems() const
+QPointF FolderView::mapToViewport(const QPointF &point) const
+{
+    return point + QPointF(0, m_scrollBar->value());
+}
+
+QRectF FolderView::mapToViewport(const QRectF &rect) const
+{
+    return rect.translated(0, m_scrollBar->value());
+}
+
+QPointF FolderView::mapFromViewport(const QPointF &point) const
+{
+    return point - QPointF(0, m_scrollBar->value());
+}
+
+QRectF FolderView::mapFromViewport(const QRectF &rect) const
+{
+    return rect.translated(0, -m_scrollBar->value());
+}
+
+void FolderView::layoutItems()
 {
     QStyleOptionViewItemV4 option = viewOptions();
     m_items.resize(m_model->rowCount());
@@ -268,8 +343,9 @@ void FolderView::layoutItems() const
     int y = rect.y() + margin + m_titleHeight;
 
     QSize grid = gridSize();
+    int maxWidth = rect.width() - m_scrollBar->geometry().width() - margin;
     int rowHeight = 0;
-    int maxColumns = columnsForWidth(rect.width());
+    int maxColumns = columnsForWidth(maxWidth);
     int column = 0;
 
     m_delegate->setMaximumSize(grid);
@@ -292,12 +368,116 @@ void FolderView::layoutItems() const
         }
     }
 
+    updateScrollBar();
     m_columns = maxColumns;
     m_layoutValid = true;
+    m_dirtyRegion = QRegion(mapToViewport(rect).toAlignedRect());
+}
+
+void FolderView::updateScrollBar()
+{
+    // Find the height of the viewport
+    int maxY = 0;
+    for (int i = 0; i < m_items.size(); i++) {
+        maxY = qMax(maxY, m_items[i].rect.bottom());
+    }
+
+    m_viewportRect = contentsRect();
+    m_viewportRect.setBottom(qMax<int>(m_viewportRect.bottom(), maxY + 10));
+    m_viewportRect.setWidth(m_viewportRect.width() - m_scrollBar->geometry().width());
+
+    int max = int(m_viewportRect.height() - contentsRect().height());
+
+    // Keep the scrollbar handle at the bottom if it was at the bottom and the viewport
+    // has grown vertically
+    bool updateValue = (m_scrollBar->minimum() != m_scrollBar->maximum()) &&
+            (max > m_scrollBar->maximum()) && (m_scrollBar->value() == m_scrollBar->maximum());
+
+    m_scrollBar->setRange(0, max);   
+    m_scrollBar->setPageStep(contentsRect().height());
+    m_scrollBar->setSingleStep(10);
+
+    if (updateValue) {
+        m_scrollBar->setValue(max);
+    }
+
+    if (max > 0) {
+        m_scrollBar->show();
+    } else {
+        m_scrollBar->hide();
+    }
+}
+
+// Marks the supplied rect, in viewport coordinates, as dirty and schedules a repaint.
+void FolderView::markAreaDirty(const QRect &rect)
+{
+    if (rect.isEmpty()) {
+        return;
+    }
+
+    const QRect visibleRect = mapToViewport(contentsRect()).toAlignedRect();
+    if (!rect.intersects(visibleRect)) {
+        return;
+    }
+
+    m_dirtyRegion += rect;
+    update(mapFromViewport(rect));
+}
+
+void FolderView::markEverythingDirty()
+{
+    m_dirtyRegion = QRegion(mapToViewport(contentsRect()).toAlignedRect());
+    update();
+}
+
+// This function scrolls the contents of the backbuffer the distance the scrollbar
+// has moved since the last time this function was called.
+QRect FolderView::scrollBackbufferContents()
+{
+    int value =  m_scrollBar->value();
+    int delta = m_lastScrollValue - value;
+    m_lastScrollValue = value;
+
+    if (qAbs(delta) >= m_pixmap.height()) {
+        return mapToViewport(contentsRect()).toAlignedRect();
+    }
+
+    int sy, dy, h;
+    QRect dirty;
+    if (delta < 0) {
+        dy = 0;
+        sy = -delta;
+        h = m_pixmap.height() - sy;
+        dirty = QRect(0, m_pixmap.height() - sy, m_pixmap.width(), sy);
+    } else {
+        dy = delta;
+        sy = 0;
+        h = m_pixmap.height() - dy;
+        dirty = QRect(0, 0, m_pixmap.width(), dy);
+    }
+
+    // Avoid the overhead of creating a QPainter to do the blit.
+    Display *dpy = QX11Info::display();
+    GC gc = XCreateGC(dpy, m_pixmap.handle(), 0, 0);
+    XCopyArea(dpy, m_pixmap.handle(), m_pixmap.handle(), gc, 0, sy, m_pixmap.width(), h, 0, dy);
+    XFreeGC(dpy, gc);
+
+    return mapToViewport(dirty.translated(contentsRect().topLeft().toPoint())).toAlignedRect();
 }
 
 void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentRect)
 {
+    if (m_pixmap.isNull()) {
+        return;
+    }
+
+    QRect clipRect = contentRect & option->exposedRect.toAlignedRect();
+    if (clipRect.isEmpty()) {
+        return;
+    }
+
+    painter->setClipRect(clipRect);
+
     QStyleOptionViewItemV4 opt = viewOptions();
     opt.palette.setColor(QPalette::All, QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     m_delegate->setShadowColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::BackgroundColor));
@@ -333,60 +513,145 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         m_titleHeight = 0;
     }
 
-    if (!m_layoutValid)
+    if (!m_layoutValid) {
         layoutItems();
+    }
 
-    const QRect clipRect = contentRect & option->exposedRect.toAlignedRect();
-    if (clipRect.isEmpty())
-        return;
+    if (m_viewScrolled) {
+        m_dirtyRegion += scrollBackbufferContents();
+        m_viewScrolled = false;
+    }
 
-    painter->save();
-    painter->setClipRect(clipRect, Qt::IntersectClip);
+    int offset = m_scrollBar->value();
 
-    for (int i = 0; i < m_items.size(); i++) {
-        opt.rect = m_items[i].rect;
+    // Update the dirty region in the backbuffer
+    // =========================================
+    if (!m_dirtyRegion.isEmpty())
+    {
+        QPainter p(&m_pixmap);
+        p.translate(-contentRect.topLeft() - QPoint(0, offset));
+        p.setClipRegion(m_dirtyRegion);
 
-        if (!opt.rect.intersects(clipRect))
-            continue;
+        // Clear the dirty region
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(mapToViewport(contentRect), Qt::transparent);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-        const QModelIndex index = m_model->index(i, 0);
-        opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver | QStyle::State_Selected);
+        for (int i = 0; i < m_items.size(); i++)
+        {
+            opt.rect = m_items[i].rect;
 
-        if (index == m_hoveredIndex)
-            opt.state |= QStyle::State_MouseOver;
-
-        if (m_selectionModel->isSelected(index)) {
-            if (m_dragInProgress) {
+            if (!m_dirtyRegion.intersects(opt.rect)) {
                 continue;
             }
-            opt.state |= QStyle::State_Selected;
+
+            const QModelIndex index = m_model->index(i, 0);
+            opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver | QStyle::State_Selected);
+
+            if (index == m_hoveredIndex) {
+                opt.state |= QStyle::State_MouseOver;
+            }
+
+            if (m_selectionModel->isSelected(index)) {
+                if (m_dragInProgress) {
+                    continue;
+                }
+                opt.state |= QStyle::State_Selected;
+            }
+
+            if (hasFocus() && index == m_selectionModel->currentIndex()) {
+                opt.state |= QStyle::State_HasFocus;
+            }
+
+            m_delegate->paint(&p, opt, index);
         }
 
-        if (hasFocus() && index == m_selectionModel->currentIndex())
-            opt.state |= QStyle::State_HasFocus;
+        if (m_rubberBand.isValid())
+        {
+            QStyleOptionRubberBand opt;
+            initStyleOption(&opt);
+            opt.rect   = m_rubberBand;
+            opt.shape  = QRubberBand::Rectangle;
+            opt.opaque = false;
 
-        m_delegate->paint(painter, opt, index);
+            style()->drawControl(QStyle::CE_RubberBand, &opt, &p);
+        }
+
+        m_dirtyRegion = QRegion();
     }
 
-    if (m_rubberBand.isValid()) {
-        QStyleOptionRubberBand opt;
-        initStyleOption(&opt);
-        opt.rect   = m_rubberBand;
-        opt.shape  = QRubberBand::Rectangle;
-        opt.opaque = false;
+    const QRect topFadeRect(contentRect.x(), contentRect.y() + m_titleHeight, contentRect.width(), 16);
+    const QRect bottomFadeRect(contentRect.bottomLeft() - QPoint(0, 16), QSize(contentRect.width(), 16));
+    QRect titleRect = contentRect;
+    titleRect.setHeight(m_titleHeight);
 
-        style()->drawControl(QStyle::CE_RubberBand, &opt, painter);
+    // Draw the backbuffer on the Applet
+    // =================================
+    if ((m_titleHeight > 0 && titleRect.intersects(clipRect)) ||
+        (offset > 0 && topFadeRect.intersects(clipRect)) ||
+        (m_viewportRect.height() > (offset + contentRect.height()) && bottomFadeRect.intersects(clipRect)))
+    {
+        QPixmap pixmap = m_pixmap;
+        QPainter p(&pixmap);
+
+        // Clear the area under the title
+        if (m_titleHeight > 0 && titleRect.intersects(clipRect))
+        {
+            p.setCompositionMode(QPainter::CompositionMode_Source);
+            p.fillRect(0, 0, pixmap.width(), m_titleHeight, Qt::transparent);
+        }
+        p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+
+        // Fade out the top section of the pixmap if the scrollbar slider isn't at the top
+        if (offset > 0 && topFadeRect.intersects(clipRect))
+        {
+            if (m_topFadeTile.isNull())
+            {
+                m_topFadeTile = QPixmap(256, 16);
+                m_topFadeTile.fill(Qt::transparent);
+                QLinearGradient g(0, 0, 0, 16);
+                g.setColorAt(0, Qt::transparent);
+                g.setColorAt(1, Qt::black);
+                QPainter p(&m_topFadeTile);
+                p.setCompositionMode(QPainter::CompositionMode_Source);
+                p.fillRect(0, 0, 256, 16, g);
+                p.end();
+            }
+            p.drawTiledPixmap(0, m_titleHeight, m_pixmap.width(), 16, m_topFadeTile);
+        }
+
+        // Fade out the bottom part of the pixmap if the scrollbar slider isn't at the bottom
+        if (m_viewportRect.height() > (offset + contentRect.height()) && bottomFadeRect.intersects(clipRect))
+        {
+            if (m_topFadeTile.isNull())
+            {
+                m_bottomFadeTile = QPixmap(256, 16);
+                m_bottomFadeTile.fill(Qt::transparent);
+                QLinearGradient g(0, 0, 0, 16);
+                g.setColorAt(0, Qt::black);
+                g.setColorAt(1, Qt::transparent);
+                QPainter p(&m_bottomFadeTile);
+                p.setCompositionMode(QPainter::CompositionMode_Source);
+                p.fillRect(0, 0, 256, 16, g);
+                p.end();
+            }
+            p.drawTiledPixmap(0, m_pixmap.height() - 16, m_pixmap.width(), 16, m_bottomFadeTile);
+        }
+        p.end();
+        painter->drawPixmap(contentRect.topLeft(), pixmap);
     }
-
-    painter->restore();
+    else
+    {
+        painter->drawPixmap(contentRect.topLeft(), m_pixmap);
+    }
 }
 
-QModelIndex FolderView::indexAt(const QPointF &point) const
+QModelIndex FolderView::indexAt(const QPointF &point)
 {
     if (!m_layoutValid)
         layoutItems();
 
-    if (!contentsRect().contains(point))
+    if (!mapToViewport(contentsRect()).contains(point))
         return QModelIndex();
 
     for (int i = 0; i < m_items.size(); i++) {
@@ -397,7 +662,7 @@ QModelIndex FolderView::indexAt(const QPointF &point) const
     return QModelIndex();
 }
 
-QRectF FolderView::visualRect(const QModelIndex &index) const
+QRectF FolderView::visualRect(const QModelIndex &index)
 {
     if (!m_layoutValid)
         layoutItems();
@@ -416,10 +681,27 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
 
     setBackgroundHints(Applet::TranslucentBackground);
 
-    if ((constraints & Plasma::SizeConstraint) &&
-        columnsForWidth(contentsRect().width()) != m_columns)
+    if (constraints & Plasma::SizeConstraint)
     {
-        m_layoutValid = false;
+        // Update the scrollbar geometry
+        QRectF r = QRectF(contentsRect().right() - m_scrollBar->geometry().width(), contentsRect().top(),
+                          m_scrollBar->geometry().width(), contentsRect().height());
+        m_scrollBar->setGeometry(r);
+
+        // Resize the backbuffer pixmap
+        m_pixmap = QPixmap(contentsRect().size().toSize());
+        m_pixmap.fill(Qt::transparent);
+
+        // TODO We shouldn't use a backbuffer pixmap at all when acting as a containment.
+
+        int maxWidth = contentsRect().width() - m_scrollBar->geometry().width() - 10;
+        if (columnsForWidth(maxWidth) != m_columns) {
+            // The scrollbar range will be updated after the re-layout
+            m_layoutValid = false;
+        } else {
+            updateScrollBar();
+            markEverythingDirty();
+        }
     }
 }
 
@@ -590,7 +872,7 @@ void FolderView::renameSelectedIcon()
         return;
 
     QStyleOptionViewItemV4 option = viewOptions();
-    option.rect = mapToScene(visualRect(index)).boundingRect().toRect();
+    option.rect = mapToScene(mapFromViewport(visualRect(index))).boundingRect().toRect();
 
     // ### Note that we don't embed the editor in the applet as a
     // QGraphicsProxyWidget here, because calling setFocus() on the
@@ -622,7 +904,8 @@ void FolderView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint
     editor->hide();
     editor->removeEventFilter(m_delegate);
     editor->deleteLater();
-    update();
+
+    markEverythingDirty();
 }
 
 void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
@@ -701,27 +984,27 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
 void FolderView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    const QModelIndex index = indexAt(event->pos());
+    const QModelIndex index = indexAt(mapToViewport(event->pos()));
     if (index.isValid()) {
         m_hoveredIndex = index;
-        update(visualRect(index));
+        markAreaDirty(visualRect(index));
     }
 }
 
 void FolderView::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 {
     if (m_hoveredIndex.isValid()) {
-        update(visualRect(m_hoveredIndex));
+        markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = QModelIndex();
     }
 }
 
 void FolderView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    const QModelIndex index = indexAt(event->pos());
+    const QModelIndex index = indexAt(mapToViewport(event->pos()));
     if (index != m_hoveredIndex) {
-        update(visualRect(index));
-        update(visualRect(m_hoveredIndex));
+        markAreaDirty(visualRect(index));
+        markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
     }
 }
@@ -733,48 +1016,51 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
 
+    const QPointF pos = mapToViewport(event->pos());
+
     if (event->button() == Qt::RightButton) {
-        const QModelIndex index = indexAt(event->pos());
+        const QModelIndex index = indexAt(pos);
         if (index.isValid()) {
             if (!m_selectionModel->isSelected(index)) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                update();
+                markEverythingDirty();
             }
             showContextMenu(event->widget(), event->screenPos(), m_selectionModel->selectedIndexes());
         } else if (m_selectionModel->hasSelection()) {
             m_selectionModel->clearSelection();
-            update();
+            markEverythingDirty();
         }
         event->accept();
         return;
     }
 
     if (event->button() == Qt::LeftButton) {
-        const QModelIndex index = indexAt(event->pos());
+        const QModelIndex index = indexAt(pos);
 
         // If an icon was pressed
         if (index.isValid())
         {
             if (event->modifiers() & Qt::ControlModifier) {
                 m_selectionModel->select(index, QItemSelectionModel::Toggle);
-                update(visualRect(index));
+                markAreaDirty(visualRect(index));
             } else if (!m_selectionModel->isSelected(index)) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                update();
+                markEverythingDirty();
             }
             m_pressedIndex = index;
-            m_buttonDownPos = event->pos();
+            m_buttonDownPos = pos;
             event->accept();
             return;
         }
 
         // If empty space was pressed
         m_pressedIndex = QModelIndex();
+        m_buttonDownPos = pos;
         if (m_selectionModel->hasSelection()) {
             m_selectionModel->clearSelection();
-            update();
+            markEverythingDirty();
         }
         event->accept();
     }
@@ -786,12 +1072,14 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (event->button() == Qt::LeftButton)
     {
         if (m_rubberBand.isValid()) {
-            update(m_rubberBand);
+            markAreaDirty(m_rubberBand);
             m_rubberBand = QRect();
             return;
         }
 
-        const QModelIndex index = indexAt(event->pos());
+        const QPointF pos = mapToViewport(event->pos());
+        const QModelIndex index = indexAt(pos);
+
         if (index.isValid() && index == m_pressedIndex) {
             if (!m_doubleClick && KGlobalSettings::singleClick()) {
                 const KFileItem item = m_model->itemForIndex(index);
@@ -805,7 +1093,7 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                update();
+                markEverythingDirty();
             }
             event->accept();
             m_doubleClick = false;
@@ -834,7 +1122,7 @@ void FolderView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     if (KGlobalSettings::singleClick())
         return;
 
-    const QModelIndex index = indexAt(event->pos());
+    const QModelIndex index = indexAt(mapToViewport(event->pos()));
     if (!index.isValid())
         return;
 
@@ -852,14 +1140,15 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
         if (point.toPoint().manhattanLength() >= QApplication::startDragDistance())
         {
-            startDrag(event->buttonDownPos(Qt::LeftButton), event->widget());
+            startDrag(m_buttonDownPos, event->widget());
         }
         event->accept();
         return;
     }
 
-    const QRectF rubberBand = QRectF(event->buttonDownPos(Qt::LeftButton), event->pos()).normalized();
-    const QRect r = QRectF(rubberBand & contentsRect()).toAlignedRect();
+    const QPointF pos = mapToViewport(event->pos());
+    const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
+    const QRect r = QRectF(rubberBand & m_viewportRect).toAlignedRect();
 
     if (r != m_rubberBand)
     {
@@ -884,7 +1173,7 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
             while (i < m_items.size() && m_items[i].rect.intersects(m_rubberBand)) {
                 dirtyRect |= m_items[i].rect;
-                if (m_items[i].rect.contains(event->pos().toPoint()))
+                if (m_items[i].rect.contains(pos.toPoint()))
                     m_hoveredIndex = m_model->index(i, 0);
                 end = i++;
             }
@@ -892,10 +1181,20 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             selection.select(m_model->index(start, 0), m_model->index(end, 0));
         }
         m_selectionModel->select(selection, QItemSelectionModel::ClearAndSelect);
-        update(dirtyRect);
+        markAreaDirty(dirtyRect);
     }
 
     event->accept();
+}
+
+void FolderView::wheelEvent(QGraphicsSceneWheelEvent *event)
+{
+    if (event->orientation() == Qt::Horizontal) {
+        return;
+    }
+
+    int pixels = 40 * event->delta() / 120;
+    m_scrollBar->setValue(m_scrollBar->value() - pixels);
 }
 
 void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
@@ -926,7 +1225,7 @@ void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         }
     }
 
-    update(dirtyRect);
+    markAreaDirty(dirtyRect);
     event->accept();
 }
 
@@ -955,7 +1254,7 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // If we get to this point, the drag was started from within the applet,
     // so instead of moving/copying/linking the dropped URL's to the folder,
     // we'll move the items in the view.
-    const QPoint delta = (event->pos() - m_buttonDownPos).toPoint();
+    const QPoint delta = (mapToViewport(event->pos()) - m_buttonDownPos).toPoint();
     foreach (const QUrl &url, event->mimeData()->urls()) {
         const QModelIndex index = m_model->indexForUrl(url);
         if (index.isValid()) {
@@ -963,7 +1262,23 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
         }
     }
 
-    update();
+    // Make sure that the distance from the top of the viewport to the
+    // topmost item is 10 pixels.
+    int minY = INT_MAX;
+    for (int i = 0; i < m_items.size(); i++) {
+        minY = qMin(minY, m_items[i].rect.y());
+    }
+
+    int topMargin = contentsRect().top() + 10 + m_titleHeight;
+    if (minY != topMargin) {
+        int delta = topMargin - minY;
+        for (int i = 0; i < m_items.size(); i++) {
+            m_items[i].rect.translate(0, delta);
+        }
+    }
+
+    updateScrollBar();
+    markEverythingDirty();
 }
 
 // pos is the position where the mouse was clicked in the applet.
@@ -994,6 +1309,11 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     }
     p.end();
 
+    // Mark the area containing the about-to-be-dragged items as dirty, so they
+    // will be erased from the view on the next repaint.  We have to do this
+    // before calling QDrag::exec(), since it's a blocking call.
+    markAreaDirty(boundingRect);
+
     m_dragInProgress = true;
 
     QDrag *drag = new QDrag(widget);
@@ -1002,17 +1322,12 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     drag->setHotSpot((pos - boundingRect.topLeft()).toPoint());
     Qt::DropAction result = drag->exec(m_model->supportedDragActions());
 
-    if (result == Qt::IgnoreAction) {
-        QRectF dirtyRect;
-        foreach (const QModelIndex &selected, m_selectionModel->selectedIndexes()) {
-            dirtyRect |= visualRect(selected);
-        }
-
-        if (!dirtyRect.isEmpty()) {
-            update(dirtyRect);
-        }
-    }
     m_dragInProgress = false;
+
+    // Repaint the dragged icons if the drag was canceled
+    if (result == Qt::IgnoreAction) {
+        markAreaDirty(boundingRect);
+    }
 }
 
 QSize FolderView::iconSize() const

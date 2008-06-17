@@ -33,6 +33,7 @@ class KFileItemDelegate;
 class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
+class ScrollBar;
 
 struct ViewItem
 {
@@ -65,6 +66,12 @@ private slots:
     void customFolderToggled(bool checked);
     void aboutToShowCreateNew();
     void clipboardDataChanged();
+    void scrollBarValueChanged(int);
+
+    QPointF mapToViewport(const QPointF &point) const;
+    QPointF mapFromViewport(const QPointF &point) const;
+    QRectF mapToViewport(const QRectF &point) const;
+    QRectF mapFromViewport(const QRectF &point) const;
 
     // These slots are for KonqPopupMenu
     void copy();
@@ -85,9 +92,14 @@ private:
     KUrl::List selectedUrls() const;
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     int columnsForWidth(qreal width) const;
-    void layoutItems() const;
-    QModelIndex indexAt(const QPointF &point) const;
-    QRectF visualRect(const QModelIndex &index) const;
+    void layoutItems();
+    void updateScrollBar();
+    QRect scrollBackbufferContents();
+    void markAreaDirty(const QRect &rect);
+    void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
+    void markEverythingDirty();
+    QModelIndex indexAt(const QPointF &point);
+    QRectF visualRect(const QModelIndex &index);
     QSize iconSize() const;
     QSize gridSize() const;
     QStyleOptionViewItemV4 viewOptions() const;
@@ -100,6 +112,7 @@ private:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void wheelEvent(QGraphicsSceneWheelEvent *event);
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
     void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
     void dropEvent(QGraphicsSceneDragDropEvent *event);
@@ -108,20 +121,28 @@ private:
     KFileItemDelegate *m_delegate;
     KDirModel *m_dirModel;
     ProxyModel *m_model;
+    ScrollBar *m_scrollBar;
+    QPixmap m_pixmap;
+    QPixmap m_topFadeTile;
+    QPixmap m_bottomFadeTile;
+    QRegion m_dirtyRegion;
     QItemSelectionModel *m_selectionModel;
     KUrl m_url;
     int m_titleHeight;
+    int m_lastScrollValue;
+    bool m_viewScrolled;
     QString m_filterFiles;
     QFont m_font;
     KNewMenu *m_newMenu;
     KActionCollection m_actionCollection;
-    mutable QVector<ViewItem> m_items;
-    mutable int m_columns;
-    mutable bool m_layoutValid;
+    QVector<ViewItem> m_items;
+    int m_columns;
+    bool m_layoutValid;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
     QRect m_rubberBand;
+    QRectF m_viewportRect;
     QPointF m_buttonDownPos;
     QTime m_pressTime;
     Ui::folderviewConfig ui;
