@@ -138,6 +138,7 @@ private:
     QVector<ViewItem> m_items;
     int m_columns;
     bool m_layoutValid;
+    bool m_layoutBroken;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;

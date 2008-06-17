@@ -100,6 +100,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
       m_actionCollection(this),
       m_columns(0),
       m_layoutValid(false),
+      m_layoutBroken(false),
       m_doubleClick(false),
       m_dragInProgress(false)
 {
@@ -240,11 +241,16 @@ void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
 void FolderView::rowsRemoved(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
-    Q_UNUSED(first)
-    Q_UNUSED(last)
 
-    m_layoutValid = false;
-    update();
+    if (!m_layoutBroken) {
+        m_layoutValid = false;
+        update();
+    } else {
+        for (int i = first; i <= last; i++) {
+            markAreaDirty(m_items[i].rect);
+        }
+        m_items.remove(first, last - first + 1);
+    }
 }
 
 void FolderView::modelReset()
@@ -371,6 +377,7 @@ void FolderView::layoutItems()
     updateScrollBar();
     m_columns = maxColumns;
     m_layoutValid = true;
+    m_layoutBroken = false;
     m_dirtyRegion = QRegion(mapToViewport(rect).toAlignedRect());
 }
 
@@ -1255,6 +1262,10 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // so instead of moving/copying/linking the dropped URL's to the folder,
     // we'll move the items in the view.
     const QPoint delta = (mapToViewport(event->pos()) - m_buttonDownPos).toPoint();
+    if (delta.isNull()) {
+        return;
+    }
+
     foreach (const QUrl &url, event->mimeData()->urls()) {
         const QModelIndex index = m_model->indexForUrl(url);
         if (index.isValid()) {
@@ -1279,6 +1290,8 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
 
     updateScrollBar();
     markEverythingDirty();
+
+    m_layoutBroken = true;
 }
 
 // pos is the position where the mouse was clicked in the applet.
