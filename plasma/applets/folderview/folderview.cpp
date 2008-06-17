@@ -160,6 +160,9 @@ void FolderView::configAccepted()
     else
         url = ui.lineEdit->url();
 
+    if ( url.isEmpty() )
+      url = KUrl(QDir::homePath());
+
     if (m_url != url || m_filterFiles != ui.filterFiles->text()) {
         m_dirModel->dirLister()->openUrl(url);
         m_model->setFilterFixedString(ui.filterFiles->text());
