@@ -124,7 +124,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(rowsRemoved(QModelIndex,int,int)));
     connect(m_model, SIGNAL(modelReset()), SLOT(modelReset()));
     connect(m_model, SIGNAL(layoutChanged()), SLOT(layoutChanged()));
-    connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), SLOT(layoutChanged(QModelIndex,QModelIndex)));
+    connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), SLOT(dataChanged(QModelIndex,QModelIndex)));
 
     m_delegate = new KFileItemDelegate(this);
     connect(m_delegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
