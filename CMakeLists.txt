@@ -12,6 +12,7 @@ add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 
 add_subdirectory(cmake)
 add_subdirectory(includes)
+add_subdirectory(icons)
 
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
@@ -48,5 +49,3 @@ install(TARGETS webkitkdepart DESTINATION ${PLUGIN_INSTALL_DIR})
 install(FILES webkitpart.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 
 install(FILES webkitpart.rc DESTINATION  ${DATA_INSTALL_DIR}/webkitpart)
-
-kde4_install_icons(${ICON_INSTALL_DIR})
