@@ -1091,6 +1091,8 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             if (!m_doubleClick && KGlobalSettings::singleClick()) {
                 const KFileItem item = m_model->itemForIndex(index);
                 item.run();
+                m_selectionModel->clearSelection();
+                markEverythingDirty();
             }
             // We don't clear and update the selection and current index in
             // mousePressEvent() if the item is already selected when it's pressed,
@@ -1124,18 +1126,23 @@ void FolderView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     // So we don't activate the item again on the release event
     m_doubleClick = true;
 
-    // We don't want to invoke default implementation in this case, since it
+    // We don't want to invoke the default implementation in this case, since it
     // calls mousePressEvent().
-    if (KGlobalSettings::singleClick())
+    if (KGlobalSettings::singleClick()) {
         return;
+    }
 
     const QModelIndex index = indexAt(mapToViewport(event->pos()));
-    if (!index.isValid())
+    if (!index.isValid()) {
         return;
+    }
 
     // Activate the item
     const KFileItem item = m_model->itemForIndex(index);
     item.run();
+
+    m_selectionModel->clearSelection();
+    markEverythingDirty();
 }
 
 void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
