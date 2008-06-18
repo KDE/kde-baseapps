@@ -1,8 +1,8 @@
 Basic build instructions:
 
-Recent Qt 4.4 snapshot or qt-copy is required for building the QtWebkKit
+Qt 4.4 with QtWebkKit support is required for building the WebKit
 KPart.
 
-If Konqueror takes KHTML instead of WebKit, run 'kbuildsycoca4' before
-starting Konqueror. You can also switch between the different engines:
+You can switch between the different rendering engines:
 View -> View Mode -> {KHTML, WebKit} (Website needs to be opened)
+If WebKit does not show up in Konqueror, run 'kbuildsycoca4'.
