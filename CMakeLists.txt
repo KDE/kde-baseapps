@@ -21,7 +21,8 @@ set(webkitkde_LIB_SRCS
     webkitglobal.cpp
     webkitpageview.cpp
     searchbar.cpp
-    knetworkaccessmanager.cpp
+    network/knetworkreply.cpp
+    network/knetworkaccessmanager.cpp
 )
 
 kde4_add_ui_files(webkitkde_LIB_SRCS
