@@ -939,7 +939,7 @@ void FolderView::undoTextChanged(const QString &text)
 
 void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes)
 {
-    if (!KAuthorized::authorize("action/kdesktop_rmb")) {
+    if (! m_newMenu || !KAuthorized::authorize("action/kdesktop_rmb")) {
         return;
     }
 
