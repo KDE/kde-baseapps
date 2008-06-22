@@ -939,7 +939,7 @@ void FolderView::undoTextChanged(const QString &text)
 
 void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes)
 {
-    if (! m_newMenu || !KAuthorized::authorize("action/kdesktop_rmb")) {
+    if (!KAuthorized::authorize("action/kdesktop_rmb")) {
         return;
     }
 
@@ -976,6 +976,7 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
     KParts::BrowserExtension::PopupFlags flags = 
          KParts::BrowserExtension::ShowUrlOperations | KParts::BrowserExtension::ShowProperties;
 
+    // m_newMenu can be NULL here but KonqPopupMenu does handle this.
     KonqPopupMenu *contextMenu = new KonqPopupMenu(items, m_url, m_actionCollection, m_newMenu,
                                                    KonqPopupMenu::ShowNewWindow, flags, widget,
                                                    KBookmarkManager::userBookmarksManager(),
