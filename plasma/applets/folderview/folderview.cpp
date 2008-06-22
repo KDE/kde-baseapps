@@ -489,36 +489,34 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     opt.palette.setColor(QPalette::All, QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     m_delegate->setShadowColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::BackgroundColor));
 
-    //Show path if not ~/Desktop
-    if (m_url != KUrl("desktop:/")) {
-        QPen currentPen = painter->pen();
-        m_titleHeight = painter->fontMetrics().height();
+    // Paint the folder text
+    QPen currentPen = painter->pen();
+    m_titleHeight = painter->fontMetrics().height();
 
-        painter->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
-        QString titleText;
-        if (m_url.isLocalFile() && m_url.path().startsWith(KUrl("~").path())) {
-            titleText = m_url.path().replace(KUrl("~").path(), i18n("Home"));
-        } else {
-            titleText = m_url.pathOrUrl();
-        }
-        titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
-        painter->drawText(contentRect, Qt::AlignLeft, titleText);
-
-        painter->setPen(Qt::NoPen);
-        QLinearGradient lineGrad(contentRect.topLeft(), contentRect.topRight());
-        QColor lineColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
-        lineColor.setAlphaF(0.8);
-        lineGrad.setColorAt(0.0, lineColor);
-        lineColor.setAlphaF(0.0);
-        lineGrad.setColorAt(1.0, lineColor);
-        QBrush lineBrush(lineGrad);
-        painter->setBrush(lineBrush);
-        painter->drawRect(contentRect.left(), contentRect.top() + m_titleHeight, contentRect.width(), 1);
-
-        painter->setPen(currentPen);
+    painter->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    QString titleText;
+    if (m_url == KUrl("desktop:/")) {
+        titleText = i18n("Desktop"); //FIXME: 4.2 make it "Desktop Folder;
+    } else if (m_url.isLocalFile() && m_url.path().startsWith(KUrl("~").path())) {
+        titleText = m_url.path().replace(KUrl("~").path(), i18n("Home"));
     } else {
-        m_titleHeight = 0;
+        titleText = m_url.pathOrUrl();
     }
+    titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
+    painter->drawText(contentRect, Qt::AlignLeft, titleText);
+
+    painter->setPen(Qt::NoPen);
+    QLinearGradient lineGrad(contentRect.topLeft(), contentRect.topRight());
+    QColor lineColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    lineColor.setAlphaF(0.8);
+    lineGrad.setColorAt(0.0, lineColor);
+    lineColor.setAlphaF(0.0);
+    lineGrad.setColorAt(1.0, lineColor);
+    QBrush lineBrush(lineGrad);
+    painter->setBrush(lineBrush);
+    painter->drawRect(contentRect.left(), contentRect.top() + m_titleHeight, contentRect.width(), 1);
+
+    painter->setPen(currentPen);
 
     if (!m_layoutValid) {
         layoutItems();
