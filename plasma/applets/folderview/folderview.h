@@ -22,6 +22,7 @@
 
 #include <QPersistentModelIndex>
 #include <QStyleOption>
+#include <QPointer>
 
 #include <KActionCollection>
 
@@ -133,7 +134,7 @@ private:
     bool m_viewScrolled;
     QString m_filterFiles;
     QFont m_font;
-    KNewMenu *m_newMenu;
+    QPointer<KNewMenu> m_newMenu;
     KActionCollection m_actionCollection;
     QVector<ViewItem> m_items;
     int m_columns;
