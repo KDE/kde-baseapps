@@ -148,7 +148,10 @@ void FolderView::init()
     // We handle the caching ourselves
     setCacheMode(NoCache);
 
-    // TODO Update the font when the global font settings change.
+    // Find out about icon and font settings changes
+    connect(KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()), SLOT(fontSettingsChanged()));
+    connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)), SLOT(iconSettingsChanged(int)));
+
     KConfigGroup cg(KGlobal::config(), "General");
     m_font = cg.readEntry("desktopFont", QFont("Sans Serif", 10));
 
@@ -226,6 +229,27 @@ void FolderView::customFolderToggled(bool checked)
 {
     ui.selectLabel->setEnabled(checked);
     ui.lineEdit->setEnabled(checked);
+}
+
+void FolderView::fontSettingsChanged()
+{
+    KConfigGroup cg(KGlobal::config(), "General");
+    QFont font = cg.readEntry("desktopFont", QFont("Sans Serif", 10));
+
+    if (m_font != font) {
+        m_font = font;
+        m_layoutValid = false;
+        markEverythingDirty();
+    }
+}
+
+void FolderView::iconSettingsChanged(int group)
+{
+    if (group == KIconLoader::Desktop)
+    {
+        m_layoutValid = false;
+        markEverythingDirty();
+    }
 }
 
 void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -1355,8 +1379,7 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
 
 QSize FolderView::iconSize() const
 {
-    KIconTheme *theme = KIconLoader::global()->theme();
-    int size = theme ? theme->defaultSize(KIconLoader::Desktop) : 48;
+    const int size = KIconLoader::global()->currentSize(KIconLoader::Desktop);
     return QSize(size, size);
 }
 

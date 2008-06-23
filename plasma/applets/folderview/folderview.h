@@ -70,6 +70,8 @@ private slots:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void configAccepted();
     void customFolderToggled(bool checked);
+    void fontSettingsChanged();
+    void iconSettingsChanged(int group);
     void aboutToShowCreateNew();
     void clipboardDataChanged();
     void scrollBarValueChanged(int);
