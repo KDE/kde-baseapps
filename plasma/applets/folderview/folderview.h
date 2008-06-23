@@ -57,6 +57,11 @@ protected:
     void createConfigurationInterface(KConfigDialog *parent);
     QList<QAction*> contextualActions();
 
+    QPointF mapToViewport(const QPointF &point) const;
+    QPointF mapFromViewport(const QPointF &point) const;
+    QRectF mapToViewport(const QRectF &point) const;
+    QRectF mapFromViewport(const QRectF &point) const;
+
 private slots:
     void rowsInserted(const QModelIndex &parent, int first, int last);
     void rowsRemoved(const QModelIndex &parent, int first, int last);
@@ -68,11 +73,6 @@ private slots:
     void aboutToShowCreateNew();
     void clipboardDataChanged();
     void scrollBarValueChanged(int);
-
-    QPointF mapToViewport(const QPointF &point) const;
-    QPointF mapFromViewport(const QPointF &point) const;
-    QRectF mapToViewport(const QRectF &point) const;
-    QRectF mapFromViewport(const QRectF &point) const;
 
     // These slots are for KonqPopupMenu
     void copy();
