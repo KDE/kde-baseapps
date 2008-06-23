@@ -152,6 +152,9 @@ void FolderView::init()
     connect(KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()), SLOT(fontSettingsChanged()));
     connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)), SLOT(iconSettingsChanged(int)));
 
+    // Find out about theme changes
+    connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), SLOT(themeChanged()));
+
     KConfigGroup cg(KGlobal::config(), "General");
     m_font = cg.readEntry("desktopFont", QFont("Sans Serif", 10));
 
@@ -250,6 +253,29 @@ void FolderView::iconSettingsChanged(int group)
         m_layoutValid = false;
         markEverythingDirty();
     }
+}
+
+void FolderView::themeChanged()
+{
+    // We'll mark the layout as invalid here just in case the content margins
+    // have changed
+    m_layoutValid = false;
+
+    // Resize the backing pixmap
+    const QSize size = contentsRect().size().toSize();
+    if (m_pixmap.size() != size) {
+        m_pixmap = QPixmap(size);
+        m_pixmap.fill(Qt::transparent);
+    }
+
+    // Update the scrollbar geometry
+    QRectF r = QRectF(contentsRect().right() - m_scrollBar->geometry().width(), contentsRect().top(),
+                      m_scrollBar->geometry().width(), contentsRect().height());
+    if (m_scrollBar->geometry() != r) {
+        m_scrollBar->setGeometry(r);
+    }
+
+    markEverythingDirty();
 }
 
 void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)

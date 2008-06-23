@@ -72,6 +72,7 @@ private slots:
     void customFolderToggled(bool checked);
     void fontSettingsChanged();
     void iconSettingsChanged(int group);
+    void themeChanged();
     void aboutToShowCreateNew();
     void clipboardDataChanged();
     void scrollBarValueChanged(int);
