@@ -1307,6 +1307,8 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
         (m_model->flags(m_hoveredIndex) & Qt::ItemIsDropEnabled))
     {
         item = m_model->itemForIndex(m_hoveredIndex);
+    } else {
+        item = KFileItem(m_url, "inode/directory", S_IFDIR);
     }
 
     if (!m_dragInProgress || !item.isNull()) {
