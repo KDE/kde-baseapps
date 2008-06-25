@@ -1395,14 +1395,12 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     drag->setMimeData(m_model->mimeData(indexes));
     drag->setPixmap(pixmap);
     drag->setHotSpot((pos - boundingRect.topLeft()).toPoint());
-    Qt::DropAction result = drag->exec(m_model->supportedDragActions());
+    drag->exec(m_model->supportedDragActions());
 
     m_dragInProgress = false;
 
-    // Repaint the dragged icons if the drag was canceled
-    if (result == Qt::IgnoreAction) {
-        markAreaDirty(boundingRect);
-    }
+    // Repaint the dragged icons in case the drag did not remove the file 
+    markAreaDirty(boundingRect); 
 }
 
 QSize FolderView::iconSize() const
