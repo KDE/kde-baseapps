@@ -37,7 +37,7 @@
 
 
 /*
- *  npupp.h $Revision: 3.20 $
+ *  npupp.h, original dollar-revision: 3.20
  *  function call mecahnics needed by platform specific glue code.
  */
 
@@ -1604,7 +1604,7 @@ enum {
 
 #else
 
-typedef bool (* NP_LOADDS NPN_PushPopupsEnabledStateUPP)(NPP npp, NPBool enabled);
+typedef void (* NP_LOADDS NPN_PushPopupsEnabledStateUPP)(NPP npp, NPBool enabled);
 #define NewNPN_PushPopupsEnabledStateProc(FUNC)		\
 		((NPN_PushPopupsEnabledStateUPP) (FUNC))
 #define CallNPN_PushPopupsEnabledStateProc(FUNC, ARG1, ARG2)		\
@@ -1630,7 +1630,7 @@ enum {
 
 #else
 
-typedef bool (* NP_LOADDS NPN_PopPopupsEnabledStateUPP)(NPP npp);
+typedef void (* NP_LOADDS NPN_PopPopupsEnabledStateUPP)(NPP npp);
 #define NewNPN_PopPopupsEnabledStateProc(FUNC)		\
 		((NPN_PopPopupsEnabledStateUPP) (FUNC))
 #define CallNPN_PopPopupsEnabledStateProc(FUNC, ARG1)		\
