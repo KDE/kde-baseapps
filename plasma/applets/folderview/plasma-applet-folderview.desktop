@@ -1,6 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Folder View
+Name[bg]=Директория
 Name[ca]=Vista de carpeta
 Name[cs]=Pohled na složku
 Name[da]=Mappevisning
@@ -15,6 +16,7 @@ Name[gu]=ફોલ્ડર દેખાવ
 Name[ja]=フォルダビュー
 Name[km]=ទិដ្ឋភាព​ជា​ថត
 Name[ko]=폴더 보기
+Name[ku]=Bergeha Peldankan
 Name[lv]=Mapju skats
 Name[nds]=Orneransicht
 Name[nl]=Mapweergave
@@ -22,6 +24,7 @@ Name[pa]=ਫੋਲਡਰ ਝਲਕ
 Name[pl]=Widok katalogu
 Name[pt]=Área de Pasta
 Name[pt_BR]=Área de Pasta
+Name[ru]=Просмотр папки
 Name[sl]=Prikaz mape
 Name[sr]=приказ фасцикле
 Name[sr@latin]=prikaz fascikle
