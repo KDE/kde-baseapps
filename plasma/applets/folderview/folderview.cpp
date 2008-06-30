@@ -522,6 +522,30 @@ QRect FolderView::scrollBackbufferContents()
     return mapToViewport(dirty.translated(contentsRect().topLeft().toPoint())).toAlignedRect();
 }
 
+void FolderView::updateTextShadows(const QColor &textColor)
+{
+    QColor shadowColor;
+
+    // Use black shadows with bright text, and white shadows with dark text.
+    if (qGray(textColor.rgb()) > 192) {
+        shadowColor = Qt::black;
+    } else {
+        shadowColor = Qt::white;
+    }
+
+    if (m_delegate->shadowColor() != shadowColor)
+    {
+        m_delegate->setShadowColor(shadowColor);
+
+        // Center white shadows to create a halo effect, and offset dark shadows slightly.
+        if (shadowColor == Qt::white) {
+            m_delegate->setShadowOffset(QPoint(0, 0));
+        } else {
+            m_delegate->setShadowOffset(QPoint(layoutDirection() == Qt::RightToLeft ? -1 : 1, 1));
+        }
+    }
+}
+
 void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentRect)
 {
     if (m_pixmap.isNull()) {
@@ -537,7 +561,6 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
 
     QStyleOptionViewItemV4 opt = viewOptions();
     opt.palette.setColor(QPalette::All, QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
-    m_delegate->setShadowColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::BackgroundColor));
 
     // Paint the folder text
     QPen currentPen = painter->pen();
@@ -611,7 +634,10 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
                 if (m_dragInProgress) {
                     continue;
                 }
+                updateTextShadows(palette().color(QPalette::HighlightedText));
                 opt.state |= QStyle::State_Selected;
+            } else {
+                updateTextShadows(palette().color(QPalette::Text));
             }
 
             if (hasFocus() && index == m_selectionModel->currentIndex()) {
@@ -1369,6 +1395,8 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
 
     QStyleOptionViewItemV4 option = viewOptions(); 
     option.state |= QStyle::State_Selected;
+
+    updateTextShadows(palette().color(QPalette::HighlightedText));
 
     QPainter p(&pixmap);
     foreach (const QModelIndex &index, indexes)

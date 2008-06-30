@@ -102,6 +102,7 @@ private:
     void markAreaDirty(const QRect &rect);
     void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
     void markEverythingDirty();
+    void updateTextShadows(const QColor &textColor);
     QModelIndex indexAt(const QPointF &point);
     QRectF visualRect(const QModelIndex &index);
     QSize iconSize() const;
