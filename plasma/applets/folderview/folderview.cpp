@@ -1303,12 +1303,10 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // in the drag and drop operation, but since two QGraphicsItems can be part of the
     // same widget, we can't use that method here.
     KFileItem item;
-    if (m_hoveredIndex.isValid() &&
+    if (!m_hoveredIndex.isValid() ||
         (m_model->flags(m_hoveredIndex) & Qt::ItemIsDropEnabled))
     {
         item = m_model->itemForIndex(m_hoveredIndex);
-    } else {
-        item = KFileItem(m_url, "inode/directory", S_IFDIR);
     }
 
     if (!m_dragInProgress || !item.isNull()) {
