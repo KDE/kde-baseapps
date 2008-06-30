@@ -637,7 +637,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
                 updateTextShadows(palette().color(QPalette::HighlightedText));
                 opt.state |= QStyle::State_Selected;
             } else {
-                updateTextShadows(palette().color(QPalette::Text));
+                updateTextShadows(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
             }
 
             if (hasFocus() && index == m_selectionModel->currentIndex()) {
