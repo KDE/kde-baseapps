@@ -55,6 +55,7 @@
 
 #include "proxymodel.h"
 #include "plasma/theme.h"
+#include "plasma/imageeffects.h"
 
 #include <QX11Info>
 #include <X11/Xlib.h>
@@ -561,12 +562,12 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
 
     QStyleOptionViewItemV4 opt = viewOptions();
     opt.palette.setColor(QPalette::All, QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    updateTextShadows(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
 
-    // Paint the folder text
+    // Paint the folder title
     QPen currentPen = painter->pen();
     m_titleHeight = painter->fontMetrics().height();
 
-    painter->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     QString titleText;
     if (m_url == KUrl("desktop:/")) {
         titleText = i18n("Desktop"); //FIXME: 4.2 make it "Desktop Folder;
@@ -576,8 +577,14 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         titleText = m_url.pathOrUrl();
     }
     titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
-    painter->drawText(contentRect, Qt::AlignLeft, titleText);
+    QColor titleColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
+    QPixmap titlePixmap = Plasma::ImageEffects::shadowText(titleText, 
+                                  titleColor,
+                                  m_delegate->shadowColor(),
+                                  m_delegate->shadowOffset().toPoint());
+    painter->drawPixmap(contentRect.topLeft(), titlePixmap);
 
+    //Draw underline
     painter->setPen(Qt::NoPen);
     QLinearGradient lineGrad(contentRect.topLeft(), contentRect.topRight());
     QColor lineColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
