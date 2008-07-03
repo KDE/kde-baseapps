@@ -262,13 +262,6 @@ void FolderView::themeChanged()
     // have changed
     m_layoutValid = false;
 
-    // Resize the backing pixmap
-    const QSize size = contentsRect().size().toSize();
-    if (m_pixmap.size() != size) {
-        m_pixmap = QPixmap(size);
-        m_pixmap.fill(Qt::transparent);
-    }
-
     // Update the scrollbar geometry
     QRectF r = QRectF(contentsRect().right() - m_scrollBar->geometry().width(), contentsRect().top(),
                       m_scrollBar->geometry().width(), contentsRect().height());
@@ -549,8 +542,15 @@ void FolderView::updateTextShadows(const QColor &textColor)
 
 void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentRect)
 {
-    if (m_pixmap.isNull()) {
-        return;
+    // Make sure the backbuffer pixmap has the same size as the content rect
+    if (m_pixmap.isNull() || m_pixmap.size() != contentRect.size())
+    {
+        if (!contentRect.isValid()) {
+            return;
+        }
+        m_pixmap = QPixmap(contentRect.size());
+        m_pixmap.fill(Qt::transparent);
+        m_dirtyRegion = QRegion(mapToViewport(contentRect).toAlignedRect());
     }
 
     QRect clipRect = contentRect & option->exposedRect.toAlignedRect();
@@ -775,12 +775,6 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
         QRectF r = QRectF(contentsRect().right() - m_scrollBar->geometry().width(), contentsRect().top(),
                           m_scrollBar->geometry().width(), contentsRect().height());
         m_scrollBar->setGeometry(r);
-
-        // Resize the backbuffer pixmap
-        m_pixmap = QPixmap(contentsRect().size().toSize());
-        m_pixmap.fill(Qt::transparent);
-
-        // TODO We shouldn't use a backbuffer pixmap at all when acting as a containment.
 
         int maxWidth = contentsRect().width() - m_scrollBar->geometry().width() - 10;
         if (columnsForWidth(maxWidth) != m_columns) {
