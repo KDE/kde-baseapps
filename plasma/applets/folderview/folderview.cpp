@@ -55,7 +55,7 @@
 
 #include "proxymodel.h"
 #include "plasma/theme.h"
-#include "plasma/imageeffects.h"
+#include "plasma/paintutils.h"
 
 #include <QX11Info>
 #include <X11/Xlib.h>
@@ -578,7 +578,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     }
     titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
     QColor titleColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
-    QPixmap titlePixmap = Plasma::ImageEffects::shadowText(titleText, 
+    QPixmap titlePixmap = Plasma::PaintUtils::shadowText(titleText, 
                                   titleColor,
                                   m_delegate->shadowColor(),
                                   m_delegate->shadowOffset().toPoint());
