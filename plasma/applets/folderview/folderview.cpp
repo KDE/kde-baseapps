@@ -169,8 +169,9 @@ void FolderView::init()
     lister->openUrl(m_url);
 
     m_model->setFilterFixedString(m_filterFiles);
-
     m_dirModel->setDirLister(lister);
+
+    createActions();
 
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardDataChanged()));
 }
@@ -869,10 +870,6 @@ QList<QAction*> FolderView::contextualActions()
 
     if (KAuthorized::authorize("action/kdesktop_rmb"))
     {
-        if (m_actionCollection.isEmpty()) {
-            createActions();
-        }
-
         if (QAction *action = m_actionCollection.action("new_menu")) {
             actions.append(action);
             QAction *separator = new QAction(this);
@@ -1016,10 +1013,6 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 {
     if (!KAuthorized::authorize("action/kdesktop_rmb")) {
         return;
-    }
-
-    if (m_actionCollection.isEmpty()) {
-        createActions();
     }
 
     KFileItemList items;
