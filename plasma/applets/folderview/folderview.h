@@ -110,6 +110,8 @@ private:
     QStyleOptionViewItemV4 viewOptions() const;
     void startDrag(const QPointF &pos, QWidget *widget);
     void constraintsEvent(Plasma::Constraints constraints);
+    void focusInEvent(QFocusEvent *event);
+    void focusOutEvent(QFocusEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);

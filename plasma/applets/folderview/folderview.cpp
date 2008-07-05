@@ -1065,6 +1065,18 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
     }
 }
 
+void FolderView::focusInEvent(QFocusEvent *event)
+{
+    Plasma::Applet::focusInEvent(event);
+    markEverythingDirty();
+}
+
+void FolderView::focusOutEvent(QFocusEvent *event)
+{
+    Plasma::Applet::focusOutEvent(event);
+    markEverythingDirty();
+}
+
 void FolderView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     const QModelIndex index = indexAt(mapToViewport(event->pos()));
@@ -1100,6 +1112,7 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 
     const QPointF pos = mapToViewport(event->pos());
+    setFocus(Qt::MouseFocusReason);
 
     if (event->button() == Qt::RightButton) {
         const QModelIndex index = indexAt(pos);
@@ -1147,7 +1160,6 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         }
         event->accept();
     }
-
 }
 
 void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
