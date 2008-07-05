@@ -1283,6 +1283,14 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             selection.select(m_model->index(start, 0), m_model->index(end, 0));
         }
         m_selectionModel->select(selection, QItemSelectionModel::ClearAndSelect);
+
+        // Update the current index
+        if (m_hoveredIndex.isValid()) {
+            if (m_hoveredIndex != m_selectionModel->currentIndex()) {
+                dirtyRect |= visualRect(m_selectionModel->currentIndex());
+            }
+            m_selectionModel->setCurrentIndex(m_hoveredIndex, QItemSelectionModel::NoUpdate);
+        }
         markAreaDirty(dirtyRect);
     }
 
