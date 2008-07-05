@@ -950,8 +950,14 @@ void FolderView::renameSelectedIcon()
     if (!index.isValid())
         return;
 
+    // Don't allow renaming of files the aren't visible in the view
+    const QRectF rect = visualRect(index);
+    if (!mapToViewport(contentsRect()).contains(rect)) {
+        return;
+    }
+
     QStyleOptionViewItemV4 option = viewOptions();
-    option.rect = mapToScene(mapFromViewport(visualRect(index))).boundingRect().toRect();
+    option.rect = mapToScene(mapFromViewport(rect)).boundingRect().toRect();
 
     // ### Note that we don't embed the editor in the applet as a
     // QGraphicsProxyWidget here, because calling setFocus() on the
