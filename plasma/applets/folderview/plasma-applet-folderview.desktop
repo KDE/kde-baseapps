@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Folder View
 Name[bg]=Директория
+Name[bn_IN]=ফোল্ডার প্রদর্শন
 Name[ca]=Vista de carpeta
 Name[cs]=Pohled na složku
 Name[da]=Mappevisning
@@ -22,13 +23,14 @@ Name[ja]=フォルダビュー
 Name[km]=ទិដ្ឋភាព​ជា​ថត
 Name[ko]=폴더 보기
 Name[lv]=Mapju skats
+Name[mk]=Преглед на папки
 Name[nds]=Orneransicht
 Name[nl]=Mapweergave
 Name[nn]=Mappevising
 Name[pa]=ਫੋਲਡਰ ਝਲਕ
 Name[pl]=Widok katalogu
 Name[pt]=Área de Pasta
-Name[pt_BR]=Área de Pasta
+Name[pt_BR]=Exibição de pasta
 Name[ru]=Просмотр папки
 Name[sl]=Prikaz mape
 Name[sr]=приказ фасцикле
