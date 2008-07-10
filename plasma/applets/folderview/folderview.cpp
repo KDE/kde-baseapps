@@ -1105,7 +1105,8 @@ void FolderView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
 void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (!contentsRect().contains(event->pos())) {
+    if (!contentsRect().contains(event->pos()) ||
+        event->pos().y() < contentsRect().top() + m_titleHeight) {
         Plasma::Applet::mousePressEvent(event);
         return;
     }
