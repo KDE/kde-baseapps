@@ -765,10 +765,13 @@ QRectF FolderView::visualRect(const QModelIndex &index)
 void FolderView::constraintsEvent(Plasma::Constraints constraints)
 {
     // We should probably only do this when acting as the desktop containment
-    //if (constraints & Plasma::FormFactorConstraint)
-    //   setBackgroundHints(Applet::NoBackground);
-
-    setBackgroundHints(Applet::TranslucentBackground);
+    if (constraints & Plasma::FormFactorConstraint) {
+        if (isContainment()) {
+            setBackgroundHints(Applet::NoBackground);
+        } else if (formFactor() == Plasma::Planar || formFactor() == Plasma::MediaCenter) {
+            setBackgroundHints(Applet::TranslucentBackground);
+        }
+    }
 
     if (constraints & Plasma::SizeConstraint)
     {
