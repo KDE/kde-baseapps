@@ -16,8 +16,8 @@ add_subdirectory(icons)
 
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
-    webkitview.cpp
-    webkitpage.cpp
+    webview.cpp
+    webpage.cpp
     webkitglobal.cpp
     webkitpageview.cpp
     searchbar.cpp
@@ -37,10 +37,10 @@ set_target_properties(webkitkde PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
 install(TARGETS webkitkde ${INSTALL_TARGETS_DEFAULT_ARGS})
 
-install(FILES webkitkde_export.h webkitpart.h webkitview.h DESTINATION ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
+install(FILES webkitkde_export.h webkitpart.h webview.h DESTINATION ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
 
 
-kde4_add_plugin(webkitkdepart webkitpart_factory.cpp)
+kde4_add_plugin(webkitkdepart webkitpartfactory.cpp)
 
 target_link_libraries(webkitkdepart webkitkde)
 
