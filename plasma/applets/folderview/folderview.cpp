@@ -178,9 +178,21 @@ bool ProxyMimeModel::filterAcceptsRow(int source_row, const QModelIndex &source_
     if (m_filter.isEmpty()) {
         return true;
     }
-    return mime->comment().contains(m_filter, Qt::CaseInsensitive) ||
-           ((!mime->patterns().count() || mime->comment().isEmpty()) && mime->name().contains(m_filter, Qt::CaseInsensitive)) ||
-           mime->patterns().contains(m_filter, Qt::CaseInsensitive);
+    
+    bool fastRet = mime->comment().contains(m_filter, Qt::CaseInsensitive) ||
+                   ((!mime->patterns().count() || mime->comment().isEmpty()) && mime->name().contains(m_filter, Qt::CaseInsensitive));
+                   
+    if (fastRet) {
+        return true;
+    }
+    
+    foreach (const QString &pattern, mime->patterns()) {
+        if (pattern.contains(m_filter, Qt::CaseInsensitive)) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 
