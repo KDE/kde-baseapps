@@ -177,11 +177,14 @@ public:
     MimeModel(QObject *parent = 0);
     
     virtual QVariant data(const QModelIndex &index, int role) const;
+    virtual Qt::ItemFlags flags(const QModelIndex &index) const;
     virtual QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
     
 private:
     KMimeType::List m_mimetypes;
+    QMap<KMimeType*, Qt::CheckState> m_state;
 };
 
 

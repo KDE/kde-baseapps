@@ -91,9 +91,21 @@ QVariant MimeModel::data(const QModelIndex &index, int role) const
         }
         case Qt::DecorationRole:
             return KIcon(mime->iconName());
+        case Qt::CheckStateRole:
+            return m_state[mime];
         default:
             return QStringListModel::data(index, role);
     }
+}
+
+Qt::ItemFlags MimeModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags itemFlags = QStringListModel::flags(index);
+    itemFlags &= ~Qt::ItemIsEditable;
+    if (!index.isValid()) {
+        return itemFlags;
+    }
+    return itemFlags | Qt::ItemIsUserCheckable;
 }
 
 QModelIndex MimeModel::index(int row, int column, const QModelIndex &parent) const
@@ -110,6 +122,22 @@ int MimeModel::rowCount(const QModelIndex &parent) const
         return 0;
     }
     return m_mimetypes.count();
+}
+
+bool MimeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (!index.isValid()) {
+        return false;
+    }
+    
+    if (role == Qt::CheckStateRole) {
+        KMimeType *mime = static_cast<KMimeType*>(index.internalPointer());
+        m_state[mime] = (Qt::CheckState) value.toInt();
+        emit dataChanged(index, index);
+        return true;
+    }
+    
+    return QStringListModel::setData(index, value, role);
 }
 
 
@@ -330,7 +358,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
             const KMimeType *mime = static_cast<KMimeType*>(pMimeModel->mapToSource(index).internalPointer());
             if (selectedItems.contains(mime->name())) {
                 selectedItems.removeAll(mime->name());
-                ui.filterFilesList->selectionModel()->select(index, QItemSelectionModel::Select);
+                ui.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
             }
         }
     }
@@ -348,10 +376,13 @@ void FolderView::configAccepted()
     if (url.isEmpty() || (url.isLocalFile() && !QFile::exists(url.path())))
         url = KUrl(QDir::homePath());
 
-    QStringList selectedItems;
-    foreach(const QModelIndex &index, ui.filterFilesList->selectionModel()->selectedIndexes()) {
-        const QModelIndex mappedIndex = static_cast<ProxyMimeModel*>(ui.filterFilesList->model())->mapToSource(index);
-        selectedItems << static_cast<KMimeType*>(mappedIndex.internalPointer())->name();
+    QStringList selectedItems;    
+    for (int i = 0; i < ui.filterFilesList->model()->rowCount(); i++) {
+        const QModelIndex index = ui.filterFilesList->model()->index(i, 0);
+        if (index.model()->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) {
+            const QModelIndex mappedIndex = static_cast<ProxyMimeModel*>(ui.filterFilesList->model())->mapToSource(index);
+            selectedItems << static_cast<KMimeType*>(mappedIndex.internalPointer())->name();
+        }
     }
     
     int filterType = ui.filterType->currentIndex();
@@ -1151,13 +1182,11 @@ void FolderView::filterChanged(int index)
 
 void FolderView::selectUnselectAll()
 {
-    if (sender() == ui.selectAll) {
-        const QModelIndex first = ui.filterFilesList->model()->index(0, 0);
-        const QModelIndex last = ui.filterFilesList->model()->index(ui.filterFilesList->model()->rowCount() - 1, 0);
-        ui.filterFilesList->selectionModel()->select(QItemSelection(first, last), QItemSelectionModel::SelectCurrent);
-        return;
+    Qt::CheckState state = sender() == ui.selectAll ? Qt::Checked : Qt::Unchecked;
+    for (int i = 0; i < ui.filterFilesList->model()->rowCount(); i++) {
+        const QModelIndex index = ui.filterFilesList->model()->index(i, 0);
+        ui.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);
     }
-    ui.filterFilesList->selectionModel()->clearSelection();
 }
 
 void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
