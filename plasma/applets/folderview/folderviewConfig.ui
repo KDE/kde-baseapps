@@ -1,11 +1,25 @@
 <ui version="4.0" >
  <class>folderviewConfig</class>
  <widget class="QWidget" name="folderviewConfig" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>562</height>
+   </rect>
+  </property>
   <property name="sizePolicy" >
    <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
+  </property>
+  <property name="minimumSize" >
+   <size>
+    <width>500</width>
+    <height>0</height>
+   </size>
   </property>
   <layout class="QGridLayout" name="gridLayout" >
    <item row="0" column="0" colspan="3" >
@@ -21,22 +35,6 @@
       <string>Show a custom folder</string>
      </property>
     </widget>
-   </item>
-   <item row="2" column="0" >
-    <spacer name="spacer2" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeType" >
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0" >
-      <size>
-       <width>21</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item row="2" column="1" >
     <widget class="QLabel" name="selectLabel" >
@@ -64,43 +62,171 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1" >
-    <widget class="QLabel" name="filterLabel" >
-     <property name="text" >
-      <string>Filter</string>
+   <item row="3" column="0" colspan="3" >
+    <widget class="QGroupBox" name="fileFilters" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-    </widget>
-   </item>
-   <item row="4" column="2" >
-    <spacer name="spacer1" >
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
+     <property name="title" >
+      <string>File filters</string>
      </property>
-     <property name="sizeType" >
-      <enum>QSizePolicy::Expanding</enum>
-     </property>
-     <property name="sizeHint" stdset="0" >
-      <size>
-       <width>20</width>
-       <height>81</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="3" column="2" >
-    <widget class="KLineEdit" name="filterFiles" >
-     <property name="toolTip" >
-      <string>Space-separated list of extensions, e.g. *.txt * .od*</string>
-     </property>
-     <property name="whatsThis" >
-      <string>Space-separated list of extensions, e.g. *.txt * .od* to display only office- and text-files</string>
-     </property>
-     <property name="urlDropsEnabled" >
-      <bool>false</bool>
-     </property>
-     <property name="showClearButton" stdset="0" >
-      <bool>true</bool>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3" >
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2" >
+        <item>
+         <widget class="QRadioButton" name="noFilter" >
+          <property name="text" >
+           <string>No filter</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="filterByPattern" >
+          <property name="text" >
+           <string>Filter by pattern</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5" >
+          <item>
+           <spacer name="horizontalSpacer" >
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType" >
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_2" >
+            <property name="margin" >
+             <number>4</number>
+            </property>
+            <item row="0" column="1" >
+             <widget class="KLineEdit" name="filterFilesPattern" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip" >
+               <string>Space-separated list of extensions, e.g. *.txt * .od*</string>
+              </property>
+              <property name="whatsThis" >
+               <string>Space-separated list of extensions, e.g. *.txt * .od* to display only office- and text-files</string>
+              </property>
+              <property name="urlDropsEnabled" >
+               <bool>false</bool>
+              </property>
+              <property name="showClearButton" stdset="0" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" >
+             <widget class="QLabel" name="filterLabelPattern" >
+              <property name="text" >
+               <string>Filter</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="filterByMimeType" >
+          <property name="text" >
+           <string>Filter by mime type</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6" >
+          <item>
+           <spacer name="horizontalSpacer_2" >
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType" >
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_5" >
+            <property name="margin" >
+             <number>4</number>
+            </property>
+            <item row="1" column="0" >
+             <widget class="QLabel" name="filterLabelList" >
+              <property name="text" >
+               <string>Filter</string>
+              </property>
+              <property name="alignment" >
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" >
+             <widget class="KLineEdit" name="searchMimetype" >
+              <property name="clickMessage" >
+               <string>Search mime type</string>
+              </property>
+              <property name="showClearButton" stdset="0" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1" >
+             <widget class="QListView" name="filterFilesList" >
+              <property name="selectionMode" >
+               <enum>QAbstractItemView::ExtendedSelection</enum>
+              </property>
+              <property name="flow" >
+               <enum>QListView::TopToBottom</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="excludeFilter" >
+          <property name="text" >
+           <string>Inverse filter (will exclude matching results)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

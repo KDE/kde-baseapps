@@ -21,10 +21,12 @@
 #define FOLDERVIEW_H
 
 #include <QPersistentModelIndex>
+#include <QSortFilterProxyModel>
 #include <QStyleOption>
 #include <QPointer>
 
 #include <KActionCollection>
+#include <KMimeType>
 
 #include <plasma/containment.h>
 #include "ui_folderviewConfig.h"
@@ -90,6 +92,8 @@ private slots:
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
+    
+    void filterChanged(bool state);
 
 private:
     void createActions();
@@ -138,7 +142,10 @@ private:
     int m_titleHeight;
     int m_lastScrollValue;
     bool m_viewScrolled;
+    int m_filterType;
     QString m_filterFiles;
+    QStringList m_filterFilesMimeList;
+    bool m_excludeFilter;
     QFont m_font;
     QPointer<KNewMenu> m_newMenu;
     KActionCollection m_actionCollection;
@@ -156,6 +163,51 @@ private:
     Ui::folderviewConfig ui;
     bool m_doubleClick;
     bool m_dragInProgress;
+};
+
+
+
+// ---------------------------------------------------------------------------
+
+
+
+class MimeModel : public QStringListModel
+{
+public:
+    MimeModel(QObject *parent = 0);
+    
+    virtual QVariant data(const QModelIndex &index, int role) const;
+    virtual QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    
+private:
+    KMimeType::List m_mimetypes;
+};
+
+
+
+// ---------------------------------------------------------------------------
+
+
+
+class ProxyMimeModel : public QSortFilterProxyModel
+{
+Q_OBJECT
+
+public:
+    ProxyMimeModel(QObject *parent = 0);
+    
+    virtual void setSourceModel(QAbstractItemModel *sourceModel);
+    
+public slots:
+    void setFilter(const QString &filter);
+    
+protected:
+    virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
+    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+    
+private:
+    QString m_filter;
 };
 
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)

@@ -33,6 +33,39 @@ ProxyModel::~ProxyModel()
 {
 }
 
+void ProxyModel::setFilterMode(FilterMode filterMode)
+{
+    m_filterMode = filterMode;
+    invalidateFilter();
+}
+
+ProxyModel::FilterMode ProxyModel::filterMode() const
+{
+    return m_filterMode;
+}
+
+void ProxyModel::setMimeTypeFilterList(const QStringList &mimeList)
+{
+    m_mimeList = mimeList;
+    invalidateFilter();
+}
+
+const QStringList &ProxyModel::mimeTypeFilterList() const
+{
+    return m_mimeList;
+}
+
+void ProxyModel::setExcludeMatches(bool excludeMatches)
+{
+    m_excludeMatches = excludeMatches;
+    invalidateFilter();
+}
+
+bool ProxyModel::excludeMatches() const
+{
+    return m_excludeMatches;
+}
+
 QModelIndex ProxyModel::indexForUrl(const KUrl &url) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
@@ -61,23 +94,46 @@ bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) con
     return KStringHandler::naturalCompare(item1.name(), item2.name(), Qt::CaseInsensitive) < 0;
 }
 
+ProxyModel::FilterMode ProxyModel::filterModeFromInt(int filterMode)
+{
+    switch (filterMode) {
+        case 0:
+            return ProxyModel::NoFilter;
+        case 1:
+            return ProxyModel::FilterByPattern;
+        default:
+            return ProxyModel::FilterByMimeType;
+    }
+}
+
 bool ProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
     const KFileItem item = dirModel->itemForIndex(dirModel->index(sourceRow, KDirModel::Name, sourceParent));
 
-    const QString regExpOrig = filterRegExp().pattern();
-    const QStringList regExps = regExpOrig.split(' ');
-    foreach (const QString &regExpStr, regExps) {
-        QRegExp regExp(regExpStr);
-        regExp.setPatternSyntax(QRegExp::Wildcard);
-        regExp.setCaseSensitivity(Qt::CaseInsensitive);
-
-        if (regExp.indexIn(item.name()) != -1) {
+    switch (m_filterMode) {
+        case NoFilter:
             return true;
+        case FilterByPattern: {
+            const QString regExpOrig = filterRegExp().pattern();
+            const QStringList regExps = regExpOrig.split(' ');
+            foreach (const QString &regExpStr, regExps) {
+                QRegExp regExp(regExpStr);
+                regExp.setPatternSyntax(QRegExp::Wildcard);
+                regExp.setCaseSensitivity(Qt::CaseInsensitive);
+
+                if (regExp.indexIn(item.name()) != -1) {
+                    return m_excludeMatches ? false : true;
+                }
+            }
+            break;
+        }
+        case FilterByMimeType: {
+            bool ret = m_mimeList.contains(item.determineMimeType()->name());
+            return m_excludeMatches ? !ret : ret;
         }
     }
 
-    return false;
+    return m_excludeMatches ? true : false;
 }
 
