@@ -31,8 +31,8 @@ class ProxyModel : public QSortFilterProxyModel
 public:
     enum FilterMode {
         NoFilter = 0,
-        FilterByPattern,
-        FilterByMimeType
+        FilterShowMatches,
+        FilterHideMatches
     };
 
     ProxyModel(QObject *parent = 0);
@@ -44,9 +44,6 @@ public:
     void setMimeTypeFilterList(const QStringList &mimeList);
     const QStringList &mimeTypeFilterList() const;
     
-    void setExcludeMatches(bool excludeMatches);
-    bool excludeMatches() const;
-
     QModelIndex indexForUrl(const KUrl &url) const;
     KFileItem itemForIndex(const QModelIndex &index) const;
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
@@ -59,7 +56,6 @@ protected:
 private:
     FilterMode m_filterMode;
     QStringList m_mimeList;
-    bool m_excludeMatches;
 };
 
 #endif

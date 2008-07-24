@@ -55,17 +55,6 @@ const QStringList &ProxyModel::mimeTypeFilterList() const
     return m_mimeList;
 }
 
-void ProxyModel::setExcludeMatches(bool excludeMatches)
-{
-    m_excludeMatches = excludeMatches;
-    invalidateFilter();
-}
-
-bool ProxyModel::excludeMatches() const
-{
-    return m_excludeMatches;
-}
-
 QModelIndex ProxyModel::indexForUrl(const KUrl &url) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
@@ -100,9 +89,9 @@ ProxyModel::FilterMode ProxyModel::filterModeFromInt(int filterMode)
         case 0:
             return ProxyModel::NoFilter;
         case 1:
-            return ProxyModel::FilterByPattern;
+            return ProxyModel::FilterShowMatches;
         default:
-            return ProxyModel::FilterByMimeType;
+            return ProxyModel::FilterHideMatches;
     }
 }
 
@@ -111,10 +100,19 @@ bool ProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
     const KFileItem item = dirModel->itemForIndex(dirModel->index(sourceRow, KDirModel::Name, sourceParent));
 
+    bool invertResult = false;
     switch (m_filterMode) {
         case NoFilter:
             return true;
-        case FilterByPattern: {
+        case FilterHideMatches:
+            invertResult = true; // fall through
+        case FilterShowMatches: {
+            // Mime type check
+            bool ret = m_mimeList.contains(item.determineMimeType()->name());
+            if (!ret) {
+                return invertResult ? true : false;
+            }
+            // Pattern check
             const QString regExpOrig = filterRegExp().pattern();
             const QStringList regExps = regExpOrig.split(' ');
             foreach (const QString &regExpStr, regExps) {
@@ -123,17 +121,13 @@ bool ProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent
                 regExp.setCaseSensitivity(Qt::CaseInsensitive);
 
                 if (regExp.indexIn(item.name()) != -1) {
-                    return m_excludeMatches ? false : true;
+                    return invertResult ? false : true;
                 }
             }
             break;
         }
-        case FilterByMimeType: {
-            bool ret = m_mimeList.contains(item.determineMimeType()->name());
-            return m_excludeMatches ? !ret : ret;
-        }
     }
 
-    return m_excludeMatches ? true : false;
+    return invertResult ? true : false;
 }
 

@@ -93,7 +93,8 @@ private slots:
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
     
-    void filterChanged(bool state);
+    void filterChanged(int index);
+    void selectUnselectAll();
 
 private:
     void createActions();
@@ -145,7 +146,6 @@ private:
     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
-    bool m_excludeFilter;
     QFont m_font;
     QPointer<KNewMenu> m_newMenu;
     KActionCollection m_actionCollection;

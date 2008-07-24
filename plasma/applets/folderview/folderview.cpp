@@ -269,8 +269,6 @@ void FolderView::init()
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
     
-    m_model->setExcludeMatches(cg.readEntry("excludeFilter", false));
-    
     KDirLister *lister = new KDirLister(this);
     lister->openUrl(m_url);
 
@@ -315,19 +313,14 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
     connect(ui.showCustomFolder, SIGNAL(toggled(bool)), this, SLOT(customFolderToggled(bool)));
-    connect(ui.noFilter, SIGNAL(toggled(bool)), this, SLOT(filterChanged(bool)));
-    connect(ui.filterByPattern, SIGNAL(toggled(bool)), this, SLOT(filterChanged(bool)));
-    connect(ui.filterByMimeType, SIGNAL(toggled(bool)), this, SLOT(filterChanged(bool)));
+    connect(ui.filterType, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
+    connect(ui.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(ui.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
     
     KConfigGroup cg = config();
     int filter = cg.readEntry("filter", 0);
-    if (filter == 0) {
-        ui.noFilter->setChecked(true);
-    } else if (filter == 1) {
-        ui.filterByPattern->setChecked(true);
-    } else if (filter == 2) {
-        ui.filterByMimeType->setChecked(true);
-    }
+    ui.filterType->setCurrentIndex(filter);
+    filterChanged(filter);
     
     QStringList selectedItems = cg.readEntry("mimeFilter", QStringList());
     
@@ -341,8 +334,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
             }
         }
     }
-    
-    ui.excludeFilter->setChecked(cg.readEntry("excludeFilter", false));
 }
 
 void FolderView::configAccepted()
@@ -363,35 +354,25 @@ void FolderView::configAccepted()
         selectedItems << static_cast<KMimeType*>(mappedIndex.internalPointer())->name();
     }
     
-    int filterType;
-    if (ui.noFilter->isChecked()) {
-        filterType = 0;
-    } else if (ui.filterByPattern->isChecked()) {
-        filterType = 1;
-    } else if (ui.filterByMimeType->isChecked()) {
-        filterType = 2;
-    }
+    int filterType = ui.filterType->currentIndex();
 
     if (m_url != url || m_filterFiles != ui.filterFilesPattern->text() || m_filterFilesMimeList != selectedItems ||
-        m_filterType != filterType || m_excludeFilter != ui.excludeFilter->isChecked()) {
+        m_filterType != filterType) {
         m_dirModel->dirLister()->openUrl(url);
         m_model->setFilterFixedString(ui.filterFilesPattern->text());
         m_url = url;
         m_filterFiles = ui.filterFilesPattern->text();
         m_filterFilesMimeList = selectedItems;
         m_filterType = filterType;
-        m_excludeFilter = ui.excludeFilter->isChecked();
 
         KConfigGroup cg = config();
         cg.writeEntry("url", m_url);
         cg.writeEntry("filterFiles", m_filterFiles);
         cg.writeEntry("filter", m_filterType);
         cg.writeEntry("mimeFilter", m_filterFilesMimeList);
-        cg.writeEntry("excludeFilter", m_excludeFilter);
         
         m_model->setMimeTypeFilterList(m_filterFilesMimeList);
         m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
-        m_model->setExcludeMatches(m_excludeFilter);
 
         emit configNeedsSaving();
     }
@@ -1163,37 +1144,20 @@ void FolderView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint
     markEverythingDirty();
 }
 
-void FolderView::filterChanged(bool state)
+void FolderView::filterChanged(int index)
 {
-    if (!state) {
+    ui.fileFilters->setVisible(index != 0);
+}
+
+void FolderView::selectUnselectAll()
+{
+    if (sender() == ui.selectAll) {
+        const QModelIndex first = ui.filterFilesList->model()->index(0, 0);
+        const QModelIndex last = ui.filterFilesList->model()->index(ui.filterFilesList->model()->rowCount() - 1, 0);
+        ui.filterFilesList->selectionModel()->select(QItemSelection(first, last), QItemSelectionModel::SelectCurrent);
         return;
     }
-    
-    QObject *senderObject = sender();
-    if (senderObject == ui.noFilter) {
-            ui.excludeFilter->setEnabled(false);
-            ui.filterLabelPattern->setEnabled(false);
-            ui.filterFilesPattern->setEnabled(false);
-            ui.searchMimetype->setEnabled(false);
-            ui.filterLabelList->setEnabled(false);
-            ui.filterFilesList->setEnabled(false);
-    } else if (senderObject == ui.filterByPattern) {
-            ui.excludeFilter->setEnabled(true);
-            ui.filterLabelPattern->setEnabled(true);
-            ui.filterFilesPattern->setEnabled(true);
-            ui.searchMimetype->setEnabled(false);
-            ui.filterLabelList->setEnabled(false);
-            ui.filterFilesList->setEnabled(false);
-    } else if (senderObject == ui.filterByMimeType) {
-            ui.excludeFilter->setEnabled(true);
-            ui.filterLabelPattern->setEnabled(false);
-            ui.filterFilesPattern->setEnabled(false);
-            ui.searchMimetype->setEnabled(true);
-            ui.filterLabelList->setEnabled(true);
-            ui.filterFilesList->setEnabled(true);
-    }
-    
-    return;
+    ui.filterFilesList->selectionModel()->clearSelection();
 }
 
 void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
