@@ -1,5 +1,6 @@
 /*
  *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Library General Public
@@ -388,12 +389,14 @@ void FolderView::configAccepted()
     if (url.isEmpty() || (url.isLocalFile() && !QFile::exists(url.path())))
         url = KUrl(QDir::homePath());
 
-    QStringList selectedItems;    
-    for (int i = 0; i < ui.filterFilesList->model()->rowCount(); i++) {
-        const QModelIndex index = ui.filterFilesList->model()->index(i, 0);
+    // Now, we have to iterate over all items (not only the filtered ones). For that reason we have
+    // to ask the source model, not the proxy model.
+    QStringList selectedItems;
+    ProxyMimeModel *proxyModel = static_cast<ProxyMimeModel*>(ui.filterFilesList->model());
+    for (int i = 0; i < proxyModel->sourceModel()->rowCount(); i++) {
+        const QModelIndex index = proxyModel->sourceModel()->index(i, 0);
         if (index.model()->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) {
-            const QModelIndex mappedIndex = static_cast<ProxyMimeModel*>(ui.filterFilesList->model())->mapToSource(index);
-            selectedItems << static_cast<KMimeType*>(mappedIndex.internalPointer())->name();
+            selectedItems << static_cast<KMimeType*>(index.internalPointer())->name();
         }
     }
     
