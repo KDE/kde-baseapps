@@ -996,7 +996,11 @@ void FolderView::setUrl(const KUrl &url)
             m_titleText = m_titleText.right(m_titleText.length() - places.url(index).pathOrUrl().length() - 1);
 
             if (!m_titleText.isEmpty()) {
-                m_titleText.prepend(" > "); 
+                if (layoutDirection() == Qt::RightToLeft) {
+                    m_titleText.prepend(" < ");
+                } else {
+                    m_titleText.prepend(" > ");
+                }
             }
 
             m_titleText.prepend(places.text(index));
