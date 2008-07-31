@@ -771,7 +771,11 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     if (m_url == KUrl("desktop:/")) {
         titleText = i18n("Desktop"); //FIXME: 4.2 make it "Desktop Folder;
     } else if (m_url.isLocalFile() && m_url.path().startsWith(KUrl("~").path())) {
+#ifndef Q_WS_WIN
         titleText = m_url.path().replace(KUrl("~").path(), i18n("Home"));
+#else
+        titleText = m_url.path().replace(QDir::homePath(), i18n("Home"));
+#endif
     } else {
         titleText = m_url.pathOrUrl();
     }
