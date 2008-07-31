@@ -40,6 +40,7 @@
 #include <KDirLister>
 #include <KDirModel>
 #include <KFileItemDelegate>
+#include <kfileplacesmodel.h>
 #include <KGlobalSettings>
 #include <KMenu>
 #include <KStandardShortcut>
@@ -278,10 +279,8 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     m_scrollBar->hide();
     connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
 
-    if ( args.count() ) {
-        m_url = KUrl(args.value(0).toString());
-    } else {
-        m_url = KUrl();
+    if (args.count() > 0) {
+        setUrl(KUrl(args.value(0).toString()));
     }
 }
 
@@ -302,7 +301,7 @@ void FolderView::init()
 
     cg = config();
     if (!m_url.isValid()) {
-        m_url = cg.readEntry("url", KUrl(QDir::homePath()));
+        setUrl(cg.readEntry("url", KUrl(QDir::homePath())));
     }
     m_filterFiles = cg.readEntry("filterFiles", "*");
 
@@ -343,12 +342,12 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
 
     ui.lineEdit->setMode(KFile::Directory); 
     ui.filterFilesPattern->setText(m_filterFiles);
-    
+
     MimeModel *mimeModel = new MimeModel(ui.filterFilesList);
     ProxyMimeModel *pMimeModel = new ProxyMimeModel(ui.filterFilesList);
     pMimeModel->setSourceModel(mimeModel);
     ui.filterFilesList->setModel(pMimeModel);
-    
+
     connect(ui.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
 
     parent->addPage(widget, parent->windowTitle(), icon());
@@ -408,7 +407,7 @@ void FolderView::configAccepted()
         m_filterType != filterType) {
         m_dirModel->dirLister()->openUrl(url);
         m_model->setFilterFixedString(ui.filterFilesPattern->text());
-        m_url = url;
+        setUrl(url);
         m_filterFiles = ui.filterFilesPattern->text();
         m_filterFilesMimeList = selectedItems;
         m_filterType = filterType;
@@ -767,18 +766,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     QPen currentPen = painter->pen();
     m_titleHeight = painter->fontMetrics().height();
 
-    QString titleText;
-    if (m_url == KUrl("desktop:/")) {
-        titleText = i18n("Desktop"); //FIXME: 4.2 make it "Desktop Folder;
-    } else if (m_url.isLocalFile() && m_url.path().startsWith(KUrl("~").path())) {
-#ifndef Q_WS_WIN
-        titleText = m_url.path().replace(KUrl("~").path(), i18n("Home"));
-#else
-        titleText = m_url.path().replace(QDir::homePath(), i18n("Home"));
-#endif
-    } else {
-        titleText = m_url.pathOrUrl();
-    }
+    QString titleText = m_titleText;
     titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
     QColor titleColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
     QPixmap titlePixmap = Plasma::PaintUtils::shadowText(titleText, 
@@ -989,6 +977,29 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
         } else {
             updateScrollBar();
             markEverythingDirty();
+        }
+    }
+}
+
+void FolderView::setUrl(const KUrl &url)
+{
+    m_url = url;
+
+    if (m_url == KUrl("desktop:/")) {
+        m_titleText = i18n("Desktop Folder");
+    } else {
+        m_titleText = m_url.pathOrUrl();
+
+        KFilePlacesModel places;
+        const QModelIndex index = places.closestItem(url);
+        if (index.isValid()) {
+            m_titleText = m_titleText.right(m_titleText.length() - places.url(index).pathOrUrl().length() - 1);
+
+            if (!m_titleText.isEmpty()) {
+                m_titleText.prepend(" > "); 
+            }
+
+            m_titleText.prepend(places.text(index));
         }
     }
 }

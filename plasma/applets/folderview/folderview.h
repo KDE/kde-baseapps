@@ -98,6 +98,7 @@ private slots:
     void selectUnselectAll();
 
 private:
+    void setUrl(const KUrl &url);
     void createActions();
     KUrl::List selectedUrls() const;
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
@@ -141,6 +142,7 @@ private:
     QRegion m_dirtyRegion;
     QItemSelectionModel *m_selectionModel;
     KUrl m_url;
+    QString m_titleText;
     int m_titleHeight;
     int m_lastScrollValue;
     bool m_viewScrolled;
