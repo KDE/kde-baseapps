@@ -993,9 +993,13 @@ void FolderView::setUrl(const KUrl &url)
         KFilePlacesModel places;
         const QModelIndex index = places.closestItem(url);
         if (index.isValid()) {
-            m_titleText = m_titleText.right(m_titleText.length() - places.url(index).pathOrUrl().length() - 1);
+            m_titleText = m_titleText.right(m_titleText.length() - places.url(index).pathOrUrl().length());
 
             if (!m_titleText.isEmpty()) {
+                if (m_titleText.at(0) == '/') {
+                    m_titleText.remove(0, 1);
+                }
+
                 if (layoutDirection() == Qt::RightToLeft) {
                     m_titleText.prepend(" < ");
                 } else {
