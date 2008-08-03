@@ -1417,6 +1417,7 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             if (!m_doubleClick && KGlobalSettings::singleClick()) {
                 const KFileItem item = m_model->itemForIndex(index);
                 item.run();
+                emit releaseVisualFocus();
                 m_selectionModel->clearSelection();
                 markEverythingDirty();
             }
@@ -1424,8 +1425,7 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             // mousePressEvent() if the item is already selected when it's pressed,
             // so we need to do that here.
             if (m_selectionModel->currentIndex() != index ||
-                m_selectionModel->selectedIndexes().count() > 1)
-            {
+                m_selectionModel->selectedIndexes().count() > 1) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 markEverythingDirty();
@@ -1466,6 +1466,7 @@ void FolderView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     // Activate the item
     const KFileItem item = m_model->itemForIndex(index);
     item.run();
+    emit releaseVisualFocus();
 
     m_selectionModel->clearSelection();
     markEverythingDirty();
