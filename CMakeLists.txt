@@ -16,7 +16,9 @@ add_subdirectory(icons)
 
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
+    kwebview.cpp
     webview.cpp
+    kwebpage.cpp
     webpage.cpp
     webkitglobal.cpp
     webkitpageview.cpp
