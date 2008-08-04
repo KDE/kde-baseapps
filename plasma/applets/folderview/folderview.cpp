@@ -302,6 +302,9 @@ void FolderView::init()
     cg = config();
     if (!m_url.isValid()) {
         setUrl(cg.readEntry("url", KUrl(QDir::homePath())));
+    } else {
+        KConfigGroup cg = config();
+        cg.writeEntry("url", m_url);
     }
     m_filterFiles = cg.readEntry("filterFiles", "*");
 
@@ -310,7 +313,7 @@ void FolderView::init()
 
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
-    
+
     KDirLister *lister = new KDirLister(this);
     lister->openUrl(m_url);
 
