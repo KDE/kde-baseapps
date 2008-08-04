@@ -40,7 +40,7 @@ set_target_properties(webkitkde PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
 install(TARGETS webkitkde ${INSTALL_TARGETS_DEFAULT_ARGS})
 
-install(FILES webkitkde_export.h webkitpart.h webview.h DESTINATION ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
+install(FILES webkitkde_export.h webkitpart.h webview.h kwebpage.h kwebview.h DESTINATION ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
 
 
 kde4_add_plugin(webkitkdepart webkitpartfactory.cpp)
