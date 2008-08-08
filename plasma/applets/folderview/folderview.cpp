@@ -830,6 +830,7 @@ void FolderView::createActions()
             SLOT(moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers)));
 
     KAction *del = new KAction(i18n("&Delete"), this);
+    del->setIcon(KIcon("edit-delete"));
     del->setShortcut(Qt::SHIFT + Qt::Key_Delete);
     connect(del, SIGNAL(triggered()), SLOT(deleteSelectedIcons()));
 
@@ -1038,9 +1039,14 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
     QList<QAction*> editActions;
     editActions.append(m_actionCollection.action("rename"));
+    KConfigGroup configGroup(KGlobal::config(), "KDE");
+    bool showDeleteCommand = configGroup.readEntry("ShowDeleteCommand", false);
     if (!hasRemoteFiles) {
         editActions.append(m_actionCollection.action("trash"));
     } else {
+        showDeleteCommand = true;
+    }
+    if (showDeleteCommand) {
         editActions.append(m_actionCollection.action("del"));
     }
 
