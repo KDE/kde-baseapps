@@ -1281,10 +1281,8 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
     QList<QAction*> editActions;
     editActions.append(m_actionCollection.action("rename"));
 
-    KSharedConfig::Ptr dolphinConfig =
-        KSharedConfig::openConfig("dolphinrc", KConfig::IncludeGlobals);
-    const KConfigGroup dolphinKdeConfig(dolphinConfig, "KDE");
-    bool showDeleteCommand = dolphinKdeConfig.readEntry("ShowDeleteCommand", false);
+    KConfigGroup configGroup(KGlobal::config(), "KDE");
+    bool showDeleteCommand = configGroup.readEntry("ShowDeleteCommand", false);
     if (!hasRemoteFiles) {
         editActions.append(m_actionCollection.action("trash"));
     } else {
