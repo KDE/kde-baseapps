@@ -41,7 +41,7 @@ class ProxyModel;
 namespace Plasma
 {
     class ScrollBar;
-};
+}
 
 struct ViewItem
 {
