@@ -37,7 +37,11 @@ class KFileItemDelegate;
 class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
-class ScrollBar;
+
+namespace Plasma
+{
+    class ScrollBar;
+};
 
 struct ViewItem
 {
@@ -135,7 +139,7 @@ private:
     KFileItemDelegate *m_delegate;
     KDirModel *m_dirModel;
     ProxyModel *m_model;
-    ScrollBar *m_scrollBar;
+    Plasma::ScrollBar *m_scrollBar;
     QPixmap m_pixmap;
     QPixmap m_topFadeTile;
     QPixmap m_bottomFadeTile;

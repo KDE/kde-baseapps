@@ -57,6 +57,7 @@
 
 #include "proxymodel.h"
 #include "plasma/theme.h"
+#include "plasma/widgets/scrollbar.h"
 #include "plasma/paintutils.h"
 
 #ifdef Q_WS_X11
@@ -204,36 +205,6 @@ bool ProxyMimeModel::filterAcceptsRow(int source_row, const QModelIndex &source_
 // ---------------------------------------------------------------------------
 
 
-
-// Wraps a QScrollBar in a QGraphicsProxyWidget
-class ScrollBar : public QGraphicsProxyWidget
-{
-public:
-    ScrollBar(Qt::Orientation orientation, QGraphicsWidget *parent);
-    void setRange(int min, int max) { static_cast<QScrollBar*>(widget())->setRange(min, max); }
-    void setSingleStep(int val) { static_cast<QScrollBar*>(widget())->setSingleStep(val); }
-    void setPageStep(int val) { static_cast<QScrollBar*>(widget())->setPageStep(val); }
-    void setValue(int val) { static_cast<QScrollBar*>(widget())->setValue(val); }
-    int value() const { return static_cast<QScrollBar*>(widget())->value(); }
-    int minimum() const { return static_cast<QScrollBar*>(widget())->minimum(); }
-    int maximum() const { return static_cast<QScrollBar*>(widget())->maximum(); }
-    QScrollBar *nativeWidget() const { return static_cast<QScrollBar*>(widget()); }
-};
-
-ScrollBar::ScrollBar(Qt::Orientation orientation, QGraphicsWidget *parent)
-        : QGraphicsProxyWidget(parent)
-{
-    QScrollBar *scrollbar = new QScrollBar(orientation);
-    scrollbar->setAttribute(Qt::WA_NoSystemBackground);
-    setWidget(scrollbar);
-}
-
-
-
-// ---------------------------------------------------------------------------
-
-
-
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
       m_titleHeight(0),
@@ -275,7 +246,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     connect(m_delegate, SIGNAL(commitData(QWidget*)), SLOT(commitData(QWidget*)));
 
     m_selectionModel = new QItemSelectionModel(m_model, this);
-    m_scrollBar = new ScrollBar(Qt::Vertical, this);
+    m_scrollBar = new Plasma::ScrollBar(Qt::Vertical, this);
     m_scrollBar->hide();
     connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
 
