@@ -142,6 +142,10 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     } else {
         m_url = KUrl();
     }
+
+    // As we use some part of konqueror libkonq must be added to have translations
+    KGlobal::locale()->insertCatalog("libkonq");
+
 }
 
 void FolderView::init()
