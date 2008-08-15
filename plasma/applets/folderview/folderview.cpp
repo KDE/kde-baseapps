@@ -253,6 +253,10 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     if (args.count() > 0) {
         setUrl(KUrl(args.value(0).toString()));
     }
+
+    // As we use some part of konqueror libkonq must be added to have translations
+    KGlobal::locale()->insertCatalog("libkonq");
+
 }
 
 void FolderView::init()
