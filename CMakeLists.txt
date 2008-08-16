@@ -21,7 +21,6 @@ set(webkitkde_LIB_SRCS
     kwebpage.cpp
     webpage.cpp
     webkitglobal.cpp
-    webkitpageview.cpp
     searchbar.cpp
     network/knetworkreply.cpp
     network/knetworkaccessmanager.cpp
