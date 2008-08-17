@@ -33,7 +33,7 @@ kde4_add_ui_files(webkitkde_LIB_SRCS
 
 kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
 
-target_link_libraries(webkitkde ${KDE4_KPARTS_LIBS} ${QT_QTWEBKIT_LIBRARY})
+target_link_libraries(webkitkde ${KDE4_KPARTS_LIBS} ${QT_QTWEBKIT_LIBRARY} ${QT_QTUITOOLS_LIBRARY})
 
 set_target_properties(webkitkde PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
