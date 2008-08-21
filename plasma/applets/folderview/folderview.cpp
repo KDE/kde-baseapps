@@ -261,6 +261,8 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
 void FolderView::init()
 {
+    Containment::init();
+
     // We handle the caching ourselves
     setCacheMode(NoCache);
 
