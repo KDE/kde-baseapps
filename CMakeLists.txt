@@ -13,33 +13,33 @@ add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 add_subdirectory(cmake)
 add_subdirectory(includes)
 add_subdirectory(icons)
+add_subdirectory(kdewebkit)
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/kdewebkit/
+)
 
 set(webkitkde_LIB_SRCS
     webkitpart.cpp
-    kwebview.cpp
     webview.cpp
-    kwebpage.cpp
     webpage.cpp
     webkitglobal.cpp
-    searchbar.cpp
-    network/knetworkreply.cpp
-    network/knetworkaccessmanager.cpp
     settings/webkitsettings.cpp
-)
-
-kde4_add_ui_files(webkitkde_LIB_SRCS
-    searchbar.ui
 )
 
 kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
 
-target_link_libraries(webkitkde ${KDE4_KPARTS_LIBS} ${QT_QTWEBKIT_LIBRARY} ${QT_QTUITOOLS_LIBRARY})
+target_link_libraries(webkitkde kdewebkit ${KDE4_KPARTS_LIBS})
 
 set_target_properties(webkitkde PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
 install(TARGETS webkitkde ${INSTALL_TARGETS_DEFAULT_ARGS})
 
-install(FILES webkitkde_export.h webkitpart.h webview.h kwebpage.h kwebview.h DESTINATION ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
+install(FILES
+    webkitkde_export.h
+    webkitpart.h
+    webview.h
+    DESTINATION ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
 
 
 kde4_add_plugin(webkitkdepart webkitpartfactory.cpp)
