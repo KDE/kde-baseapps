@@ -19,19 +19,16 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/kdewebkit/
 )
 
-set(webkitkde_LIB_SRCS
+set(webkitpart_SRCS
     webkitpart.cpp
     webview.cpp
     webpage.cpp
+    webkitpartfactory.cpp
 )
 
-kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
+kde4_add_plugin(webkitkdepart ${webkitpart_SRCS})
 
-target_link_libraries(webkitkde kdewebkit ${KDE4_KPARTS_LIBS})
-
-set_target_properties(webkitkde PROPERTIES VERSION 1.0.0 SOVERSION 1)
-
-install(TARGETS webkitkde ${INSTALL_TARGETS_DEFAULT_ARGS})
+target_link_libraries(webkitkdepart kdewebkit ${KDE4_KPARTS_LIBS})
 
 install(FILES
     webkitkde_export.h
@@ -39,13 +36,7 @@ install(FILES
     webview.h
     DESTINATION ${INCLUDE_INSTALL_DIR}/webkitkde/ COMPONENT Devel)
 
-
-kde4_add_plugin(webkitkdepart webkitpartfactory.cpp)
-
-target_link_libraries(webkitkdepart webkitkde)
-
 install(TARGETS webkitkdepart DESTINATION ${PLUGIN_INSTALL_DIR})
-
 
 install(FILES webkitpart.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 
