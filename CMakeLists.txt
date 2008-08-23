@@ -23,8 +23,6 @@ set(webkitkde_LIB_SRCS
     webkitpart.cpp
     webview.cpp
     webpage.cpp
-    webkitglobal.cpp
-    settings/webkitsettings.cpp
 )
 
 kde4_add_library(webkitkde SHARED ${webkitkde_LIB_SRCS})
