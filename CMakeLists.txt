@@ -28,7 +28,7 @@ set(webkitpart_SRCS
 
 kde4_add_plugin(webkitkdepart ${webkitpart_SRCS})
 
-target_link_libraries(webkitkdepart kdewebkit ${KDE4_KPARTS_LIBS})
+target_link_libraries(webkitkdepart kdewebkit ${KDE4_KPARTS_LIBS} ${QT_QTWEBKIT_LIBRARY})
 
 install(FILES
     webkitkde_export.h
