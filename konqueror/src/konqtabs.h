@@ -36,6 +36,7 @@ class KonqView;
 class KonqViewManager;
 class KonqFrameContainerBase;
 class KonqFrameContainer;
+class KonqTabsStyle;
 class KConfig;
 
 class KonqFrameTabs : public KTabWidget, public KonqFrameContainerBase
@@ -80,6 +81,12 @@ public:
   void moveTabForward(int index);
 
   void setLoading(KonqFrameBase* frame, bool loading);
+  
+  /**
+   * Returns the tab that contains (directly or indirectly) the frame @p frame,
+   * or 0 if the frame is not in the tab widget.
+   */
+  KonqFrameBase* tabContaining(KonqFrameBase* frame) const;
 
 public Q_SLOTS:
   void slotCurrentChanged( QWidget* newPage );
@@ -127,6 +134,7 @@ private:
   bool m_alwaysTabBar;
   bool m_MouseMiddleClickClosesTab;
   int m_closeOtherTabsId;
+  KonqTabsStyle *m_konqTabsStyle;
 
   friend class KonqTabsStyle;
 };

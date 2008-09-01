@@ -57,8 +57,10 @@
 #include "plasma/theme.h"
 #include "plasma/paintutils.h"
 
+#ifdef Q_WS_X11
 #include <QX11Info>
 #include <X11/Xlib.h>
+#endif
 
 #include <limits.h>
 
@@ -511,13 +513,15 @@ QRect FolderView::scrollBackbufferContents()
         h = m_pixmap.height() - dy;
         dirty = QRect(0, 0, m_pixmap.width(), dy);
     }
-
+#ifdef Q_WS_X11
     // Avoid the overhead of creating a QPainter to do the blit.
     Display *dpy = QX11Info::display();
     GC gc = XCreateGC(dpy, m_pixmap.handle(), 0, 0);
     XCopyArea(dpy, m_pixmap.handle(), m_pixmap.handle(), gc, 0, sy, m_pixmap.width(), h, 0, dy);
     XFreeGC(dpy, gc);
-
+#else
+    m_pixmap = m_pixmap.copy(0, sy, m_pixmap.width(), h);
+#endif
     return mapToViewport(dirty.translated(contentsRect().topLeft().toPoint())).toAlignedRect();
 }
 
@@ -577,7 +581,11 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     if (m_url == KUrl("desktop:/")) {
         titleText = i18n("Desktop"); //FIXME: 4.2 make it "Desktop Folder;
     } else if (m_url.isLocalFile() && m_url.path().startsWith(KUrl("~").path())) {
+#ifndef Q_WS_WIN
         titleText = m_url.path().replace(KUrl("~").path(), i18n("Home"));
+#else
+        titleText = m_url.path().replace(QDir::homePath(), i18n("Home"));
+#endif
     } else {
         titleText = m_url.pathOrUrl();
     }

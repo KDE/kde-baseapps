@@ -62,13 +62,8 @@ KonqViewManager::KonqViewManager( KonqMainWindow *mainWindow )
   m_pamProfiles = 0L;
   m_bProfileListDirty = true;
   m_bLoadingProfile = false;
-
-  m_activePartChangedTimer = new QTimer(this);
-  m_activePartChangedTimer->setSingleShot(true);
-
   m_tabContainer = 0;
 
-  connect(m_activePartChangedTimer, SIGNAL(timeout()), this, SLOT( emitActivePartChanged()));
   connect( this, SIGNAL( activePartChanged ( KParts::Part * ) ),
            this, SLOT( slotActivePartChanged ( KParts::Part * ) ) );
 }
@@ -271,7 +266,7 @@ void KonqViewManager::duplicateTab( KonqFrameBase* currentFrame, bool openAfterC
   QString prefix = QString::fromLatin1( currentFrame->frameType() ) + QString::number(0);
   profileGroup.writeEntry( "RootItem", prefix );
   prefix.append( QLatin1Char( '_' ) );
-  KonqFrameBase::Options flags = KonqFrameBase::saveURLs;
+  KonqFrameBase::Options flags = KonqFrameBase::saveHistoryItems;
   currentFrame->saveConfig( profileGroup, prefix, flags, 0L, 0, 1);
 
   loadRootItem( profileGroup, tabContainer(), KUrl(), true, KUrl(), openAfterCurrentPage );
@@ -280,10 +275,6 @@ void KonqViewManager::duplicateTab( KonqFrameBase* currentFrame, bool openAfterC
     m_tabContainer->setCurrentIndex( m_tabContainer->currentIndex () + 1 );
   else
     m_tabContainer->setCurrentIndex( m_tabContainer->count() - 1 );
-
-  KonqFrameBase* duplicatedFrame = dynamic_cast<KonqFrameBase*>(m_tabContainer->currentWidget());
-  if (duplicatedFrame)
-    duplicatedFrame->copyHistory( currentFrame );
 
 #ifdef DEBUG_VIEWMGR
   m_pMainWindow->dumpViewList();
@@ -301,23 +292,18 @@ void KonqViewManager::breakOffTab( KonqFrameBase* currentFrame, const QSize& win
 
   KTemporaryFile tempFile;
   tempFile.open();
-  KConfig config( tempFile.fileName() );
-  KConfigGroup profileGroup( &config, "Profile" );
+  KSharedConfigPtr config = KSharedConfig::openConfig( tempFile.fileName() );
+  KConfigGroup profileGroup( config, "Profile" );
 
   QString prefix = QString::fromLatin1( currentFrame->frameType() ) + QString::number(0);
   profileGroup.writeEntry( "RootItem", prefix );
   prefix.append( QLatin1Char( '_' ) );
-  KonqFrameBase::Options flags = KonqFrameBase::saveURLs;
+  KonqFrameBase::Options flags = KonqFrameBase::saveHistoryItems;
   currentFrame->saveConfig( profileGroup, prefix, flags, 0L, 0, 1);
 
   KonqMainWindow *mainWindow = new KonqMainWindow(KUrl(), m_pMainWindow->xmlFile());
 
-  mainWindow->viewManager()->loadViewProfileFromGroup( profileGroup, QString() );
-
-  KonqFrameTabs * kft = mainWindow->viewManager()->tabContainer();
-  KonqFrameBase *newFrame = dynamic_cast<KonqFrameBase*>(kft->currentWidget());
-  if(newFrame)
-    newFrame->copyHistory( currentFrame );
+  mainWindow->viewManager()->loadViewProfileFromConfig( config, QString(), currentProfile() );
 
   removeTab( currentFrame, false );
 
@@ -417,9 +403,14 @@ void KonqViewManager::reloadAllTabs( )
 
 void KonqViewManager::removeOtherTabs( KonqFrameBase* currentFrame )
 {
+  Q_ASSERT(currentFrame);
+
+  // currentFrame might be a frame contained inside a splitted frame so what we'll
+  // do here is just compare if the frames are inside the same tab.
+  currentFrame = m_tabContainer->tabContaining(currentFrame);
   foreach ( KonqFrameBase* frame, m_tabContainer->childFrameList() )
   {
-    if ( frame && frame != currentFrame )
+    if ( frame && m_tabContainer->tabContaining(frame) != currentFrame )
       removeTab(frame);
   }
 
@@ -961,8 +952,6 @@ void KonqViewManager::setActivePart( KParts::Part *part, bool immediate )
     //if ( part )
     //    kDebug(1202) << part->metaObject()->className() << part->name();
 
-    // Due to the single-shot timer below, we need to also make sure that
-    // the mainwindow also has the right part active already
     KParts::Part* mainWindowActivePart = m_pMainWindow->currentView()
                                          ? m_pMainWindow->currentView()->part() : 0;
     if (part == activePart() && (!immediate || mainWindowActivePart == part))
@@ -993,20 +982,7 @@ void KonqViewManager::setActivePart( KParts::Part *part, bool immediate )
     if (part && part->widget())
         part->widget()->setFocus();
 
-    if (!immediate && reason() != ReasonRightClick) {
-        // We use a 0s single shot timer so that when left-clicking on a part,
-        // we process the mouse event before rebuilding the GUI.
-        // Otherwise, when e.g. dragging icons, the mouse pointer can already
-        // be very far from where it was...
-        // TODO: use a QTimer member var, so that if two conflicting calls to
-        // setActivePart(part,immediate=false) happen, the 1st one gets canceled.
-        m_activePartChangedTimer->start( 0 );
-        // This is not done with right-clicking so that the part is activated before the
-        // popup appears (#75201)
-    } else {
-        m_activePartChangedTimer->stop();
-        emitActivePartChanged();
-    }
+    emitActivePartChanged();
 }
 
 void KonqViewManager::slotActivePartChanged ( KParts::Part *newPart )
@@ -1531,11 +1507,10 @@ KonqMainWindow* KonqViewManager::duplicateWindow()
     tempFile.open();
     KConfig config( tempFile.fileName() );
     KConfigGroup profileGroup( &config, "Profile" );
-    KonqFrameBase::Options flags = KonqFrameBase::saveURLs;
+    KonqFrameBase::Options flags = KonqFrameBase::saveHistoryItems;
     saveViewProfileToGroup(profileGroup, flags);
 
     KonqMainWindow *mainWindow = openSavedWindow(profileGroup);
-    mainWindow->copyHistory( m_pMainWindow->childFrame() );
 #ifndef NDEBUG
     mainWindow->viewManager()->printFullHierarchy();
 #endif

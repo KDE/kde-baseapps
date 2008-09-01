@@ -128,6 +128,7 @@ public:
   /**
    * Removes all, but the specified tab.
    * Also takes care of setting the specified tab as active if the active view was not in this tab
+   * @param tab must exist
    */
   void removeOtherTabs( KonqFrameBase* tab );
 
@@ -399,8 +400,6 @@ private:
   QString m_currentProfileText;
 
     QMap<QString /*display name*/, QString /*path to file*/> m_mapProfileNames;
-
-  QTimer *m_activePartChangedTimer;
 };
 
 #endif

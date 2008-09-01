@@ -133,7 +133,8 @@ KonqFrameTabs::KonqFrameTabs(QWidget* parent, KonqFrameContainerBase* parentCont
     m_pPopupMenu(0),
     m_pSubPopupMenuTab(0),
     m_rightWidget(0), m_leftWidget(0), m_alwaysTabBar(false),
-    m_closeOtherTabsId(0)
+    m_closeOtherTabsId(0),
+    m_konqTabsStyle( new KonqTabsStyle( this ) )
 {
   // Set an object name so the widget style can identify this widget.
   setObjectName("kde_konq_tabwidget");
@@ -142,7 +143,7 @@ KonqFrameTabs::KonqFrameTabs(QWidget* parent, KonqFrameContainerBase* parentCont
 
   // Set the widget style to a forwarding proxy style that removes the tabwidget frame,
   // and draws a tabbar base underneath the tabbar.
-  setStyle(new KonqTabsStyle(this));
+  setStyle(m_konqTabsStyle);
 
   // The base will be drawn on the frame instead of on the tabbar, so it extends across
   // the whole widget.
@@ -225,6 +226,7 @@ KonqFrameTabs::~KonqFrameTabs()
   //kDebug(1202) << "KonqFrameTabs::~KonqFrameTabs() " << this << " - " << className();
   qDeleteAll( m_childFrameList );
   m_childFrameList.clear();
+  delete m_konqTabsStyle;
 }
 
 void KonqFrameTabs::saveConfig( KConfigGroup& config, const QString &prefix, const KonqFrameBase::Options &options,
@@ -408,7 +410,7 @@ void KonqFrameTabs::refreshSubPopupMenuTab()
 {
     m_pSubPopupMenuTab->clear();
     int i=0;
-    m_pSubPopupMenuTab->addAction( KIcon( "reload_all_tabs" ),
+    m_pSubPopupMenuTab->addAction( KIcon( "view-refresh" ),
                                     i18n( "&Reload All Tabs" ),
                                     m_pViewManager->mainWindow(),
                                     SLOT( slotReloadAllTabs() ),
@@ -616,22 +618,20 @@ void KonqFrameTabs::slotCurrentChanged( QWidget* newPage )
     }
 }
 
-#if 0
 /**
  * Returns the index position of the tab that contains (directly or indirectly) the frame @p frame,
  * or -1 if the frame is not in the tab widget.
  */
-int KonqFrameTabs::tabContaining(KonqFrameBase* frame) const
+KonqFrameBase* KonqFrameTabs::tabContaining(KonqFrameBase* frame) const
 {
     KonqFrameBase* frameBase = frame;
     while (frameBase && frameBase->parentContainer() != this)
         frameBase = frameBase->parentContainer();
     if (frameBase)
-        return indexOf(frameBase->asQWidget());
+        return frameBase;
     else
-        return -1;
+        return 0;
 }
-#endif
 
 int KonqFrameTabs::tabWhereActive(KonqFrameBase* frame) const
 {
