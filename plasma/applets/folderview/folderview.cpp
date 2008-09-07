@@ -743,31 +743,34 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     updateTextShadows(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
 
     // Paint the folder title
-    QPen currentPen = painter->pen();
     m_titleHeight = painter->fontMetrics().height();
 
-    QString titleText = m_titleText;
-    titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
-    QColor titleColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
-    QPixmap titlePixmap = Plasma::PaintUtils::shadowText(titleText, 
-                                  titleColor,
-                                  m_delegate->shadowColor(),
-                                  m_delegate->shadowOffset().toPoint());
-    painter->drawPixmap(contentRect.topLeft(), titlePixmap);
+    if (option->exposedRect.x() <= m_titleHeight) {
+        QPen currentPen = painter->pen();
 
-    //Draw underline
-    painter->setPen(Qt::NoPen);
-    QLinearGradient lineGrad(contentRect.topLeft(), contentRect.topRight());
-    QColor lineColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
-    lineColor.setAlphaF(0.8);
-    lineGrad.setColorAt(0.0, lineColor);
-    lineColor.setAlphaF(0.0);
-    lineGrad.setColorAt(1.0, lineColor);
-    QBrush lineBrush(lineGrad);
-    painter->setBrush(lineBrush);
-    painter->drawRect(contentRect.left(), contentRect.top() + m_titleHeight, contentRect.width(), 1);
+        QString titleText = m_titleText;
+        titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
+        QColor titleColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
+        QPixmap titlePixmap = Plasma::PaintUtils::shadowText(titleText, 
+                titleColor,
+                m_delegate->shadowColor(),
+                m_delegate->shadowOffset().toPoint());
+        painter->drawPixmap(contentRect.topLeft(), titlePixmap);
 
-    painter->setPen(currentPen);
+        //Draw underline
+        painter->setPen(Qt::NoPen);
+        QLinearGradient lineGrad(contentRect.topLeft(), contentRect.topRight());
+        QColor lineColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+        lineColor.setAlphaF(0.8);
+        lineGrad.setColorAt(0.0, lineColor);
+        lineColor.setAlphaF(0.0);
+        lineGrad.setColorAt(1.0, lineColor);
+        QBrush lineBrush(lineGrad);
+        painter->setBrush(lineBrush);
+        painter->drawRect(contentRect.left(), contentRect.top() + m_titleHeight, contentRect.width(), 1);
+
+        painter->setPen(currentPen);
+    }
 
     if (!m_layoutValid) {
         layoutItems();
