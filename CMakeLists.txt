@@ -1,6 +1,6 @@
 project(webkitkde)
 
-set(CMAKE_MODULE_PATH
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/kdewebkit/cmake/modules
     ${CMAKE_SOURCE_DIR}/kdenetwork/cmake/modules
     ${CMAKE_SOURCE_DIR}/part/cmake/modules)
