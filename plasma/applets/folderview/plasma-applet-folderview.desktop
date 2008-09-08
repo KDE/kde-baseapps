@@ -62,6 +62,7 @@ Comment[pt]=Mostrar o conteúdo das pastas ('Desktop' por omissão)
 Comment[pt_BR]=Mostrar o conteúdo das pastas ('Desktop' por omissão)
 Comment[sv]=Visa innehåll i kataloger (Desktop är förval)
 Comment[uk]=Показує вміст тек (типово, стільниці)
+Comment[zh_TW]=顯示資料夾內容（預設顯示桌面資料夾）
 Type=Service
 Icon=folder
 X-KDE-ServiceTypes=Plasma/Applet,Plasma/Containment
