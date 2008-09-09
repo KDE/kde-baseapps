@@ -1,12 +1,12 @@
 <ui version="4.0" >
- <class>folderviewConfig</class>
- <widget class="QWidget" name="folderviewConfig" >
+ <class>folderviewFilterConfig</class>
+ <widget class="QWidget" name="folderviewFilterConfig" >
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>592</width>
-    <height>399</height>
+    <width>509</width>
+    <height>375</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -21,51 +21,7 @@
     <height>0</height>
    </size>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_6" >
-   <item>
-    <widget class="QRadioButton" name="showDesktopFolder" >
-     <property name="text" >
-      <string>Show the desktop folder</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QRadioButton" name="showCustomFolder" >
-     <property name="text" >
-      <string>Show a custom folder</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="selectFilesLayout" >
-     <item>
-      <widget class="QLabel" name="selectLabel" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Preferred" hsizetype="Minimum" >
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text" >
-        <string>Select:</string>
-       </property>
-       <property name="wordWrap" >
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="KUrlRequester" name="lineEdit" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Preferred" hsizetype="Expanding" >
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
+  <layout class="QVBoxLayout" name="verticalLayout_2" >
    <item>
     <widget class="QComboBox" name="filterType" >
      <item>
@@ -86,19 +42,6 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_2" >
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0" >
-      <size>
-       <width>20</width>
-       <height>0</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <widget class="QFrame" name="fileFilters" >
      <property name="sizePolicy" >
       <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
@@ -115,14 +58,14 @@
      <property name="lineWidth" >
       <number>0</number>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" >
+     <layout class="QGridLayout" name="gridLayout_3" >
       <property name="margin" >
        <number>0</number>
       </property>
       <property name="spacing" >
        <number>0</number>
       </property>
-      <item row="0" column="0" >
+      <item row="0" column="1" >
        <layout class="QGridLayout" name="mimeTypeLayout" >
         <property name="horizontalSpacing" >
          <number>0</number>
@@ -260,8 +203,6 @@
        </layout>
       </item>
      </layout>
-     <zorder>fileFilters</zorder>
-     <zorder></zorder>
     </widget>
    </item>
   </layout>
@@ -271,12 +212,6 @@
    <class>KLineEdit</class>
    <extends>QLineEdit</extends>
    <header>klineedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>KUrlRequester</class>
-   <extends>QFrame</extends>
-   <header>kurlrequester.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <includes>
