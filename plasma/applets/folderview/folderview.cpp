@@ -277,6 +277,10 @@ void FolderView::init()
     m_font = cg.readEntry("desktopFont", QFont("Sans Serif", 10));
 
     cg = config();
+
+    m_customLabel = cg.readEntry("customLabel", "");
+    m_customIconSize = cg.readEntry("customIconSize", 0);
+
     if (!m_url.isValid()) {
         setUrl(cg.readEntry("url", KUrl(QDir::homePath())));
     } else {
@@ -309,50 +313,64 @@ FolderView::~FolderView()
 
 void FolderView::createConfigurationInterface(KConfigDialog *parent)
 {
-    QWidget *widget = new QWidget;
-    ui.setupUi(widget);
+    QWidget *widgetFilter = new QWidget;
+    QWidget *widgetDisplay = new QWidget;
+    QWidget *widgetLocation = new QWidget;
+    uiFilter.setupUi(widgetFilter);
+    uiDisplay.setupUi(widgetDisplay);
+    uiLocation.setupUi(widgetLocation);
+
     if (m_url == KUrl("desktop:/")) {
-        ui.showDesktopFolder->setChecked(true);
-        ui.selectLabel->setEnabled(false);
-        ui.lineEdit->setEnabled(false);
+        uiLocation.showDesktopFolder->setChecked(true);
+        uiLocation.selectLabel->setEnabled(false);
+        uiLocation.lineEdit->setEnabled(false);
     } else {
-        ui.showCustomFolder->setChecked(true);
-        ui.lineEdit->setUrl(m_url);
+        uiLocation.showCustomFolder->setChecked(true);
+        uiLocation.lineEdit->setUrl(m_url);
     }
 
-    ui.lineEdit->setMode(KFile::Directory); 
-    ui.filterFilesPattern->setText(m_filterFiles);
+    uiLocation.lineEdit->setMode(KFile::Directory);
+    uiFilter.filterFilesPattern->setText(m_filterFiles);
 
-    MimeModel *mimeModel = new MimeModel(ui.filterFilesList);
-    ProxyMimeModel *pMimeModel = new ProxyMimeModel(ui.filterFilesList);
+    MimeModel *mimeModel = new MimeModel(uiFilter.filterFilesList);
+    ProxyMimeModel *pMimeModel = new ProxyMimeModel(uiFilter.filterFilesList);
     pMimeModel->setSourceModel(mimeModel);
-    ui.filterFilesList->setModel(pMimeModel);
+    uiFilter.filterFilesList->setModel(pMimeModel);
 
-    connect(ui.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
+    uiDisplay.edtCustomLabel->setText(m_customLabel);
+    uiDisplay.chkCustomIconSize->setChecked(m_customIconSize != 0);
+    uiDisplay.sbxCustomIconSize->setValue(m_customIconSize);
+    uiDisplay.sbxCustomIconSize->setEnabled(m_customIconSize != 0);
 
-    parent->addPage(widget, parent->windowTitle(), icon());
+    connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
+
+    parent->addPage(widgetLocation, i18n("Location"), "folder");
+    parent->addPage(widgetDisplay, i18n("Display"), "display");
+    parent->addPage(widgetFilter, i18n("Filter"), "view-filter");
+
     parent->setButtons(KDialog::Ok | KDialog::Cancel | KDialog::Apply);
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
-    connect(ui.showCustomFolder, SIGNAL(toggled(bool)), this, SLOT(customFolderToggled(bool)));
-    connect(ui.filterType, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
-    connect(ui.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(ui.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    
+    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), this, SLOT(customFolderToggled(bool)));
+    connect(uiFilter.filterType, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
+    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiDisplay.chkCustomIconSize, SIGNAL(toggled(bool)), this, SLOT(chkCustomIconSizeToggled(bool)));
+
     KConfigGroup cg = config();
     int filter = cg.readEntry("filter", 0);
-    ui.filterType->setCurrentIndex(filter);
+    uiFilter.filterType->setCurrentIndex(filter);
     filterChanged(filter);
-    
+
     QStringList selectedItems = cg.readEntry("mimeFilter", QStringList());
-    
+
     if (selectedItems.count()) {
         for (int i = 0; i < pMimeModel->rowCount(); i++) {
             const QModelIndex index = pMimeModel->index(i, 0);
             const KMimeType *mime = static_cast<KMimeType*>(pMimeModel->mapToSource(index).internalPointer());
             if (selectedItems.contains(mime->name())) {
                 selectedItems.removeAll(mime->name());
-                ui.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
+                uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
             }
         }
     }
@@ -362,33 +380,35 @@ void FolderView::configAccepted()
 {
     KUrl url;
 
-    if (ui.showDesktopFolder->isChecked())
+    if (uiLocation.showDesktopFolder->isChecked()) {
         url = KUrl("desktop:/");
-    else
-        url = ui.lineEdit->url();
+    } else {
+        url = uiLocation.lineEdit->url();
+    }
 
-    if (url.isEmpty() || (url.isLocalFile() && !QFile::exists(url.path())))
+    if (url.isEmpty() || (url.isLocalFile() && !QFile::exists(url.path()))) {
         url = KUrl(QDir::homePath());
+    }
 
     // Now, we have to iterate over all items (not only the filtered ones). For that reason we have
     // to ask the source model, not the proxy model.
     QStringList selectedItems;
-    ProxyMimeModel *proxyModel = static_cast<ProxyMimeModel*>(ui.filterFilesList->model());
+    ProxyMimeModel *proxyModel = static_cast<ProxyMimeModel*>(uiFilter.filterFilesList->model());
     for (int i = 0; i < proxyModel->sourceModel()->rowCount(); i++) {
         const QModelIndex index = proxyModel->sourceModel()->index(i, 0);
         if (index.model()->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) {
             selectedItems << static_cast<KMimeType*>(index.internalPointer())->name();
         }
     }
-    
-    int filterType = ui.filterType->currentIndex();
 
-    if (m_url != url || m_filterFiles != ui.filterFilesPattern->text() || m_filterFilesMimeList != selectedItems ||
-        m_filterType != filterType) {
+    int filterType = uiFilter.filterType->currentIndex();
+
+    if (m_url != url || m_filterFiles != uiFilter.filterFilesPattern->text() ||
+        m_filterFilesMimeList != selectedItems || m_filterType != filterType) {
         m_dirModel->dirLister()->openUrl(url);
-        m_model->setFilterFixedString(ui.filterFilesPattern->text());
+        m_model->setFilterFixedString(uiFilter.filterFilesPattern->text());
         setUrl(url);
-        m_filterFiles = ui.filterFilesPattern->text();
+        m_filterFiles = uiFilter.filterFilesPattern->text();
         m_filterFilesMimeList = selectedItems;
         m_filterType = filterType;
 
@@ -397,7 +417,9 @@ void FolderView::configAccepted()
         cg.writeEntry("filterFiles", m_filterFiles);
         cg.writeEntry("filter", m_filterType);
         cg.writeEntry("mimeFilter", m_filterFilesMimeList);
-        
+        cg.writeEntry("customLabel", m_customLabel);
+        cg.writeEntry("customIconSize", m_customIconSize);
+
         m_model->setMimeTypeFilterList(m_filterFilesMimeList);
         m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
 
@@ -405,10 +427,15 @@ void FolderView::configAccepted()
     }
 }
 
+void FolderView::chkCustomIconSizeToggled(bool checked)
+{
+	uiDisplay.sbxCustomIconSize->setEnabled(checked);
+}
+
 void FolderView::customFolderToggled(bool checked)
 {
-    ui.selectLabel->setEnabled(checked);
-    ui.lineEdit->setEnabled(checked);
+    uiLocation.selectLabel->setEnabled(checked);
+    uiLocation.lineEdit->setEnabled(checked);
 }
 
 void FolderView::fontSettingsChanged()
@@ -968,7 +995,10 @@ void FolderView::setUrl(const KUrl &url)
 {
     m_url = url;
 
-    if (m_url == KUrl("desktop:/")) {
+
+    if (! m_customLabel.isEmpty() ) {
+        m_titleText = m_customLabel;
+    } else if (m_url == KUrl("desktop:/")) {
         m_titleText = i18n("Desktop Folder");
     } else {
         m_titleText = m_url.pathOrUrl();
@@ -1203,15 +1233,19 @@ void FolderView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint
 
 void FolderView::filterChanged(int index)
 {
-    ui.fileFilters->setVisible(index != 0);
+	uiFilter.filterFilesPattern->setEnabled(index != 0);
+	uiFilter.searchMimetype->setEnabled(index != 0);
+	uiFilter.filterFilesList->setEnabled(index != 0);
+	uiFilter.selectAll->setEnabled(index != 0);
+	uiFilter.deselectAll->setEnabled(index != 0);
 }
 
 void FolderView::selectUnselectAll()
 {
-    Qt::CheckState state = sender() == ui.selectAll ? Qt::Checked : Qt::Unchecked;
-    for (int i = 0; i < ui.filterFilesList->model()->rowCount(); i++) {
-        const QModelIndex index = ui.filterFilesList->model()->index(i, 0);
-        ui.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);
+    Qt::CheckState state = sender() == uiFilter.selectAll ? Qt::Checked : Qt::Unchecked;
+    for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
+        const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
+        uiFilter.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);
     }
 }
 
@@ -1682,7 +1716,7 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
 
 QSize FolderView::iconSize() const
 {
-    const int size = KIconLoader::global()->currentSize(KIconLoader::Desktop);
+    const int size = (m_customIconSize != 0) ? m_customIconSize : KIconLoader::global()->currentSize(KIconLoader::Desktop);
     return QSize(size, size);
 }
 

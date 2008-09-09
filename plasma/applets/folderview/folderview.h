@@ -30,7 +30,9 @@
 #include <KMimeType>
 
 #include <plasma/containment.h>
-#include "ui_folderviewConfig.h"
+#include "ui_folderviewFilterConfig.h"
+#include "ui_folderviewDisplayConfig.h"
+#include "ui_folderviewLocationConfig.h"
 
 class KDirModel;
 class KFileItemDelegate;
@@ -83,6 +85,7 @@ private slots:
     void aboutToShowCreateNew();
     void clipboardDataChanged();
     void scrollBarValueChanged(int);
+    void chkCustomIconSizeToggled(bool checked);
 
     // These slots are for KonqPopupMenu
     void copy();
@@ -97,7 +100,7 @@ private slots:
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
-    
+
     void filterChanged(int index);
     void selectUnselectAll();
 
@@ -167,9 +170,13 @@ private:
     QRectF m_viewportRect;
     QPointF m_buttonDownPos;
     QTime m_pressTime;
-    Ui::folderviewConfig ui;
+    Ui::folderviewFilterConfig uiFilter;
+    Ui::folderviewDisplayConfig uiDisplay;
+    Ui::folderviewLocationConfig uiLocation;
     bool m_doubleClick;
     bool m_dragInProgress;
+    QString m_customLabel;
+    int m_customIconSize;
 };
 
 
@@ -182,13 +189,13 @@ class MimeModel : public QStringListModel
 {
 public:
     MimeModel(QObject *parent = 0);
-    
+
     virtual QVariant data(const QModelIndex &index, int role) const;
     virtual Qt::ItemFlags flags(const QModelIndex &index) const;
     virtual QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
     virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-    
+
 private:
     KMimeType::List m_mimetypes;
     QMap<KMimeType*, Qt::CheckState> m_state;
@@ -206,16 +213,16 @@ Q_OBJECT
 
 public:
     ProxyMimeModel(QObject *parent = 0);
-    
+
     virtual void setSourceModel(QAbstractItemModel *sourceModel);
-    
+
 public slots:
     void setFilter(const QString &filter);
-    
+
 protected:
     virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
     virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-    
+
 private:
     QString m_filter;
 };
