@@ -23,6 +23,7 @@
 
 #include <QPersistentModelIndex>
 #include <QSortFilterProxyModel>
+#include <QListView>
 #include <QStyleOption>
 #include <QPointer>
 
@@ -110,6 +111,7 @@ private:
     KUrl::List selectedUrls() const;
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     int columnsForWidth(qreal width) const;
+    int rowsForHeight(qreal height) const;
     void layoutItems();
     void updateScrollBar();
     QRect scrollBackbufferContents();
@@ -161,6 +163,7 @@ private:
     KActionCollection m_actionCollection;
     QVector<ViewItem> m_items;
     int m_columns;
+    int m_rows;
     bool m_layoutValid;
     bool m_layoutBroken;
     QPersistentModelIndex m_hoveredIndex;
@@ -177,6 +180,7 @@ private:
     bool m_dragInProgress;
     QString m_customLabel;
     int m_customIconSize;
+    QListView::Flow m_flow;
 };
 
 
