@@ -1191,13 +1191,14 @@ void FolderView::renameSelectedIcon()
     }
 
     QStyleOptionViewItemV4 option = viewOptions();
-    option.rect = mapToScene(mapFromViewport(rect)).boundingRect().toRect();
+    option.rect = rect.toRect();
 
-    // ### Note that we don't embed the editor in the applet as a
-    // QGraphicsProxyWidget here, because calling setFocus() on the
-    // editor or the proxy doesn't work properly when we do.
-    QWidget *editor = m_delegate->createEditor(view(), option, index);
+    QWidget *editor = m_delegate->createEditor(0, option, index);
+    editor->setAttribute(Qt::WA_NoSystemBackground);
     editor->installEventFilter(m_delegate);
+
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
+    proxy->setWidget(editor);
 
     m_delegate->updateEditorGeometry(editor, option, index);
     m_delegate->setEditorData(editor, index);
