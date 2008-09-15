@@ -465,13 +465,6 @@ void FolderView::themeChanged()
     // have changed
     m_layoutValid = false;
 
-    // Update the scrollbar geometry
-    QRectF r = QRectF(contentsRect().right() - m_scrollBar->geometry().width(), contentsRect().top(),
-                      m_scrollBar->geometry().width(), contentsRect().height());
-    if (m_scrollBar->geometry() != r) {
-        m_scrollBar->setGeometry(r);
-    }
-
     markEverythingDirty();
 }
 
@@ -586,6 +579,14 @@ QRectF FolderView::mapFromViewport(const QRectF &rect) const
 
 void FolderView::layoutItems()
 {
+    // Update the scrollbar geometry.
+    // 10 is a small vertical space
+    QRectF r = QRectF(contentsRect().right() - m_scrollBar->geometry().width(), contentsRect().top() + m_titleHeight + KDialog::spacingHint(),
+                      m_scrollBar->geometry().width(), contentsRect().height() - m_titleHeight - KDialog::spacingHint());
+    if (m_scrollBar->geometry() != r) {
+        m_scrollBar->setGeometry(r);
+    }
+
     QStyleOptionViewItemV4 option = viewOptions();
     m_items.resize(m_model->rowCount());
 
@@ -975,11 +976,6 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
 
     if (constraints & Plasma::SizeConstraint)
     {
-        // Update the scrollbar geometry
-        QRectF r = QRectF(contentsRect().right() - m_scrollBar->geometry().width(), contentsRect().top(),
-                          m_scrollBar->geometry().width(), contentsRect().height());
-        m_scrollBar->setGeometry(r);
-
         int maxWidth = contentsRect().width() - m_scrollBar->geometry().width() - 10;
         if (columnsForWidth(maxWidth) != m_columns) {
             // The scrollbar range will be updated after the re-layout
