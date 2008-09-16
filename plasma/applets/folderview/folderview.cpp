@@ -842,7 +842,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
 
         // Clear the dirty region
         p.setCompositionMode(QPainter::CompositionMode_Source);
-        p.fillRect(mapToViewport(contentRect), Qt::transparent);
+        p.fillRect(mapToViewport(contentRect).toAlignedRect(), Qt::transparent);
         p.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
         for (int i = 0; i < m_items.size(); i++)
