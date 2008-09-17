@@ -112,6 +112,8 @@ private:
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     int columnsForWidth(qreal width) const;
     int rowsForHeight(qreal height) const;
+    QPoint nextGridPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
+    QPoint findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
     void layoutItems();
     void updateScrollBar();
     QRect scrollBackbufferContents();
@@ -181,6 +183,7 @@ private:
     QString m_customLabel;
     int m_customIconSize;
     QListView::Flow m_flow;
+    QPoint m_lastDeletedPos;
 };
 
 

@@ -474,11 +474,41 @@ void FolderView::themeChanged()
 void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
-    Q_UNUSED(first)
-    Q_UNUSED(last)
 
-    m_layoutValid = false;
-    update();
+    if (!m_layoutBroken) {
+        m_layoutValid = false;
+        update();
+    } else {
+        const QStyleOptionViewItemV4 option = viewOptions();
+        const QRect cr = contentsRect().toRect();
+        const QSize grid = gridSize();
+        QPoint pos = QPoint();
+
+        m_items.insert(first, last - first + 1, ViewItem());
+
+        // If a single item was inserted and we have a saved position from a deleted file,
+        // reuse that position.
+        if (first == last && !m_lastDeletedPos.isNull()) {
+            const QModelIndex index = m_model->index(first, 0);
+            const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+            m_items[first].rect = QRect(m_lastDeletedPos.x() + (grid.width() - size.width()) / 2,
+                                        m_lastDeletedPos.y(), size.width(), size.height());
+            markAreaDirty(m_items[first].rect);
+            m_lastDeletedPos = QPoint();
+            return;
+        }
+
+        // Lay out the newly inserted files 
+        for (int i = first; i <= last; i++) {
+            const QModelIndex index = m_model->index(i, 0);
+            const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+            pos = findNextEmptyPosition(pos, grid, cr);
+            m_items[i].rect = QRect(pos.x() + (grid.width() - size.width()) / 2, pos.y(),
+                                    size.width(), size.height());
+            markAreaDirty(m_items[i].rect);
+        }
+        updateScrollBar();
+    }
 }
 
 void FolderView::rowsRemoved(const QModelIndex &parent, int first, int last)
@@ -491,6 +521,14 @@ void FolderView::rowsRemoved(const QModelIndex &parent, int first, int last)
     } else {
         for (int i = first; i <= last; i++) {
             markAreaDirty(m_items[i].rect);
+        }
+        // When a single item is removed, we'll save the position and use it for the next new item.
+        // The reason for this is that when a file is renamed, it will first be removed from the view
+        // and then reinserted.
+        if (first == last) {
+            const QSize size = gridSize();
+            m_lastDeletedPos.rx() = m_items[first].rect.x() - (size.width() - m_items[first].rect.width()) / 2;
+            m_lastDeletedPos.ry() = m_items[first].rect.y();
         }
         m_items.remove(first, last - first + 1);
     }
@@ -589,6 +627,55 @@ QRectF FolderView::mapFromViewport(const QRectF &rect) const
     return rect.translated(0, -m_scrollBar->value());
 }
 
+QPoint inline FolderView::nextGridPosition(const QPoint &lastPos, const QSize &grid, const QRect &contentRect) const
+{
+    int spacing = 10;
+    int margin = 10;
+
+    if (lastPos.isNull()) {
+        return QPoint(contentRect.left() + margin, contentRect.top() + m_titleHeight + margin);
+    }
+
+    QPoint pos = lastPos;
+
+    if (m_flow == QListView::LeftToRight) {
+        pos.rx() += grid.width() + spacing;
+        if ((pos.x() + grid.width()) > (contentRect.right() - m_scrollBar->geometry().width() - margin)) {
+            pos.ry() += grid.height() + spacing;
+            pos.rx() = contentRect.left() + margin;
+        }
+    } else {
+        pos.ry() += grid.height() + spacing;
+        if ((pos.y() + grid.height()) > (contentRect.bottom() - margin)) {
+            pos.rx() += grid.width() + spacing;
+            pos.ry() = contentRect.top() + m_titleHeight + margin;
+        }
+    }
+
+    return pos;
+}
+
+QPoint FolderView::findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const
+{
+    QPoint pos = prevPos;
+    bool done = false;
+
+    while (!done)
+    {
+        done = true;
+        pos = nextGridPosition(pos, gridSize, contentRect);
+        const QRect r(pos, gridSize);
+        for (int i = 0; i < m_items.count(); i++) {
+            if (m_items.at(i).rect.intersects(r)) {
+                done = false;
+                break;
+            }
+        }
+    }
+
+    return pos;
+}
+
 void FolderView::layoutItems()
 {
     // Update the scrollbar geometry.
@@ -602,49 +689,29 @@ void FolderView::layoutItems()
     QStyleOptionViewItemV4 option = viewOptions();
     m_items.resize(m_model->rowCount());
 
-    const QRectF rect = contentsRect();
-    int spacing = 10;
+    const QRect rect = contentsRect().toRect();
     int margin = 10;
-    int x = rect.x() + margin; 
-    int y = rect.y() + margin + m_titleHeight;
 
     QSize grid = gridSize();
-    int maxWidth = rect.width() - m_scrollBar->geometry().width() - margin;
-    int maxHeight = rect.height() - m_titleHeight - margin;
-    int maxColumns = columnsForWidth(maxWidth);
-    int maxRows = rowsForHeight(maxHeight);
-    int column = 0;
-    int row = 0;
+    int maxWidth = rect.width() - m_scrollBar->geometry().width() - 2 * margin;
+    int maxHeight = rect.height() - m_titleHeight - 2 * margin;
+    m_columns = columnsForWidth(maxWidth);
+    m_rows = rowsForHeight(maxHeight);
 
     m_delegate->setMaximumSize(grid);
 
+    QPoint pos = QPoint();
+
     for (int i = 0; i < m_items.size(); i++) {
         const QModelIndex index = m_model->index(i, 0);
-        QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+        const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
 
-        QPoint pos(x + (grid.width() - size.width()) / 2, y);
-        m_items[i].rect = QRect(pos, size);
-
-        if (m_flow == QListView::LeftToRight) {
-            x += grid.width() + spacing;
-            if (++column >= maxColumns) {
-                y += grid.height() + spacing;
-                column = 0;
-                x = rect.x() + margin;
-            }
-        } else {
-            y += grid.height() + spacing;
-            if (++row >= maxRows) {
-                x += grid.width() + spacing;
-                row = 0;
-                y = rect.y() + margin;
-            }
-        }
+        pos = nextGridPosition(pos, grid, rect);
+        m_items[i].rect = QRect(pos.x() + (grid.width() - size.width()) / 2, pos.y(),
+                                size.width(), size.height());
     }
 
     updateScrollBar();
-    m_columns = maxColumns;
-    m_rows = maxRows;
     m_layoutValid = true;
     m_layoutBroken = false;
     m_dirtyRegion = QRegion(mapToViewport(rect).toAlignedRect());
