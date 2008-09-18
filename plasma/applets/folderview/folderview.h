@@ -98,6 +98,7 @@ private slots:
     void moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers);
     void deleteSelectedIcons();
     void undoTextChanged(const QString &text);
+    void toggleIconsLocked(bool locked);
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
@@ -180,6 +181,7 @@ private:
     Ui::folderviewLocationConfig uiLocation;
     bool m_doubleClick;
     bool m_dragInProgress;
+    bool m_iconsLocked;
     QString m_customLabel;
     int m_customIconSize;
     QListView::Flow m_flow;

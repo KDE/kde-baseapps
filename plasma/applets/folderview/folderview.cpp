@@ -303,6 +303,7 @@ void FolderView::init()
     m_dirModel->setDirLister(lister);
 
     m_flow = isContainment() ? QListView::TopToBottom : QListView::LeftToRight;
+    m_iconsLocked = cg.readEntry("iconsLocked", false);
 
     createActions();
 
@@ -1167,10 +1168,25 @@ void FolderView::createActions()
     m_actionCollection.addAction("trash", trash);
     m_actionCollection.addAction("del", del);
 
-    // Create the new menu
     if (KAuthorized::authorize("editable_desktop_icons")) {
+        KAction *lockIcons = new KAction(i18nc("Icons on the desktop", "Lock in Place"), this);
+        lockIcons->setCheckable(true);
+        lockIcons->setChecked(m_iconsLocked);
+        connect(lockIcons, SIGNAL(toggled(bool)), SLOT(toggleIconsLocked(bool)));
+
+        QMenu *iconsMenu = new QMenu;
+        iconsMenu->addAction(lockIcons);
+
+        QAction *iconsMenuAction = new KAction(i18n("Icons"), this);
+        iconsMenuAction->setIcon(KIcon("preferences-desktop-icons"));
+        iconsMenuAction->setMenu(iconsMenu);
+
+        // Create the new menu
         m_newMenu = new KNewMenu(&m_actionCollection, view(), "new_menu");
         connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
+ 
+        m_actionCollection.addAction("lock_icons", lockIcons);
+        m_actionCollection.addAction("icons_menu", iconsMenuAction);
     }
 
     // Note: We have to create our own action collection, because the one Plasma::Applet
@@ -1203,6 +1219,14 @@ QList<QAction*> FolderView::contextualActions()
 
         actions.append(m_actionCollection.action("undo"));
         actions.append(m_actionCollection.action("paste"));
+ 
+        if (QAction *iconsMenu = m_actionCollection.action("icons_menu")) {
+            QAction *separator = new QAction(this);
+            separator->setSeparator(true);
+
+            actions.append(separator);
+            actions.append(iconsMenu);
+        }
 
         QAction *separator = new QAction(this);
         separator->setSeparator(true);
@@ -1297,6 +1321,13 @@ void FolderView::renameSelectedIcon()
     editor->setFocus();
 
     m_editorIndex = index;
+}
+
+void FolderView::toggleIconsLocked(bool locked)
+{
+    m_iconsLocked = locked;
+    config().writeEntry("iconsLocked", locked);
+    emit configNeedsSaving();
 }
 
 void FolderView::commitData(QWidget *editor)
@@ -1720,7 +1751,7 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // so instead of moving/copying/linking the dropped URL's to the folder,
     // we'll move the items in the view.
     const QPoint delta = (mapToViewport(event->pos()) - m_buttonDownPos).toPoint();
-    if (delta.isNull()) {
+    if (delta.isNull() || m_iconsLocked) {
         return;
     }
 
