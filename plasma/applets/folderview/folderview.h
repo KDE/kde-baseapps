@@ -99,6 +99,7 @@ private slots:
     void deleteSelectedIcons();
     void undoTextChanged(const QString &text);
     void toggleIconsLocked(bool locked);
+    void toggleAlignToGrid(bool align);
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
@@ -116,6 +117,8 @@ private:
     QPoint nextGridPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
     QPoint findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
     void layoutItems();
+    void alignIconsToGrid();
+    void doLayoutSanityCheck();
     void updateScrollBar();
     QRect scrollBackbufferContents();
     void markAreaDirty(const QRect &rect);
@@ -182,6 +185,7 @@ private:
     bool m_doubleClick;
     bool m_dragInProgress;
     bool m_iconsLocked;
+    bool m_alignToGrid;
     QString m_customLabel;
     int m_customIconSize;
     QListView::Flow m_flow;

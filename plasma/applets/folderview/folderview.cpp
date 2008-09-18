@@ -304,6 +304,7 @@ void FolderView::init()
 
     m_flow = isContainment() ? QListView::TopToBottom : QListView::LeftToRight;
     m_iconsLocked = cg.readEntry("iconsLocked", false);
+    m_alignToGrid = cg.readEntry("alignToGrid", false);
 
     createActions();
 
@@ -716,6 +717,58 @@ void FolderView::layoutItems()
     m_layoutValid = true;
     m_layoutBroken = false;
     m_dirtyRegion = QRegion(mapToViewport(rect).toAlignedRect());
+}
+
+void FolderView::alignIconsToGrid()
+{
+    int margin = 10;
+    int spacing = 10;
+    const QRect cr = contentsRect().toRect();
+    const QSize size = gridSize() + QSize(spacing, spacing);
+    int topMargin = margin + cr.top() + m_titleHeight;
+    int leftMargin = margin + cr.left();
+    int vOffset = topMargin + size.height() / 2;
+    int hOffset = leftMargin + size.width() / 2;
+    bool layoutChanged = false;
+
+    for (int i = 0; i < m_items.size(); i++) {
+        const QPoint center = m_items[i].rect.center();
+        const int col = qRound((center.x() - hOffset) / qreal(size.width()));
+        const int row = qRound((center.y() - vOffset) / qreal(size.height()));
+
+        const QPoint pos(leftMargin + col * size.width() + (size.width() - m_items[i].rect.width() - spacing) / 2,
+                         topMargin + row * size.height());
+
+        if (pos != m_items[i].rect.topLeft()) {
+            m_items[i].rect.moveTo(pos);
+            layoutChanged = true;
+        }
+    }
+
+    if (layoutChanged) {
+        doLayoutSanityCheck();
+        updateScrollBar();
+        markEverythingDirty();
+        m_layoutBroken = true;
+    }
+}
+
+void FolderView::doLayoutSanityCheck()
+{
+    // Make sure that the distance from the top of the viewport to the
+    // topmost item is 10 pixels.
+    int minY = INT_MAX;
+    for (int i = 0; i < m_items.size(); i++) {
+        minY = qMin(minY, m_items[i].rect.y());
+    }
+
+    int topMargin = contentsRect().top() + 10 + m_titleHeight;
+    if (minY != topMargin) {
+        int delta = topMargin - minY;
+        for (int i = 0; i < m_items.size(); i++) {
+            m_items[i].rect.translate(0, delta);
+        }
+    }
 }
 
 void FolderView::updateScrollBar()
@@ -1169,12 +1222,18 @@ void FolderView::createActions()
     m_actionCollection.addAction("del", del);
 
     if (KAuthorized::authorize("editable_desktop_icons")) {
+        KAction *alignToGrid = new KAction(i18n("Align to Grid"), this);
+        alignToGrid->setCheckable(true);
+        alignToGrid->setChecked(m_alignToGrid);
+        connect(alignToGrid, SIGNAL(toggled(bool)), SLOT(toggleAlignToGrid(bool)));
+
         KAction *lockIcons = new KAction(i18nc("Icons on the desktop", "Lock in Place"), this);
         lockIcons->setCheckable(true);
         lockIcons->setChecked(m_iconsLocked);
         connect(lockIcons, SIGNAL(toggled(bool)), SLOT(toggleIconsLocked(bool)));
 
         QMenu *iconsMenu = new QMenu;
+        iconsMenu->addAction(alignToGrid);
         iconsMenu->addAction(lockIcons);
 
         QAction *iconsMenuAction = new KAction(i18n("Icons"), this);
@@ -1184,8 +1243,9 @@ void FolderView::createActions()
         // Create the new menu
         m_newMenu = new KNewMenu(&m_actionCollection, view(), "new_menu");
         connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
- 
+
         m_actionCollection.addAction("lock_icons", lockIcons);
+        m_actionCollection.addAction("auto_align", alignToGrid);
         m_actionCollection.addAction("icons_menu", iconsMenuAction);
     }
 
@@ -1327,6 +1387,18 @@ void FolderView::toggleIconsLocked(bool locked)
 {
     m_iconsLocked = locked;
     config().writeEntry("iconsLocked", locked);
+    emit configNeedsSaving();
+}
+
+void FolderView::toggleAlignToGrid(bool align)
+{
+    m_alignToGrid = align;
+
+    if (align) {
+        alignIconsToGrid();
+    }
+
+    config().writeEntry("alignToGrid", align);
     emit configNeedsSaving();
 }
 
@@ -1750,9 +1822,22 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // If we get to this point, the drag was started from within the applet,
     // so instead of moving/copying/linking the dropped URL's to the folder,
     // we'll move the items in the view.
-    const QPoint delta = (mapToViewport(event->pos()) - m_buttonDownPos).toPoint();
+    QPoint delta = (mapToViewport(event->pos()) - m_buttonDownPos).toPoint();
     if (delta.isNull() || m_iconsLocked) {
         return;
+    }
+
+    // If this option is set, we'll assume the dragged icons were aligned
+    // to the grid before the drag started, and just adjust the delta we use
+    // to move all of them.
+    if (m_alignToGrid) {
+        const QSize size = gridSize() + QSize(10, 10);
+        if ((qAbs(delta.x()) < size.width() / 2) && (qAbs(delta.y()) < size.height() / 2)) {
+            return;
+        }
+
+        delta.rx() = qRound(delta.x() / qreal(size.width()))  * size.width();
+        delta.ry() = qRound(delta.y() / qreal(size.height())) * size.height();
     }
 
     foreach (const QUrl &url, event->mimeData()->urls()) {
@@ -1762,21 +1847,8 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
         }
     }
 
-    // Make sure that the distance from the top of the viewport to the
-    // topmost item is 10 pixels.
-    int minY = INT_MAX;
-    for (int i = 0; i < m_items.size(); i++) {
-        minY = qMin(minY, m_items[i].rect.y());
-    }
-
-    int topMargin = contentsRect().top() + 10 + m_titleHeight;
-    if (minY != topMargin) {
-        int delta = topMargin - minY;
-        for (int i = 0; i < m_items.size(); i++) {
-            m_items[i].rect.translate(0, delta);
-        }
-    }
-
+    // Make sure no icons have negative coordinates etc.
+    doLayoutSanityCheck();
     updateScrollBar();
     markEverythingDirty();
 
