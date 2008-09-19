@@ -37,25 +37,29 @@ public:
 
     ProxyModel(QObject *parent = 0);
     ~ProxyModel();
-    
+
     void setFilterMode(FilterMode filterMode);
     FilterMode filterMode() const;
-    
+
     void setMimeTypeFilterList(const QStringList &mimeList);
     const QStringList &mimeTypeFilterList() const;
-    
+
+    void setSortDirectoriesFirst(bool enable);
+    bool sortDirectoriesFirst() const;
+
     QModelIndex indexForUrl(const KUrl &url) const;
     KFileItem itemForIndex(const QModelIndex &index) const;
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
-    
+
     static FilterMode filterModeFromInt(int filterMode);
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
-    
+
 private:
     FilterMode m_filterMode;
     QStringList m_mimeList;
+    bool m_sortDirsFirst;
 };
 
 #endif

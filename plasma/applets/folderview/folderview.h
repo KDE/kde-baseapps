@@ -100,6 +100,7 @@ private slots:
     void undoTextChanged(const QString &text);
     void toggleIconsLocked(bool locked);
     void toggleAlignToGrid(bool align);
+    void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
 
     void commitData(QWidget *editor);
@@ -190,6 +191,7 @@ private:
     bool m_dragInProgress;
     bool m_iconsLocked;
     bool m_alignToGrid;
+    bool m_sortDirsFirst;
     QString m_customLabel;
     int m_customIconSize;
     QListView::Flow m_flow;

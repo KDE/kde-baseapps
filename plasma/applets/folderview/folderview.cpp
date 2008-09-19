@@ -295,7 +295,9 @@ void FolderView::init()
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
 
+    m_sortDirsFirst = cg.readEntry("sortDirsFirst", true);
     m_sortColumn = cg.readEntry("sortColumn", int(KDirModel::Name));
+    m_model->setSortDirectoriesFirst(m_sortDirsFirst);
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
     KDirLister *lister = new KDirLister(this);
@@ -1246,11 +1248,18 @@ void FolderView::createActions()
         sortByType->setCheckable(true);
         sortByDate->setCheckable(true);
 
+        KAction *dirsFirst = new KAction(i18nc("Sort icons", "Directories First"), this);
+        dirsFirst->setCheckable(true);
+        dirsFirst->setChecked(m_sortDirsFirst);
+        connect(dirsFirst, SIGNAL(toggled(bool)), SLOT(toggleDirectoriesFirst(bool)));
+
         QMenu *sortMenu = new QMenu(i18n("Sort Icons"));
         sortMenu->addAction(sortByName);
         sortMenu->addAction(sortBySize);
         sortMenu->addAction(sortByType);
         sortMenu->addAction(sortByDate);
+        sortMenu->addSeparator();
+        sortMenu->addAction(dirsFirst);
 
         QMenu *iconsMenu = new QMenu;
         iconsMenu->addMenu(sortMenu);
@@ -1429,6 +1438,19 @@ void FolderView::toggleAlignToGrid(bool align)
     emit configNeedsSaving();
 }
 
+void FolderView::toggleDirectoriesFirst(bool enable)
+{
+    m_sortDirsFirst = enable;
+
+    m_model->setSortDirectoriesFirst(m_sortDirsFirst);
+    if (m_sortColumn != -1) {
+        m_model->invalidate();
+    }
+
+    config().writeEntry("sortDirsFirst", m_sortDirsFirst);
+    emit configNeedsSaving();
+}
+
 void FolderView::sortingChanged(QAction *action)
 {
     int column = KDirModel::Name;
@@ -1444,9 +1466,9 @@ void FolderView::sortingChanged(QAction *action)
     }
 
     if (column != m_sortColumn) {
+        m_model->invalidate();
         m_model->sort(column, Qt::AscendingOrder);
         m_sortColumn = column;
-        m_layoutValid = false;
         m_layoutBroken = false;
         config().writeEntry("sortColumn", m_sortColumn);
         emit configNeedsSaving();

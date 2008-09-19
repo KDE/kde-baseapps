@@ -25,7 +25,7 @@
 
 
 ProxyModel::ProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
+    : QSortFilterProxyModel(parent), m_sortDirsFirst(true)  
 {
 }
 
@@ -55,6 +55,16 @@ const QStringList &ProxyModel::mimeTypeFilterList() const
     return m_mimeList;
 }
 
+void ProxyModel::setSortDirectoriesFirst(bool enable)
+{
+    m_sortDirsFirst = enable;
+}
+
+bool ProxyModel::sortDirectoriesFirst() const
+{
+    return m_sortDirsFirst;
+}
+
 QModelIndex ProxyModel::indexForUrl(const KUrl &url) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
@@ -74,11 +84,14 @@ bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) con
     const KFileItem item2 = dirModel->itemForIndex(right);
 
     // Sort directories first
-    if (item1.isDir() && !item2.isDir())
-        return true;
-
-    if (!item1.isDir() && item2.isDir())
-        return false;
+    if (m_sortDirsFirst) {
+        if (item1.isDir() && !item2.isDir()) {
+            return true;
+        }
+        if (!item1.isDir() && item2.isDir()) {
+            return false;
+        }
+    }
 
     const QString name1 = dirModel->data(left).toString();
     const QString name2 = dirModel->data(right).toString();
