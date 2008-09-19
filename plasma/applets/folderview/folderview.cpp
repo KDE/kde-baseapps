@@ -1036,9 +1036,9 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     updateTextShadows(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
 
     // Paint the folder title
-    m_titleHeight = painter->fontMetrics().height();
+    m_titleHeight = isContainment() ? 0 : painter->fontMetrics().height();
 
-    if (option->exposedRect.x() <= m_titleHeight) {
+    if (m_titleHeight > 0 && option->exposedRect.x() <= m_titleHeight) {
         QPen currentPen = painter->pen();
 
         QString titleText = m_titleText;
