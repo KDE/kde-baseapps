@@ -80,7 +80,10 @@ bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) con
     if (!item1.isDir() && item2.isDir())
         return false;
 
-    return KStringHandler::naturalCompare(item1.name(), item2.name(), Qt::CaseInsensitive) < 0;
+    const QString name1 = dirModel->data(left).toString();
+    const QString name2 = dirModel->data(right).toString();
+
+    return KStringHandler::naturalCompare(name1, name2, Qt::CaseInsensitive) < 0;
 }
 
 ProxyModel::FilterMode ProxyModel::filterModeFromInt(int filterMode)

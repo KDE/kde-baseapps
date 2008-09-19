@@ -233,7 +233,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     m_model->setSourceModel(m_dirModel);
     m_model->setSortLocaleAware(true);
     m_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    m_model->sort(0, Qt::AscendingOrder);
 
     connect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(rowsInserted(QModelIndex,int,int)));
     connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(rowsRemoved(QModelIndex,int,int)));
@@ -295,6 +294,9 @@ void FolderView::init()
 
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
+
+    m_sortColumn = cg.readEntry("sortColumn", int(KDirModel::Name));
+    m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
     KDirLister *lister = new KDirLister(this);
     lister->openUrl(m_url);
@@ -750,6 +752,7 @@ void FolderView::alignIconsToGrid()
         updateScrollBar();
         markEverythingDirty();
         m_layoutBroken = true;
+        updateSortActionsState();
     }
 }
 
@@ -1232,7 +1235,26 @@ void FolderView::createActions()
         lockIcons->setChecked(m_iconsLocked);
         connect(lockIcons, SIGNAL(toggled(bool)), SLOT(toggleIconsLocked(bool)));
 
+        m_sortingGroup = new QActionGroup(this);
+        connect(m_sortingGroup, SIGNAL(triggered(QAction*)), SLOT(sortingChanged(QAction*)));
+        QAction *sortByName = m_sortingGroup->addAction(i18nc("Sort icons", "By Name"));
+        QAction *sortBySize = m_sortingGroup->addAction(i18nc("Sort icons", "By Size"));
+        QAction *sortByType = m_sortingGroup->addAction(i18nc("Sort icons", "By Type"));
+        QAction *sortByDate = m_sortingGroup->addAction(i18nc("Sort icons", "By Date"));
+        sortByName->setCheckable(true);
+        sortBySize->setCheckable(true);
+        sortByType->setCheckable(true);
+        sortByDate->setCheckable(true);
+
+        QMenu *sortMenu = new QMenu(i18n("Sort Icons"));
+        sortMenu->addAction(sortByName);
+        sortMenu->addAction(sortBySize);
+        sortMenu->addAction(sortByType);
+        sortMenu->addAction(sortByDate);
+
         QMenu *iconsMenu = new QMenu;
+        iconsMenu->addMenu(sortMenu);
+        iconsMenu->addSeparator();
         iconsMenu->addAction(alignToGrid);
         iconsMenu->addAction(lockIcons);
 
@@ -1247,6 +1269,11 @@ void FolderView::createActions()
         m_actionCollection.addAction("lock_icons", lockIcons);
         m_actionCollection.addAction("auto_align", alignToGrid);
         m_actionCollection.addAction("icons_menu", iconsMenuAction);
+        m_actionCollection.addAction("sort_name", sortByName);
+        m_actionCollection.addAction("sort_size", sortBySize);
+        m_actionCollection.addAction("sort_type", sortByType);
+        m_actionCollection.addAction("sort_date", sortByDate);
+        updateSortActionsState();
     }
 
     // Note: We have to create our own action collection, because the one Plasma::Applet
@@ -1400,6 +1427,59 @@ void FolderView::toggleAlignToGrid(bool align)
 
     config().writeEntry("alignToGrid", align);
     emit configNeedsSaving();
+}
+
+void FolderView::sortingChanged(QAction *action)
+{
+    int column = KDirModel::Name;
+
+    if (action == m_actionCollection.action("sort_name")) {
+        column = KDirModel::Name;
+    } else if (action == m_actionCollection.action("sort_size")) {
+        column = KDirModel::Size;
+    } else if (action == m_actionCollection.action("sort_type")) {
+        column = KDirModel::Type;
+    } else if (action == m_actionCollection.action("sort_date")) {
+        column = KDirModel::ModifiedTime;
+    }
+
+    if (column != m_sortColumn) {
+        m_model->sort(column, Qt::AscendingOrder);
+        m_sortColumn = column;
+        m_layoutValid = false;
+        m_layoutBroken = false;
+        config().writeEntry("sortColumn", m_sortColumn);
+        emit configNeedsSaving();
+    }
+}
+
+void FolderView::updateSortActionsState()
+{
+    if (m_sortColumn != -1 && m_layoutBroken) {
+        foreach (QAction *action, m_sortingGroup->actions()) {
+            action->setChecked(false);
+        }
+        m_sortColumn = -1;
+        config().writeEntry("sortColumn", m_sortColumn);
+        emit configNeedsSaving();
+        return;
+    }
+
+    switch (m_sortColumn)
+    {
+    case KDirModel::Name:
+        m_actionCollection.action("sort_name")->setChecked(true);
+        break;
+    case KDirModel::Size:
+        m_actionCollection.action("sort_size")->setChecked(true);
+        break;
+    case KDirModel::Type:
+        m_actionCollection.action("sort_type")->setChecked(true);
+        break;
+    case KDirModel::ModifiedTime:
+        m_actionCollection.action("sort_date")->setChecked(true);
+        break;
+    }
 }
 
 void FolderView::commitData(QWidget *editor)
@@ -1853,6 +1933,7 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     markEverythingDirty();
 
     m_layoutBroken = true;
+    updateSortActionsState();
 }
 
 // pos is the position where the mouse was clicked in the applet.

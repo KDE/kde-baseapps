@@ -100,6 +100,7 @@ private slots:
     void undoTextChanged(const QString &text);
     void toggleIconsLocked(bool locked);
     void toggleAlignToGrid(bool align);
+    void sortingChanged(QAction *action);
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
@@ -110,6 +111,7 @@ private slots:
 private:
     void setUrl(const KUrl &url);
     void createActions();
+    void updateSortActionsState();
     KUrl::List selectedUrls() const;
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     int columnsForWidth(qreal width) const;
@@ -167,9 +169,11 @@ private:
     QFont m_font;
     QPointer<KNewMenu> m_newMenu;
     KActionCollection m_actionCollection;
+    QActionGroup *m_sortingGroup;
     QVector<ViewItem> m_items;
     int m_columns;
     int m_rows;
+    int m_sortColumn;
     bool m_layoutValid;
     bool m_layoutBroken;
     QPersistentModelIndex m_hoveredIndex;
