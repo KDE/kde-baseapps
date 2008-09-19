@@ -216,6 +216,8 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
       m_rows(0),
       m_layoutValid(false),
       m_layoutBroken(false),
+      m_initialListing(true),
+      m_positionsLoaded(false),
       m_doubleClick(false),
       m_dragInProgress(false)
 {
@@ -301,6 +303,7 @@ void FolderView::init()
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
     KDirLister *lister = new KDirLister(this);
+    connect(lister, SIGNAL(completed()), SLOT(listingCompleted()));
     lister->openUrl(m_url);
 
     m_model->setFilterFixedString(m_filterFiles);
@@ -318,6 +321,16 @@ void FolderView::init()
 FolderView::~FolderView()
 {
     delete m_newMenu;
+}
+
+void FolderView::saveState(KConfigGroup &config) const
+{
+    Q_UNUSED(config)
+
+    if (m_delayedSaveTimer.isActive()) {
+        //m_delayedSaveTimer.stop();  // Can't stop the timer since this is a const method
+        saveIconPositions();
+    }
 }
 
 void FolderView::createConfigurationInterface(KConfigDialog *parent)
@@ -414,6 +427,7 @@ void FolderView::configAccepted()
 
     if (m_url != url || m_filterFiles != uiFilter.filterFilesPattern->text() ||
         m_filterFilesMimeList != selectedItems || m_filterType != filterType) {
+        m_initialListing = true;
         m_dirModel->dirLister()->openUrl(url);
         m_model->setFilterFixedString(uiFilter.filterFilesPattern->text());
         setUrl(url);
@@ -481,7 +495,12 @@ void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
 
-    if (!m_layoutBroken) {
+    if (!m_positionsLoaded) {
+        loadIconPositions();
+        m_positionsLoaded = true;
+    }
+
+    if (!m_layoutBroken || m_initialListing) {
         m_layoutValid = false;
         update();
     } else {
@@ -499,6 +518,7 @@ void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
             const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
             m_items[first].rect = QRect(m_lastDeletedPos.x() + (grid.width() - size.width()) / 2,
                                         m_lastDeletedPos.y(), size.width(), size.height());
+            m_items[first].layouted = true;
             markAreaDirty(m_items[first].rect);
             m_lastDeletedPos = QPoint();
             return;
@@ -511,8 +531,11 @@ void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
             pos = findNextEmptyPosition(pos, grid, cr);
             m_items[i].rect = QRect(pos.x() + (grid.width() - size.width()) / 2, pos.y(),
                                     size.width(), size.height());
+            m_items[first].layouted = true;
             markAreaDirty(m_items[i].rect);
         }
+
+        m_delayedSaveTimer.start(5000, this);
         updateScrollBar();
     }
 }
@@ -537,6 +560,7 @@ void FolderView::rowsRemoved(const QModelIndex &parent, int first, int last)
             m_lastDeletedPos.ry() = m_items[first].rect.y();
         }
         m_items.remove(first, last - first + 1);
+        m_delayedSaveTimer.start(5000, this);
     }
 }
 
@@ -706,20 +730,58 @@ void FolderView::layoutItems()
 
     m_delegate->setMaximumSize(grid);
 
-    QPoint pos = QPoint();
+    if (!m_savedPositions.isEmpty()) {
+        bool needPostLayoutPass = false;
 
-    for (int i = 0; i < m_items.size(); i++) {
-        const QModelIndex index = m_model->index(i, 0);
-        const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+        for (int i = 0; i < m_items.size(); i++) {
+            const QModelIndex index = m_model->index(i, 0);
+            const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+            KFileItem item = m_model->itemForIndex(index);
 
-        pos = nextGridPosition(pos, grid, rect);
-        m_items[i].rect = QRect(pos.x() + (grid.width() - size.width()) / 2, pos.y(),
-                                size.width(), size.height());
+            const QPoint pos = m_savedPositions.value(item.name(), QPoint(-1, -1));
+            if (pos != QPoint(-1, -1)) {
+                m_items[i].rect = QRect(pos + QPoint((grid.width() - size.width()) / 2, 0), size);
+                m_items[i].layouted = true;
+            } else {
+                // We don't have a saved position for this file, so we'll record the
+                // size and lay it out in a second layout pass.
+                m_items[i].rect = QRect(QPoint(), size);
+                m_items[i].layouted = false;
+                needPostLayoutPass = true;
+            }
+        }
+
+        // Second layout pass for files that didn't have a saved position
+        if (needPostLayoutPass) {
+            QPoint pos = QPoint();
+            for (int i = 0; i < m_items.size(); i++) {
+                if (m_items[i].layouted) {
+                    continue;
+                }
+                pos = findNextEmptyPosition(pos, grid, rect);
+                m_items[i].rect.moveTo(pos.x() + (grid.width() - m_items[i].rect.width()) / 2, pos.y());
+            }
+        }
+
+        doLayoutSanityCheck();
+        m_layoutBroken = true;
+    } else {
+        QPoint pos = QPoint();
+
+        for (int i = 0; i < m_items.size(); i++) {
+            const QModelIndex index = m_model->index(i, 0);
+            const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+
+            pos = nextGridPosition(pos, grid, rect);
+            m_items[i].rect = QRect(pos.x() + (grid.width() - size.width()) / 2, pos.y(),
+                                    size.width(), size.height());
+            m_items[i].layouted = true;
+        }
+        m_layoutBroken = false;
     }
 
     updateScrollBar();
     m_layoutValid = true;
-    m_layoutBroken = false;
     m_dirtyRegion = QRegion(mapToViewport(rect).toAlignedRect());
 }
 
@@ -755,6 +817,8 @@ void FolderView::alignIconsToGrid()
         markEverythingDirty();
         m_layoutBroken = true;
         updateSortActionsState();
+        m_delayedSaveTimer.start(5000, this);
+        m_savedPositions.clear();
     }
 }
 
@@ -773,6 +837,51 @@ void FolderView::doLayoutSanityCheck()
         for (int i = 0; i < m_items.size(); i++) {
             m_items[i].rect.translate(0, delta);
         }
+    }
+}
+
+void FolderView::saveIconPositions() const
+{
+    if (m_layoutBroken) {
+        int version = 1;
+        QStringList data;
+        data << QString::number(version);
+        data << QString::number(m_items.size());
+
+        const QSize size = gridSize();
+        for (int i = 0; i < m_items.size(); i++) {
+            QModelIndex index = m_model->index(i, 0);
+            KFileItem item = m_model->itemForIndex(index);
+            int x = m_items[i].rect.x() - (size.width() - m_items[i].rect.width()) / 2;
+            data << item.name();
+            data << QString::number(x);
+            data << QString::number(m_items[i].rect.y());
+        }
+
+        config().writeEntry("savedPositions", data);
+    } else {
+        config().deleteEntry("savedPositions");
+    }
+}
+
+void FolderView::loadIconPositions()
+{
+    QStringList data = config().readEntry("savedPositions", QStringList());
+    if (data.isEmpty()) {
+        return;
+    }
+
+    // Sanity checks
+    if (data.size() < 5 || data.at(0).toInt() != 1 || ((data.size() - 2) % 3) ||
+        data.at(1).toInt() != ((data.size() - 2) / 3)) {
+        return;
+    }
+
+    for (int i = 2; i < data.size(); i += 3) {
+        const QString &name = data.at(i);
+        int x = data.at(i + 1).toInt();
+        int y = data.at(i + 2).toInt();
+        m_savedPositions.insert(name, QPoint(x, y));
     }
 }
 
@@ -1444,6 +1553,7 @@ void FolderView::toggleDirectoriesFirst(bool enable)
 
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
     if (m_sortColumn != -1) {
+        m_savedPositions.clear();
         m_model->invalidate();
     }
 
@@ -1466,8 +1576,10 @@ void FolderView::sortingChanged(QAction *action)
     }
 
     if (column != m_sortColumn) {
+        m_savedPositions.clear();
         m_model->invalidate();
         m_model->sort(column, Qt::AscendingOrder);
+        m_delayedSaveTimer.start(5000, this);
         m_sortColumn = column;
         m_layoutBroken = false;
         config().writeEntry("sortColumn", m_sortColumn);
@@ -1502,6 +1614,16 @@ void FolderView::updateSortActionsState()
         m_actionCollection.action("sort_date")->setChecked(true);
         break;
     }
+}
+
+void FolderView::listingCompleted()
+{
+    // We use a timer here since there is a chance that this slot is invoked
+    // before the update event from rowsInserted() has been processed, and if
+    // we clear m_savedPositions now the positions won't be available in the
+    // final layoutItems() pass.
+    m_delayedCacheClearTimer.start(5000, this);
+    m_initialListing = false;
 }
 
 void FolderView::commitData(QWidget *editor)
@@ -1956,6 +2078,7 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
 
     m_layoutBroken = true;
     updateSortActionsState();
+    m_delayedSaveTimer.start(5000, this);
 }
 
 // pos is the position where the mouse was clicked in the applet.
@@ -2042,6 +2165,22 @@ QStyleOptionViewItemV4 FolderView::viewOptions() const
     option.viewItemPosition    = QStyleOptionViewItemV4::OnlyOne;
 
     return option;
+}
+
+void FolderView::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == m_delayedSaveTimer.timerId()) {
+        m_delayedSaveTimer.stop();
+        saveIconPositions();
+        emit configNeedsSaving();
+        return;
+    } else if (event->timerId() == m_delayedCacheClearTimer.timerId()) {
+        m_delayedCacheClearTimer.stop();
+        m_savedPositions.clear();
+        return;
+    }
+
+    Containment::timerEvent(event);
 }
 
 #include "folderview.moc"

@@ -26,6 +26,7 @@
 #include <QListView>
 #include <QStyleOption>
 #include <QPointer>
+#include <QBasicTimer>
 
 #include <KActionCollection>
 #include <KMimeType>
@@ -48,7 +49,9 @@ namespace Plasma
 
 struct ViewItem
 {
+    ViewItem() : rect(QRect()), layouted(false) {}
     QRect rect;
+    bool layouted;
 };
 
 class FolderView : public Plasma::Containment
@@ -60,6 +63,7 @@ public:
     ~FolderView();
 
     void init();
+    void saveState(KConfigGroup &config) const;
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
 
@@ -103,6 +107,8 @@ private slots:
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
 
+    void listingCompleted();
+
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
 
@@ -122,6 +128,8 @@ private:
     void layoutItems();
     void alignIconsToGrid();
     void doLayoutSanityCheck();
+    void saveIconPositions() const;
+    void loadIconPositions();
     void updateScrollBar();
     QRect scrollBackbufferContents();
     void markAreaDirty(const QRect &rect);
@@ -133,6 +141,7 @@ private:
     QSize iconSize() const;
     QSize gridSize() const;
     QStyleOptionViewItemV4 viewOptions() const;
+    void timerEvent(QTimerEvent *event);
     void startDrag(const QPointF &pos, QWidget *widget);
     void constraintsEvent(Plasma::Constraints constraints);
     void focusInEvent(QFocusEvent *event);
@@ -172,11 +181,14 @@ private:
     KActionCollection m_actionCollection;
     QActionGroup *m_sortingGroup;
     QVector<ViewItem> m_items;
+    QHash<QString, QPoint> m_savedPositions;
     int m_columns;
     int m_rows;
     int m_sortColumn;
     bool m_layoutValid;
     bool m_layoutBroken;
+    bool m_initialListing;
+    bool m_positionsLoaded;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
@@ -196,6 +208,8 @@ private:
     int m_customIconSize;
     QListView::Flow m_flow;
     QPoint m_lastDeletedPos;
+    QBasicTimer m_delayedSaveTimer;
+    QBasicTimer m_delayedCacheClearTimer;
 };
 
 
