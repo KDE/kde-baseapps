@@ -578,11 +578,20 @@ void FolderView::layoutChanged()
 
 void FolderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
-    Q_UNUSED(topLeft)
-    Q_UNUSED(bottomRight)
+    const QStyleOptionViewItemV4 option = viewOptions();
+    const QSize grid = gridSize();
 
-    m_layoutValid = false;
-    update();
+    // We assume that it's something other than the name that has changed here,
+    // since the latter would result in a call to rowsRemoved() and rowsInserted().
+    for (int i = topLeft.row(); i <= bottomRight.row(); i++) {
+        const QModelIndex index = m_model->index(i, 0);
+        const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+        if (size != m_items[i].rect.size()) {
+            m_items[i].rect.translate((m_items[i].rect.width() - size.width()) / 2, 0);
+        }
+        markAreaDirty(QRect(m_items[i].rect.x() - (grid.width() - m_items[i].rect.width()) / 2,
+                             m_items[i].rect.y(), grid.width(), grid.height()));
+    }
 }
 
 void FolderView::clipboardDataChanged()
@@ -1307,9 +1316,15 @@ void FolderView::createActions()
        paste->setEnabled(false);
     }
 
-    KAction *reload  = new KAction(i18n("&Reload"), this);
-    reload->setShortcut(KStandardShortcut::reload());
+    KAction *reload = new KAction(i18n("&Reload"), this);
     connect(reload, SIGNAL(triggered()), SLOT(refreshIcons()));
+
+    KAction *refresh = new KAction(isContainment() ? i18n("&Refresh Desktop") : i18n("&Refresh View"), this);
+    refresh->setShortcut(KStandardShortcut::reload());
+    if (isContainment()) {
+        refresh->setIcon(KIcon("user-desktop"));
+    }
+    connect(refresh, SIGNAL(triggered()), SLOT(refreshIcons()));
 
     KAction *rename = new KAction(KIcon("edit-rename"), i18n("&Rename"), this);
     rename->setShortcut(Qt::Key_F2);
@@ -1331,6 +1346,7 @@ void FolderView::createActions()
     m_actionCollection.addAction("paste", paste);
     m_actionCollection.addAction("pasteto", pasteTo);
     m_actionCollection.addAction("reload", reload);
+    m_actionCollection.addAction("refresh", refresh);
     m_actionCollection.addAction("rename", rename);
     m_actionCollection.addAction("trash", trash);
     m_actionCollection.addAction("del", del);
@@ -1425,15 +1441,17 @@ QList<QAction*> FolderView::contextualActions()
         actions.append(m_actionCollection.action("undo"));
         actions.append(m_actionCollection.action("paste"));
  
-        if (QAction *iconsMenu = m_actionCollection.action("icons_menu")) {
-            QAction *separator = new QAction(this);
-            separator->setSeparator(true);
+        QAction *separator = new QAction(this);
+        separator->setSeparator(true);
+        actions.append(separator);
 
-            actions.append(separator);
+        if (QAction *iconsMenu = m_actionCollection.action("icons_menu")) {
             actions.append(iconsMenu);
         }
 
-        QAction *separator = new QAction(this);
+        actions.append(m_actionCollection.action("refresh"));
+
+        separator = new QAction(this);
         separator->setSeparator(true);
         actions.append(separator);
     }
@@ -1494,7 +1512,7 @@ void FolderView::pasteTo()
 
 void FolderView::refreshIcons()
 {
-    // TODO Implement me!
+    m_dirModel->dirLister()->updateDirectory(m_url);
 }
 
 void FolderView::renameSelectedIcon()
