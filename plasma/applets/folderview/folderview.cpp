@@ -1971,6 +1971,9 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     // before calling QDrag::exec(), since it's a blocking call.
     markAreaDirty(boundingRect);
 
+    // Unset the hovered index so dropEvent won't think the icons are being
+    // dropped on a dragged folder.
+    m_hoveredIndex = QModelIndex();
     m_dragInProgress = true;
 
     QDrag *drag = new QDrag(widget);
