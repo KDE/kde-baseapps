@@ -64,6 +64,7 @@ public:
 
     void init();
     void saveState(KConfigGroup &config) const;
+    void createAnimationFrames();
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
 
@@ -108,6 +109,7 @@ private slots:
     void sortingChanged(QAction *action);
 
     void listingCompleted();
+    void listingCanceled();
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
@@ -127,10 +129,11 @@ private:
     QPoint findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
     void layoutItems();
     void alignIconsToGrid();
-    void doLayoutSanityCheck();
+    bool doLayoutSanityCheck();
     void saveIconPositions() const;
     void loadIconPositions();
     void updateScrollBar();
+    void updateScrollBarGeometry();
     QRect scrollBackbufferContents();
     void markAreaDirty(const QRect &rect);
     void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
@@ -184,9 +187,10 @@ private:
     QHash<QString, QPoint> m_savedPositions;
     int m_columns;
     int m_rows;
+    int m_validRows;
     int m_sortColumn;
-    bool m_layoutValid;
     bool m_layoutBroken;
+    bool m_needPostLayoutPass;
     bool m_initialListing;
     bool m_positionsLoaded;
     QPersistentModelIndex m_hoveredIndex;
@@ -208,8 +212,13 @@ private:
     int m_customIconSize;
     QListView::Flow m_flow;
     QPoint m_lastDeletedPos;
+    QPoint m_currentLayoutPos;
+    int m_animFrame;
+    QPixmap m_animFrames;
     QBasicTimer m_delayedSaveTimer;
     QBasicTimer m_delayedCacheClearTimer;
+    QBasicTimer m_delayedLayoutTimer;
+    QBasicTimer m_animTimer;
 };
 
 
