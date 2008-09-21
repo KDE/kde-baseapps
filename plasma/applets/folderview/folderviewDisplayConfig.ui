@@ -22,7 +22,7 @@
       </sizepolicy>
      </property>
      <property name="text" >
-      <string>Custom Label </string>
+      <string>Custom label:</string>
      </property>
     </widget>
    </item>
@@ -38,7 +38,7 @@
       </sizepolicy>
      </property>
      <property name="text" >
-      <string>Custom Icon Size</string>
+      <string>Custom icon size:</string>
      </property>
     </widget>
    </item>

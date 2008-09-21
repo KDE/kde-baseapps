@@ -26,17 +26,17 @@
     <widget class="QComboBox" name="filterType" >
      <item>
       <property name="text" >
-       <string>Show all files</string>
+       <string>Show All Files</string>
       </property>
      </item>
      <item>
       <property name="text" >
-       <string>Show files matching...</string>
+       <string>Show Files Matching</string>
       </property>
      </item>
      <item>
       <property name="text" >
-       <string>Hide files matching...</string>
+       <string>Hide Files Matching</string>
       </property>
      </item>
     </widget>
