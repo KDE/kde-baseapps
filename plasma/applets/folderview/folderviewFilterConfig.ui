@@ -98,6 +98,9 @@
             <property name="flow" >
              <enum>QListView::TopToBottom</enum>
             </property>
+            <property name="uniformItemSizes" >
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
