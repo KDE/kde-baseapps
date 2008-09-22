@@ -1990,7 +1990,7 @@ void FolderView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         const QPointF pos = mapToViewport(event->pos());
         const QModelIndex index = indexAt(pos);
 
-        if (index.isValid() && index == m_pressedIndex) {
+        if (index.isValid() && index == m_pressedIndex && !(event->modifiers() & Qt::ControlModifier)) {
             if (!m_doubleClick && KGlobalSettings::singleClick()) {
                 const KFileItem item = m_model->itemForIndex(index);
                 item.run();
