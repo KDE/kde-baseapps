@@ -1954,6 +1954,7 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         {
             if (event->modifiers() & Qt::ControlModifier) {
                 m_selectionModel->select(index, QItemSelectionModel::Toggle);
+                m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 markAreaDirty(visualRect(index));
             } else if (!m_selectionModel->isSelected(index)) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
@@ -1970,8 +1971,10 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_pressedIndex = QModelIndex();
         m_buttonDownPos = pos;
         if (m_selectionModel->hasSelection()) {
-            m_selectionModel->clearSelection();
-            markEverythingDirty();
+            if (!(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))) {
+                m_selectionModel->clearSelection();
+                markEverythingDirty();
+            }
         }
         event->accept();
     }
@@ -2098,7 +2101,7 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
             selection.select(m_model->index(start, 0), m_model->index(end, 0));
         }
-        m_selectionModel->select(selection, QItemSelectionModel::ClearAndSelect);
+        m_selectionModel->select(selection, QItemSelectionModel::SelectCurrent);
 
         // Update the current index
         if (m_hoveredIndex.isValid()) {
