@@ -625,9 +625,11 @@ void FolderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bott
     const QStyleOptionViewItemV4 option = viewOptions();
     const QSize grid = gridSize();
 
-    // We assume that it's something other than the name that has changed here,
-    // since the latter would result in a call to rowsRemoved() and rowsInserted().
+    // Update the size of the items and center them in the grid cell
     for (int i = topLeft.row(); i <= bottomRight.row(); i++) {
+        if (!items[i].layouted) {
+            continue;
+        }
         const QModelIndex index = m_model->index(i, 0);
         const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
         if (size != m_items[i].rect.size()) {
