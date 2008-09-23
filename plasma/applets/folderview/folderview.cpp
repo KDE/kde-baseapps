@@ -1965,6 +1965,9 @@ void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             m_buttonDownPos = pos;
             event->accept();
             return;
+        } else if (event->modifiers() & Qt::ControlModifier) {
+            // make current selection persistent
+            m_selectionModel->select(m_selectionModel->selection(), QItemSelectionModel::Select);
         }
 
         // If empty space was pressed
@@ -2101,7 +2104,7 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
             selection.select(m_model->index(start, 0), m_model->index(end, 0));
         }
-        m_selectionModel->select(selection, QItemSelectionModel::SelectCurrent);
+        m_selectionModel->select(selection, QItemSelectionModel::ToggleCurrent);
 
         // Update the current index
         if (m_hoveredIndex.isValid()) {
