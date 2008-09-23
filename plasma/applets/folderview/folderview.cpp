@@ -57,6 +57,7 @@
 
 #include "proxymodel.h"
 #include "plasma/theme.h"
+#include "plasma/corona.h"
 #include "plasma/widgets/scrollbar.h"
 #include "plasma/paintutils.h"
 
@@ -2135,7 +2136,9 @@ void FolderView::wheelEvent(QGraphicsSceneWheelEvent *event)
 
 void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
-    event->setAccepted(event->mimeData()->hasUrls());
+    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
+    event->setAccepted(event->mimeData()->hasUrls() || (isContainment() &&
+                       immutability() == Plasma::Mutable && event->mimeData()->hasFormat(appletMimeType)));
 }
 
 void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
@@ -2145,10 +2148,13 @@ void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         return;
     }
 
+    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
     QRectF dirtyRect = visualRect(m_hoveredIndex);
     m_hoveredIndex = QModelIndex();
 
-    if (index.isValid() && (m_model->flags(index) & Qt::ItemIsDropEnabled)) {
+    if (index.isValid() && (m_model->flags(index) & Qt::ItemIsDropEnabled) &&
+        !event->mimeData()->hasFormat(appletMimeType))
+    {
         dirtyRect |= visualRect(index);
         bool onOurself = false;
 
@@ -2171,6 +2177,13 @@ void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 
 void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
+    // If the dropped item is an applet, let Containment handle it
+    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
+    if (isContainment() && event->mimeData()->hasFormat(appletMimeType)) {
+        Containment::dropEvent(event);
+        return;
+    }
+
     // Check if the drop event originated from this applet.
     // Normally we'd do this by checking if the source widget matches the target widget
     // in the drag and drop operation, but since two QGraphicsItems can be part of the
