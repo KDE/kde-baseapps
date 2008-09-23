@@ -627,7 +627,7 @@ void FolderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bott
 
     // Update the size of the items and center them in the grid cell
     for (int i = topLeft.row(); i <= bottomRight.row(); i++) {
-        if (!items[i].layouted) {
+        if (!m_items[i].layouted) {
             continue;
         }
         const QModelIndex index = m_model->index(i, 0);
