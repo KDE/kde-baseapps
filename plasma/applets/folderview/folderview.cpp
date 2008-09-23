@@ -68,6 +68,8 @@
 #include <limits.h>
 
 
+K_EXPORT_PLASMA_APPLET(folderview, FolderView)
+
 MimeModel::MimeModel(QObject *parent)
     : QStringListModel(parent)
 {

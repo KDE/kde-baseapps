@@ -269,6 +269,4 @@ private:
     QString m_filter;
 };
 
-K_EXPORT_PLASMA_APPLET(folderview, FolderView)
-
 #endif
