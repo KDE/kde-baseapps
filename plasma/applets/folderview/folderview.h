@@ -67,6 +67,7 @@ public:
     void createAnimationFrames();
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
+    QRect visualRect(const QModelIndex &index);
 
 protected:
     void createConfigurationInterface(KConfigDialog *parent);
@@ -140,7 +141,6 @@ private:
     void markEverythingDirty();
     void updateTextShadows(const QColor &textColor);
     QModelIndex indexAt(const QPointF &point);
-    QRectF visualRect(const QModelIndex &index);
     QSize iconSize() const;
     QSize gridSize() const;
     QStyleOptionViewItemV4 viewOptions() const;

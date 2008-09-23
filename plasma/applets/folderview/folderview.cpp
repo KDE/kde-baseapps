@@ -1324,11 +1324,11 @@ QModelIndex FolderView::indexAt(const QPointF &point)
     return QModelIndex();
 }
 
-QRectF FolderView::visualRect(const QModelIndex &index)
+QRect FolderView::visualRect(const QModelIndex &index)
 {
     if (!index.isValid() || index.row() < 0 || index.row() >= m_validRows ||
         !m_items[index.row()].layouted) {
-        return QRectF();
+        return QRect();
     }
 
     return m_items[index.row()].rect;
@@ -1641,13 +1641,13 @@ void FolderView::renameSelectedIcon()
         return;
 
     // Don't allow renaming of files the aren't visible in the view
-    const QRectF rect = visualRect(index);
+    const QRect rect = visualRect(index);
     if (!mapToViewport(contentsRect()).contains(rect)) {
         return;
     }
 
     QStyleOptionViewItemV4 option = viewOptions();
-    option.rect = rect.toRect();
+    option.rect = rect;
 
     QWidget *editor = m_delegate->createEditor(0, option, index);
     editor->setAttribute(Qt::WA_NoSystemBackground);
@@ -2231,12 +2231,12 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
 void FolderView::startDrag(const QPointF &pos, QWidget *widget)
 {
     QModelIndexList indexes = m_selectionModel->selectedIndexes();
-    QRectF boundingRect;
+    QRect boundingRect;
     foreach (const QModelIndex &index, indexes) {
         boundingRect |= visualRect(index);
     }
 
-    QPixmap pixmap(boundingRect.toAlignedRect().size());
+    QPixmap pixmap(boundingRect.size());
     pixmap.fill(Qt::transparent);
 
     QStyleOptionViewItemV4 option = viewOptions(); 
@@ -2247,7 +2247,7 @@ void FolderView::startDrag(const QPointF &pos, QWidget *widget)
     QPainter p(&pixmap);
     foreach (const QModelIndex &index, indexes)
     {
-        option.rect = visualRect(index).translated(-boundingRect.topLeft()).toAlignedRect();
+        option.rect = visualRect(index).translated(-boundingRect.topLeft());
         if (index == m_hoveredIndex)
             option.state |= QStyle::State_MouseOver;
         else
