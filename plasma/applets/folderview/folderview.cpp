@@ -1326,7 +1326,7 @@ QModelIndex FolderView::indexAt(const QPointF &point)
 
 QRectF FolderView::visualRect(const QModelIndex &index)
 {
-    if (!index.isValid() || index.row() < 0 || index.row() > m_validRows ||
+    if (!index.isValid() || index.row() < 0 || index.row() >= m_validRows ||
         !m_items[index.row()].layouted) {
         return QRectF();
     }
