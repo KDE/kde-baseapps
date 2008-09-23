@@ -67,7 +67,10 @@ public:
     void createAnimationFrames();
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
-    QRect visualRect(const QModelIndex &index);
+    QRect visualRect(const QModelIndex &index) const;
+    QModelIndex indexAt(const QPointF &point) const;
+    QSize iconSize() const;
+    QSize gridSize() const;
 
 protected:
     void createConfigurationInterface(KConfigDialog *parent);
@@ -140,9 +143,6 @@ private:
     void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
     void markEverythingDirty();
     void updateTextShadows(const QColor &textColor);
-    QModelIndex indexAt(const QPointF &point);
-    QSize iconSize() const;
-    QSize gridSize() const;
     QStyleOptionViewItemV4 viewOptions() const;
     void timerEvent(QTimerEvent *event);
     void startDrag(const QPointF &pos, QWidget *widget);

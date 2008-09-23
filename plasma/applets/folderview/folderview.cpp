@@ -1311,7 +1311,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     }
 }
 
-QModelIndex FolderView::indexAt(const QPointF &point)
+QModelIndex FolderView::indexAt(const QPointF &point) const
 {
     if (!mapToViewport(contentsRect()).contains(point))
         return QModelIndex();
@@ -1324,7 +1324,7 @@ QModelIndex FolderView::indexAt(const QPointF &point)
     return QModelIndex();
 }
 
-QRect FolderView::visualRect(const QModelIndex &index)
+QRect FolderView::visualRect(const QModelIndex &index) const
 {
     if (!index.isValid() || index.row() < 0 || index.row() >= m_validRows ||
         !m_items[index.row()].layouted) {
