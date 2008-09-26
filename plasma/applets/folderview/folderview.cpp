@@ -1133,11 +1133,8 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     painter->setClipRect(clipRect);
 
     // Paint the folder title
-    m_titleHeight = isContainment() ? 0 : painter->fontMetrics().height();
-
+    m_titleHeight = isContainment() ? 0 : painter->fontMetrics().height() + 4;
     if (m_titleHeight > 0 && option->exposedRect.y() <= m_titleHeight) {
-        QPen currentPen = painter->pen();
-
         QString titleText = m_titleText;
         titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
         QColor titleColor = themeTextColor;
@@ -1148,18 +1145,11 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         painter->drawPixmap(contentRect.topLeft(), titlePixmap);
 
         //Draw underline
-        painter->setPen(Qt::NoPen);
-        QLinearGradient lineGrad(contentRect.topLeft(), contentRect.topRight());
-        QColor lineColor(themeTextColor);
-        lineColor.setAlphaF(0.8);
-        lineGrad.setColorAt(0.0, lineColor);
-        lineColor.setAlphaF(0.0);
-        lineGrad.setColorAt(1.0, lineColor);
-        QBrush lineBrush(lineGrad);
-        painter->setBrush(lineBrush);
-        painter->drawRect(contentRect.left(), contentRect.top() + m_titleHeight, contentRect.width(), 1);
-
-        painter->setPen(currentPen);
+        int width = contentRect.width() - (m_scrollBar->isVisible() ? m_scrollBar->geometry().width() + 4 : 0);
+        painter->fillRect(contentRect.left(), contentRect.top() + m_titleHeight - 2, width, 1,
+                          QColor(0, 0, 0, 64));
+        painter->fillRect(contentRect.left(), contentRect.top() + m_titleHeight - 1, width, 1,
+                          QColor(255, 255, 255, 64));
     }
 
     if (m_viewScrolled) {
