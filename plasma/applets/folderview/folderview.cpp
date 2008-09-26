@@ -682,7 +682,7 @@ int FolderView::columnsForWidth(qreal width) const
     int spacing = 10;
     int margin = 10;
 
-    qreal available = width - 2 * margin + spacing;
+    qreal available = width - 2 * margin;
     return qFloor(available / (gridSize().width() + spacing));
 }
 
@@ -691,7 +691,7 @@ int FolderView::rowsForHeight(qreal height) const
     int spacing = 10;
     int margin = 10;
 
-    qreal available = height - 2 * margin + spacing;
+    qreal available = height - 2 * margin;
     return qFloor(available / (gridSize().height() + spacing));
 }
 
@@ -728,13 +728,13 @@ QPoint inline FolderView::nextGridPosition(const QPoint &lastPos, const QSize &g
 
     if (m_flow == QListView::LeftToRight) {
         pos.rx() += grid.width() + spacing;
-        if ((pos.x() + grid.width()) > (contentRect.right() - m_scrollBar->geometry().width() - margin)) {
+        if ((pos.x() + grid.width() + 10) >= (contentRect.right() - m_scrollBar->geometry().width() - margin)) {
             pos.ry() += grid.height() + spacing;
             pos.rx() = contentRect.left() + margin;
         }
     } else {
         pos.ry() += grid.height() + spacing;
-        if ((pos.y() + grid.height()) > (contentRect.bottom() - margin)) {
+        if ((pos.y() + grid.height() + 10) >= (contentRect.bottom() - margin)) {
             pos.rx() += grid.width() + spacing;
             pos.ry() = contentRect.top() + m_titleHeight + margin;
         }
@@ -771,11 +771,9 @@ void FolderView::layoutItems()
 
     const QRect visibleRect = mapToViewport(contentsRect()).toAlignedRect();
     const QRect rect = contentsRect().toRect();
-    int margin = 10;
-
-    QSize grid = gridSize();
-    int maxWidth = rect.width() - m_scrollBar->geometry().width() - 2 * margin;
-    int maxHeight = rect.height() - m_titleHeight - 2 * margin;
+    const QSize grid = gridSize();
+    int maxWidth = rect.width() - m_scrollBar->geometry().width();
+    int maxHeight = rect.height() - m_titleHeight;
     m_columns = columnsForWidth(maxWidth);
     m_rows = rowsForHeight(maxHeight);
     bool needUpdate = false;
@@ -1353,8 +1351,8 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
     if (constraints & Plasma::SizeConstraint)
     {
         updateScrollBarGeometry();
-        int maxWidth  = contentsRect().width() - m_scrollBar->geometry().width() - 10;
-        int maxHeight = contentsRect().height() - m_titleHeight - 10;
+        int maxWidth  = contentsRect().width() - m_scrollBar->geometry().width();
+        int maxHeight = contentsRect().height() - m_titleHeight;
         if ((m_flow == QListView::LeftToRight && columnsForWidth(maxWidth) != m_columns) ||
             (m_flow == QListView::TopToBottom && rowsForHeight(maxHeight) != m_rows)) {
             // The scrollbar range will be updated after the re-layout
