@@ -1113,8 +1113,7 @@ void FolderView::updateTextShadows(const QColor &textColor)
 void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentRect)
 {
     // Make sure the backbuffer pixmap has the same size as the content rect
-    if (m_pixmap.isNull() || m_pixmap.size() != contentRect.size())
-    {
+    if (m_pixmap.isNull() || m_pixmap.size() != contentRect.size()) {
         if (!contentRect.isValid()) {
             return;
         }
@@ -1138,10 +1137,10 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         QString titleText = m_titleText;
         titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
         QColor titleColor = themeTextColor;
-        QPixmap titlePixmap = Plasma::PaintUtils::shadowText(titleText, 
-                titleColor,
-                m_delegate->shadowColor(),
-                m_delegate->shadowOffset().toPoint());
+        QPixmap titlePixmap = Plasma::PaintUtils::shadowText(titleText,
+                                                             titleColor,
+                                                             m_delegate->shadowColor(),
+                                                             m_delegate->shadowOffset().toPoint());
         painter->drawPixmap(contentRect.topLeft(), titlePixmap);
 
         //Draw underline
@@ -1161,8 +1160,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
 
     // Update the dirty region in the backbuffer
     // =========================================
-    if (!m_dirtyRegion.isEmpty())
-    {
+    if (!m_dirtyRegion.isEmpty()) {
         QStyleOptionViewItemV4 opt = viewOptions();
         opt.palette.setColor(QPalette::All, QPalette::Text, themeTextColor);
         updateTextShadows(themeTextColor);
@@ -1176,8 +1174,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         p.fillRect(mapToViewport(contentRect).toAlignedRect(), Qt::transparent);
         p.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-        for (int i = 0; i < m_validRows; i++)
-        {
+        for (int i = 0; i < m_validRows; i++) {
             opt.rect = m_items[i].rect;
 
             if (!m_items[i].layouted || !m_dirtyRegion.intersects(opt.rect)) {
