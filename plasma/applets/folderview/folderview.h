@@ -35,9 +35,11 @@
 #include "ui_folderviewFilterConfig.h"
 #include "ui_folderviewDisplayConfig.h"
 #include "ui_folderviewLocationConfig.h"
+#include "ui_folderviewPreviewConfig.h"
 
 class KDirModel;
 class KFileItemDelegate;
+class KFilePreviewGenerator;
 class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
@@ -98,6 +100,7 @@ private slots:
     void aboutToShowCreateNew();
     void clipboardDataChanged();
     void scrollBarValueChanged(int);
+    void showPreviewConfigDialog();
 
     // These slots are for KonqPopupMenu
     void copy();
@@ -165,6 +168,7 @@ private:
 
 private:
     KFileItemDelegate *m_delegate;
+    KFilePreviewGenerator *m_previewGenerator;
     KDirModel *m_dirModel;
     ProxyModel *m_model;
     Plasma::ScrollBar *m_scrollBar;
@@ -206,13 +210,16 @@ private:
     Ui::folderviewFilterConfig uiFilter;
     Ui::folderviewDisplayConfig uiDisplay;
     Ui::folderviewLocationConfig uiLocation;
+    Ui::folderviewPreviewConfig uiPreviewConfig;
     bool m_doubleClick;
     bool m_dragInProgress;
     bool m_iconsLocked;
     bool m_alignToGrid;
     bool m_sortDirsFirst;
+    bool m_showPreviews;
     bool m_drawShadows;
     QString m_customLabel;
+    QStringList m_previewPlugins;
     int m_customIconSize;
     int m_numTextLines;
     QListView::Flow m_flow;

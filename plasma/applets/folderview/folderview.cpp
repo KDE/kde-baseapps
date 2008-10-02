@@ -41,6 +41,7 @@
 #include <KDirModel>
 #include <KFileItemDelegate>
 #include <kfileplacesmodel.h>
+#include <kfilepreviewgenerator.h>
 #include <KGlobalSettings>
 #include <KMenu>
 #include <KStandardShortcut>
@@ -56,10 +57,13 @@
 #include <konq_popupmenu.h>
 
 #include "proxymodel.h"
+#include "previewpluginsmodel.h"
 #include "plasma/theme.h"
 #include "plasma/corona.h"
 #include "plasma/widgets/scrollbar.h"
 #include "plasma/paintutils.h"
+
+#include "folderviewadapter.h"
 
 #ifdef Q_WS_X11
 #include <QX11Info>
@@ -210,6 +214,7 @@ bool ProxyMimeModel::filterAcceptsRow(int source_row, const QModelIndex &source_
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
+      m_previewGenerator(0),
       m_titleHeight(0),
       m_lastScrollValue(0),
       m_viewScrolled(false),
@@ -287,6 +292,7 @@ void FolderView::init()
 
     m_customLabel = cg.readEntry("customLabel", "");
     m_customIconSize = cg.readEntry("customIconSize", 0);
+    m_showPreviews = cg.readEntry("showPreviews", true);
     m_drawShadows = cg.readEntry("drawShadows", true);
     m_numTextLines = cg.readEntry("numTextLines", 2);
     m_textColor = cg.readEntry("textColor", QColor(Qt::transparent));
@@ -310,12 +316,21 @@ void FolderView::init()
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
     KDirLister *lister = new KDirLister(this);
+    lister->setDelayedMimeTypes(true);
     connect(lister, SIGNAL(completed()), SLOT(listingCompleted()));
     connect(lister, SIGNAL(canceled()), SLOT(listingCanceled()));
-    lister->openUrl(m_url);
 
     m_model->setFilterFixedString(m_filterFiles);
     m_dirModel->setDirLister(lister);
+
+    m_previewPlugins = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail");
+
+    FolderViewAdapter *adapter = new FolderViewAdapter(this);
+    m_previewGenerator = new KFilePreviewGenerator(adapter, m_model);
+    m_previewGenerator->setPreviewShown(m_showPreviews);
+    m_previewGenerator->setEnabledPlugins(m_previewPlugins);
+
+    lister->openUrl(m_url);
 
     m_flow = isContainment() ? QListView::TopToBottom : QListView::LeftToRight;
     m_flow = static_cast<QListView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
@@ -438,10 +453,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
     uiDisplay.lockInPlace->setChecked(m_iconsLocked);
     uiDisplay.drawShadows->setChecked(m_drawShadows);
+    uiDisplay.showPreviews->setChecked(m_showPreviews);
+    uiDisplay.previewsAdvanced->setEnabled(m_showPreviews);
     uiDisplay.numLinesEdit->setValue(m_numTextLines);
-
-    uiDisplay.showPreviews->setEnabled(false);
-    uiDisplay.previewsAdvanced->setEnabled(false);
 
     if (m_textColor != Qt::transparent) {
         uiDisplay.colorButton->setColor(m_textColor);
@@ -483,6 +497,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiFilter.filterType, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
     connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
     connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
     KConfigGroup cg = config();
@@ -533,11 +548,24 @@ void FolderView::configAccepted()
     KConfigGroup cg = config();
     bool needRelayout = false;
     bool needRepaint = false;
+    bool needReload = false;
 
     if (m_drawShadows != uiDisplay.drawShadows->isChecked()) {
         m_drawShadows = uiDisplay.drawShadows->isChecked();
         cg.writeEntry("drawShadows", m_drawShadows);
         needRepaint = true;
+    }
+
+    if (m_showPreviews != uiDisplay.showPreviews->isChecked() ||
+        m_previewPlugins != m_previewGenerator->enabledPlugins())
+    {
+        m_showPreviews = uiDisplay.showPreviews->isChecked();
+        cg.writeEntry("showPreviews", m_showPreviews);
+        cg.writeEntry("previewPlugins", m_previewPlugins);
+
+        m_previewGenerator->setEnabledPlugins(m_previewPlugins);
+        m_previewGenerator->setPreviewShown(m_showPreviews);
+        needReload = true;
     }
 
     const QColor color = uiDisplay.colorButton->color();
@@ -563,6 +591,11 @@ void FolderView::configAccepted()
         m_customIconSize = size;
         cg.writeEntry("customIconSize", m_customIconSize);
         needRelayout = true;
+
+        // This is to force the preview images to be regenerated with the new size
+        if (m_showPreviews) {
+            needReload = true;
+        }
     }
 
     int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
@@ -614,10 +647,10 @@ void FolderView::configAccepted()
     }
 
     if (m_url != url || m_filterFiles != uiFilter.filterFilesPattern->text() ||
-        m_filterFilesMimeList != selectedItems || m_filterType != filterType) {
+        m_filterFilesMimeList != selectedItems || m_filterType != filterType)
+    {
         m_initialListing = true;
         m_validRows = 0;
-        m_dirModel->dirLister()->openUrl(url);
         m_model->setFilterFixedString(uiFilter.filterFilesPattern->text());
         m_filterFiles = uiFilter.filterFilesPattern->text();
         m_filterFilesMimeList = selectedItems;
@@ -633,10 +666,16 @@ void FolderView::configAccepted()
         m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
     }
 
+    if (needReload) {
+        m_dirModel->dirLister()->openUrl(m_url);
+    }
+
     if (needRelayout) {
         m_validRows = 0;
         m_delayedLayoutTimer.start(10, this);
-    } else if (needRepaint) {
+    }
+
+    if (needRepaint) {
         markEverythingDirty();
     }
 
@@ -647,6 +686,28 @@ void FolderView::customFolderToggled(bool checked)
 {
     uiLocation.selectLabel->setEnabled(checked);
     uiLocation.lineEdit->setEnabled(checked);
+}
+
+void FolderView::showPreviewConfigDialog()
+{
+    QWidget *widget = new QWidget;
+    uiPreviewConfig.setupUi(widget);
+
+    PreviewPluginsModel *model = new PreviewPluginsModel(this);
+    model->setCheckedPlugins(m_previewPlugins);
+
+    uiPreviewConfig.listView->setModel(model);
+
+    KDialog *dialog = new KDialog;
+    dialog->setMainWidget(widget);
+
+    if (dialog->exec() == KDialog::Accepted) {
+        m_previewPlugins = model->checkedPlugins();
+    }
+
+    delete widget;
+    delete dialog;
+    delete model;
 }
 
 void FolderView::fontSettingsChanged()
@@ -951,7 +1012,7 @@ void FolderView::layoutItems()
     QTime time;
     time.start();
     do {
-        const int count = qMin(m_validRows + 5, m_items.size());
+        const int count = qMin(m_validRows + 50, m_items.size());
         if (!m_savedPositions.isEmpty()) {
 
             // Layout with saved icon positions
