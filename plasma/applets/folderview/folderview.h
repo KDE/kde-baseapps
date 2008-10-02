@@ -95,7 +95,6 @@ private slots:
     void aboutToShowCreateNew();
     void clipboardDataChanged();
     void scrollBarValueChanged(int);
-    void chkCustomIconSizeToggled(bool checked);
 
     // These slots are for KonqPopupMenu
     void copy();
@@ -180,6 +179,7 @@ private:
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
     QFont m_font;
+    QColor m_textColor;
     QPointer<KNewMenu> m_newMenu;
     KActionCollection m_actionCollection;
     QActionGroup *m_sortingGroup;
@@ -208,8 +208,10 @@ private:
     bool m_iconsLocked;
     bool m_alignToGrid;
     bool m_sortDirsFirst;
+    bool m_drawShadows;
     QString m_customLabel;
     int m_customIconSize;
+    int m_numTextLines;
     QListView::Flow m_flow;
     QPoint m_lastDeletedPos;
     QPoint m_currentLayoutPos;

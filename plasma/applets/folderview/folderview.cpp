@@ -287,6 +287,9 @@ void FolderView::init()
 
     m_customLabel = cg.readEntry("customLabel", "");
     m_customIconSize = cg.readEntry("customIconSize", 0);
+    m_drawShadows = cg.readEntry("drawShadows", true);
+    m_numTextLines = cg.readEntry("numTextLines", 2);
+    m_textColor = cg.readEntry("textColor", QColor(Qt::transparent));
 
     if (!m_url.isValid()) {
         setUrl(cg.readEntry("url", KUrl(isContainment() ? QString("desktop:/") : QDir::homePath())));
@@ -294,12 +297,11 @@ void FolderView::init()
         KConfigGroup cg = config();
         cg.writeEntry("url", m_url);
     }
+
     m_filterFiles = cg.readEntry("filterFiles", "*");
-
     m_filterType = cg.readEntry("filter", 0);
-    m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
-
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
+    m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
 
     m_sortDirsFirst = cg.readEntry("sortDirsFirst", true);
@@ -316,6 +318,7 @@ void FolderView::init()
     m_dirModel->setDirLister(lister);
 
     m_flow = isContainment() ? QListView::TopToBottom : QListView::LeftToRight;
+    m_flow = static_cast<QListView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
     m_iconsLocked = cg.readEntry("iconsLocked", false);
     m_alignToGrid = cg.readEntry("alignToGrid", false);
 
@@ -396,15 +399,66 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     pMimeModel->setSourceModel(mimeModel);
     uiFilter.filterFilesList->setModel(pMimeModel);
 
-    uiDisplay.edtCustomLabel->setText(m_customLabel);
-    uiDisplay.chkCustomIconSize->setChecked(m_customIconSize != 0);
-    uiDisplay.sbxCustomIconSize->setValue(m_customIconSize);
-    uiDisplay.sbxCustomIconSize->setEnabled(m_customIconSize != 0);
+    // The label is not shown when the applet is acting as a containment,
+    // so don't confuse the user by making it editable.
+    if (isContainment()) {
+        uiDisplay.labelEdit->hide();
+    }
+
+    uiDisplay.labelEdit->setText(m_titleText);
+
+    const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
+    uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
+    uiDisplay.sizeSlider->setValue(iconSizes.indexOf(iconSize().width()));
+
+    uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), -1);
+    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_name")->text(), KDirModel::Name);
+    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_size")->text(), KDirModel::Size);
+    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_type")->text(), KDirModel::Type);
+    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_date")->text(), KDirModel::ModifiedTime);
+
+    uiDisplay.flowCombo->addItem(i18n("Top to Bottom"), QListView::TopToBottom);
+    uiDisplay.flowCombo->addItem(i18n("Left to Right"), QListView::LeftToRight);
+
+    uiDisplay.alignToGrid->setChecked(m_alignToGrid);
+    uiDisplay.lockInPlace->setChecked(m_iconsLocked);
+    uiDisplay.drawShadows->setChecked(m_drawShadows);
+    uiDisplay.numLinesEdit->setValue(m_numTextLines);
+
+    uiDisplay.showPreviews->setEnabled(false);
+    uiDisplay.previewsAdvanced->setEnabled(false);
+
+    if (m_textColor != Qt::transparent) {
+        uiDisplay.colorButton->setColor(m_textColor);
+    } else {
+        uiDisplay.colorButton->setColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    }
+
+    for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
+       if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
+           uiDisplay.sortCombo->setCurrentIndex(i);
+           break;
+       }
+    }
+
+    for (int i = 0; i < uiDisplay.flowCombo->maxCount(); i++) {
+       if (m_flow == uiDisplay.flowCombo->itemData(i).toInt()) {
+           uiDisplay.flowCombo->setCurrentIndex(i);
+           break;
+       }
+    }
+
+    // Hide the icon arrangement controls when we're not acting as a containment,
+    // since this option doesn't make much sense in the applet.
+    if (!isContainment()) {
+        uiDisplay.flowLabel->hide();
+        uiDisplay.flowCombo->hide();
+    }
 
     connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
 
     parent->addPage(widgetLocation, i18n("Location"), "folder");
-    parent->addPage(widgetDisplay, i18n("Display"), "display");
+    parent->addPage(widgetDisplay, i18n("Display"), "preferences-desktop-display");
     parent->addPage(widgetFilter, i18n("Filter"), "view-filter");
 
     parent->setButtons(KDialog::Ok | KDialog::Cancel | KDialog::Apply);
@@ -414,7 +468,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiFilter.filterType, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
     connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
     connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(uiDisplay.chkCustomIconSize, SIGNAL(toggled(bool)), this, SLOT(chkCustomIconSizeToggled(bool)));
+    connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
     KConfigGroup cg = config();
     int filter = cg.readEntry("filter", 0);
@@ -461,6 +515,88 @@ void FolderView::configAccepted()
     }
 
     int filterType = uiFilter.filterType->currentIndex();
+    KConfigGroup cg = config();
+    bool needRelayout = false;
+    bool needRepaint = false;
+
+    if (m_drawShadows != uiDisplay.drawShadows->isChecked()) {
+        m_drawShadows = uiDisplay.drawShadows->isChecked();
+        cg.writeEntry("drawShadows", m_drawShadows);
+        needRepaint = true;
+    }
+
+    const QColor color = uiDisplay.colorButton->color();
+    if ((m_textColor != Qt::transparent && color != m_textColor) ||
+        (m_textColor == Qt::transparent && color != Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor)))
+    {
+        m_textColor = color;
+        cg.writeEntry("textColor", m_textColor);
+        needRepaint = true;
+    }
+
+    if (m_numTextLines != uiDisplay.numLinesEdit->value()) {
+        m_numTextLines = uiDisplay.numLinesEdit->value();
+        cg.writeEntry("numTextLines", m_numTextLines);
+        needRelayout = true;
+    }
+
+    const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
+    int size = iconSizes.at(uiDisplay.sizeSlider->value());
+    if ((m_customIconSize == 0 && size != KIconLoader::global()->currentSize(KIconLoader::Desktop)) ||
+        (m_customIconSize != 0 && size != m_customIconSize))
+    {
+        m_customIconSize = size;
+        cg.writeEntry("customIconSize", m_customIconSize);
+        needRelayout = true;
+    }
+
+    int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
+    if (m_sortColumn != sortColumn) {
+        if (sortColumn != -1) {
+            m_sortColumn = sortColumn;
+            m_model->invalidate();
+            m_model->sort(m_sortColumn, Qt::AscendingOrder);
+            m_layoutBroken = false;
+            needRelayout = true;
+            cg.writeEntry("sortColumn", m_sortColumn);
+        } else {
+            m_layoutBroken = true;
+            // Note: updateSortActionsState() will set m_sortColumn and write the config entry.
+        }
+        updateSortActionsState();
+    }
+
+    int flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).toInt();
+    if (m_flow != flow) {
+        m_flow = static_cast<QListView::Flow>(flow);
+        cg.writeEntry("flow", flow);
+        needRelayout = true;
+    }
+
+    if (m_alignToGrid != uiDisplay.alignToGrid->isChecked()) {
+        m_alignToGrid = uiDisplay.alignToGrid->isChecked();
+        cg.writeEntry("alignToGrid", m_alignToGrid);
+        m_actionCollection.action("grid_align")->setChecked(m_alignToGrid);
+        if (m_alignToGrid && m_layoutBroken) {
+            alignIconsToGrid();
+        }
+    }
+
+    if (m_iconsLocked != uiDisplay.lockInPlace->isChecked()) {
+        m_iconsLocked = uiDisplay.lockInPlace->isChecked();
+        cg.writeEntry("iconsLocked", m_iconsLocked);
+        m_actionCollection.action("lock_icons")->setChecked(m_alignToGrid);
+    }
+
+    const QString label = uiDisplay.labelEdit->text();
+    if ((m_customLabel.isEmpty() && label != m_titleText) ||
+        (!m_customLabel.isEmpty() && label != m_customLabel))
+    {
+        m_customLabel = label;
+        setUrl(url);
+        cg.writeEntry("customLabel", m_customLabel);
+        needRepaint = true;
+    }
 
     if (m_url != url || m_filterFiles != uiFilter.filterFilesPattern->text() ||
         m_filterFilesMimeList != selectedItems || m_filterType != filterType) {
@@ -468,29 +604,28 @@ void FolderView::configAccepted()
         m_validRows = 0;
         m_dirModel->dirLister()->openUrl(url);
         m_model->setFilterFixedString(uiFilter.filterFilesPattern->text());
-        setUrl(url);
         m_filterFiles = uiFilter.filterFilesPattern->text();
         m_filterFilesMimeList = selectedItems;
         m_filterType = filterType;
+        setUrl(url);
 
-        KConfigGroup cg = config();
         cg.writeEntry("url", m_url);
         cg.writeEntry("filterFiles", m_filterFiles);
         cg.writeEntry("filter", m_filterType);
         cg.writeEntry("mimeFilter", m_filterFilesMimeList);
-        cg.writeEntry("customLabel", m_customLabel);
-        cg.writeEntry("customIconSize", m_customIconSize);
 
         m_model->setMimeTypeFilterList(m_filterFilesMimeList);
         m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
-
-        emit configNeedsSaving();
     }
-}
 
-void FolderView::chkCustomIconSizeToggled(bool checked)
-{
-	uiDisplay.sbxCustomIconSize->setEnabled(checked);
+    if (needRelayout) {
+        m_validRows = 0;
+        m_delayedLayoutTimer.start(10, this);
+    } else if (needRepaint) {
+        markEverythingDirty();
+    }
+
+    emit configNeedsSaving();
 }
 
 void FolderView::customFolderToggled(bool checked)
@@ -1088,6 +1223,11 @@ QRect FolderView::scrollBackbufferContents()
 
 void FolderView::updateTextShadows(const QColor &textColor)
 {
+    if (!m_drawShadows) {
+        m_delegate->setShadowColor(Qt::transparent);
+        return;
+    }
+
     QColor shadowColor;
 
     // Use black shadows with bright text, and white shadows with dark text.
@@ -1128,6 +1268,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     }
 
     const QColor themeTextColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
+    const QColor textColor = (m_textColor.alpha() > 0 ? m_textColor : themeTextColor);
 
     painter->setClipRect(clipRect);
 
@@ -1136,13 +1277,12 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     if (m_titleHeight > 0 && option->exposedRect.y() <= m_titleHeight) {
         QString titleText = m_titleText;
         titleText = painter->fontMetrics().elidedText(titleText, Qt::ElideMiddle, contentRect.width());
-        QColor titleColor = themeTextColor;
+        QColor titleColor = textColor;
         QPixmap titlePixmap = Plasma::PaintUtils::shadowText(titleText,
                                                              titleColor,
                                                              m_delegate->shadowColor(),
                                                              m_delegate->shadowOffset().toPoint());
         painter->drawPixmap(contentRect.topLeft(), titlePixmap);
-
         //Draw underline
         int width = contentRect.width() - (m_scrollBar->isVisible() ? m_scrollBar->geometry().width() + 4 : 0);
         painter->fillRect(contentRect.left(), contentRect.top() + m_titleHeight - 2, width, 1,
@@ -1162,8 +1302,8 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     // =========================================
     if (!m_dirtyRegion.isEmpty()) {
         QStyleOptionViewItemV4 opt = viewOptions();
-        opt.palette.setColor(QPalette::All, QPalette::Text, themeTextColor);
-        updateTextShadows(themeTextColor);
+        opt.palette.setColor(QPalette::All, QPalette::Text, textColor);
+        updateTextShadows(textColor);
 
         QPainter p(&m_pixmap);
         p.translate(-contentRect.topLeft() - QPoint(0, offset));
@@ -1195,7 +1335,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
                 updateTextShadows(palette().color(QPalette::HighlightedText));
                 opt.state |= QStyle::State_Selected;
             } else {
-                updateTextShadows(themeTextColor);
+                updateTextShadows(textColor);
             }
 
             if (hasFocus() && index == m_selectionModel->currentIndex()) {
@@ -1277,6 +1417,7 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
             p.drawTiledPixmap(0, m_pixmap.height() - 16, m_pixmap.width(), 16, m_bottomFadeTile);
         }
         p.end();
+
         painter->drawPixmap(contentRect.topLeft(), pixmap);
     }
     else
@@ -1367,8 +1508,7 @@ void FolderView::setUrl(const KUrl &url)
 {
     m_url = url;
 
-
-    if (! m_customLabel.isEmpty() ) {
+    if (!m_customLabel.isEmpty()) {
         m_titleText = m_customLabel;
     } else if (m_url == KUrl("desktop:/")) {
         m_titleText = i18n("Desktop Folder");
@@ -2288,9 +2428,11 @@ QSize FolderView::iconSize() const
 
 QSize FolderView::gridSize() const
 {
+    const QFontMetrics fm(m_font);
+    const int textHeight = fm.lineSpacing() * m_numTextLines;
     QSize size = iconSize();
-    size.rwidth()  *= 2;
-    size.rheight() *= 2;
+    size.rheight() = size.height() + textHeight + 16;
+    size.rwidth() = qMax(size.width() * 2, fm.averageCharWidth() * 10);
     return size;
 }
 
@@ -2306,10 +2448,13 @@ QStyleOptionViewItemV4 FolderView::viewOptions() const
     option.decorationSize      = iconSize();
     option.displayAlignment    = Qt::AlignHCenter;
     option.textElideMode       = Qt::ElideRight;
-    option.features            = QStyleOptionViewItemV2::WrapText;
     option.locale              = QLocale::system();
     option.widget              = 0;
     option.viewItemPosition    = QStyleOptionViewItemV4::OnlyOne;
+
+    if (m_numTextLines > 1) {
+        option.features = QStyleOptionViewItemV2::WrapText;
+    }
 
     return option;
 }

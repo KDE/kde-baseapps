@@ -5,76 +5,391 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>522</width>
+    <height>682</height>
    </rect>
   </property>
   <property name="windowTitle" >
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" >
-   <item row="0" column="0" >
-    <widget class="QLabel" name="lblCustomLabel" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Preferred" hsizetype="Fixed" >
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+  <layout class="QVBoxLayout" name="verticalLayout_3" >
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5" >
+     <item>
+      <widget class="QLabel" name="lblCustomLabel" >
+       <property name="sizePolicy" >
+        <sizepolicy vsizetype="Preferred" hsizetype="Fixed" >
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text" >
+        <string>Label:</string>
+       </property>
+       <property name="alignment" >
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy" >
+        <cstring>labelEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="KLineEdit" name="labelEdit" >
+       <property name="whatsThis" >
+        <string>This edit field contains the label which is shown at the top of the applet.
+
+By default it contains the name of the place being shown in the applet, but if you prefer to have a custom label you can enter it here.</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2" >
+     <property name="title" >
+      <string>Icon Settings</string>
      </property>
-     <property name="text" >
-      <string>Custom label:</string>
+     <property name="flat" >
+      <bool>true</bool>
      </property>
+     <layout class="QVBoxLayout" name="verticalLayout" >
+      <item>
+       <widget class="QLabel" name="label_4" >
+        <property name="text" >
+         <string>Icon size:</string>
+        </property>
+        <property name="buddy" >
+         <cstring>sizeSlider</cstring>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7" >
+        <item>
+         <spacer name="horizontalSpacer_8" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType" >
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0" >
+           <size>
+            <width>25</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5" >
+          <property name="text" >
+           <string>Small</string>
+          </property>
+          <property name="alignment" >
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSlider" name="sizeSlider" >
+          <property name="whatsThis" >
+           <string>Use this slider to increase or decrease the size of the icons in the view.</string>
+          </property>
+          <property name="maximum" >
+           <number>6</number>
+          </property>
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition" >
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_6" >
+          <property name="text" >
+           <string>Large</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_7" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0" >
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2" >
+        <property name="topMargin" >
+         <number>4</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="showPreviews" >
+          <property name="whatsThis" >
+           <string>Check this option if you want to see previews of the file contents in the icons.</string>
+          </property>
+          <property name="text" >
+           <string>Show previews</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="previewsAdvanced" >
+          <property name="whatsThis" >
+           <string>Click this button to choose for which types of files previews will be shown.</string>
+          </property>
+          <property name="text" >
+           <string>Advanced...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_5" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0" >
+           <size>
+            <width>210</width>
+            <height>23</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2" >
-    <widget class="KLineEdit" name="edtCustomLabel" />
-   </item>
-   <item row="1" column="0" >
-    <widget class="QCheckBox" name="chkCustomIconSize" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Preferred" hsizetype="Fixed" >
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3" >
+     <property name="title" >
+      <string>Text Settings</string>
      </property>
-     <property name="text" >
-      <string>Custom icon size:</string>
+     <property name="flat" >
+      <bool>true</bool>
      </property>
+     <layout class="QGridLayout" name="gridLayout_3" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>Text color:</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy" >
+         <cstring>colorButton</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <layout class="QHBoxLayout" name="horizontalLayout_3" >
+        <item>
+         <widget class="KColorButton" name="colorButton" >
+          <property name="whatsThis" >
+           <string>Click this button to choose the color which is used for the text labels in the view.</string>
+          </property>
+          <property name="text" >
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0" >
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>Number of lines:</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy" >
+         <cstring>numLinesEdit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <layout class="QHBoxLayout" name="horizontalLayout_4" >
+        <item>
+         <widget class="QSpinBox" name="numLinesEdit" >
+          <property name="sizePolicy" >
+           <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="whatsThis" >
+           <string>Use this control to choose how many lines of text will be shown below the icons.</string>
+          </property>
+          <property name="minimum" >
+           <number>1</number>
+          </property>
+          <property name="maximum" >
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0" >
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0" colspan="2" >
+       <widget class="QCheckBox" name="drawShadows" >
+        <property name="whatsThis" >
+         <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'Bitstream Vera Sans'; font-size:8pt; font-weight:400; font-style:normal;">
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Check this option if you want the text labels to cast a shadow on the background.&lt;/p>
+&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Shadows help make the text easier to read by making it stand out more from the background.&lt;/p>
+&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-style:italic;">Note that with dark text colors, this option will cause the text to glow with a bright halo, instead of casting a shadow.&lt;/span>&lt;/p>&lt;/body>&lt;/html></string>
+        </property>
+        <property name="text" >
+         <string>Show text shadows</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="1" column="1" >
-    <widget class="QSpinBox" name="sbxCustomIconSize" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item>
+    <widget class="QGroupBox" name="groupBox" >
+     <property name="title" >
+      <string>Icon Arrangement</string>
      </property>
-     <property name="suffix" >
-      <string> px</string>
+     <property name="flat" >
+      <bool>true</bool>
      </property>
-     <property name="minimum" >
-      <number>16</number>
-     </property>
-     <property name="maximum" >
-      <number>128</number>
-     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2" >
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout" >
+        <item>
+         <layout class="QGridLayout" name="gridLayout" >
+          <item row="0" column="0" >
+           <widget class="QLabel" name="flowLabel" >
+            <property name="text" >
+             <string>Arrange icons:</string>
+            </property>
+            <property name="alignment" >
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="buddy" >
+             <cstring>flowCombo</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QComboBox" name="flowCombo" >
+            <property name="whatsThis" >
+             <string>Use this control to choose if you want the icons to be arranged top to bottom starting on the left side of the view, or arranged left to right starting at the top of the view.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="label" >
+            <property name="text" >
+             <string>Sort icons:</string>
+            </property>
+            <property name="alignment" >
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+            <property name="buddy" >
+             <cstring>sortCombo</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QComboBox" name="sortCombo" >
+            <property name="whatsThis" >
+             <string>Use this control to choose the criteria by which the icons will be sorted in the view.</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0" >
+           <size>
+            <width>248</width>
+            <height>18</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="alignToGrid" >
+        <property name="whatsThis" >
+         <string>Check this option if you want the icons to be arranged in a grid.
+
+When this option is checked, icons will automatically snap to the nearest grid cell when you move them around in the view.</string>
+        </property>
+        <property name="text" >
+         <string>Align icons in a grid</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="lockInPlace" >
+        <property name="whatsThis" >
+         <string>Check this option if you do not want the icons to be moveable in the view.
+
+This option is useful if you want to avoid accidentally moving the icons while interacting with them.</string>
+        </property>
+        <property name="text" >
+         <string>Lock icons in place</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="1" column="2" >
-    <spacer name="horizontalSpacer" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0" >
-      <size>
-       <width>133</width>
-       <height>22</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="2" column="1" >
+   <item>
     <spacer name="verticalSpacer_2" >
      <property name="orientation" >
       <enum>Qt::Vertical</enum>
@@ -94,6 +409,11 @@
    <class>KLineEdit</class>
    <extends>QLineEdit</extends>
    <header>klineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KColorButton</class>
+   <extends>QPushButton</extends>
+   <header>kcolorbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
