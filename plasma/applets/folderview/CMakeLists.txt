@@ -14,7 +14,8 @@ include_directories(
 
 set(folderview_SRCS
     folderview.cpp
-    proxymodel.cpp)
+    proxymodel.cpp
+    previewpluginsmodel.cpp)
 
 kde4_add_ui_files(folderview_SRCS folderviewFilterConfig.ui folderviewDisplayConfig.ui folderviewLocationConfig.ui)
 kde4_add_plugin(plasma_applet_folderview ${folderview_SRCS})
