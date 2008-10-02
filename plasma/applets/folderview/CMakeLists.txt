@@ -15,6 +15,7 @@ include_directories(
 set(folderview_SRCS
     folderview.cpp
     proxymodel.cpp
+    folderviewadapter.cpp
     previewpluginsmodel.cpp)
 
 kde4_add_ui_files(folderview_SRCS folderviewFilterConfig.ui folderviewDisplayConfig.ui folderviewLocationConfig.ui)
