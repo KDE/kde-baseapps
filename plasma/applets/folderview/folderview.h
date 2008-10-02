@@ -71,6 +71,9 @@ public:
     QModelIndex indexAt(const QPointF &point) const;
     QSize iconSize() const;
     QSize gridSize() const;
+    QScrollBar *verticalScrollBar() const;
+    QAbstractItemModel *model() const;
+    QRect visibleArea() const;
 
 protected:
     void createConfigurationInterface(KConfigDialog *parent);

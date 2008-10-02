@@ -342,6 +342,21 @@ void FolderView::saveState(KConfigGroup &config) const
     }
 }
 
+QScrollBar *FolderView::verticalScrollBar() const
+{
+    return m_scrollBar->nativeWidget();
+}
+
+QAbstractItemModel *FolderView::model() const
+{
+    return m_model;
+}
+
+QRect FolderView::visibleArea() const
+{
+    return mapToViewport(contentsRect()).toAlignedRect();
+}
+
 void FolderView::createAnimationFrames()
 {
     m_animFrames = QPixmap(100, 100 * 20);
