@@ -664,6 +664,7 @@ void FolderView::configAccepted()
 
         m_model->setMimeTypeFilterList(m_filterFilesMimeList);
         m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
+        needReload = true;
     }
 
     if (needReload) {
