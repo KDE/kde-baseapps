@@ -285,10 +285,9 @@ void FolderView::init()
     // Find out about theme changes
     connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), SLOT(themeChanged()));
 
-    KConfigGroup cg(KGlobal::config(), "General");
-    m_font = cg.readEntry("desktopFont", QFont("Sans Serif", 10));
+    m_font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
 
-    cg = config();
+    KConfigGroup cg = config();
 
     m_customLabel = cg.readEntry("customLabel", "");
     m_customIconSize = cg.readEntry("customIconSize", 0);
@@ -713,8 +712,7 @@ void FolderView::showPreviewConfigDialog()
 
 void FolderView::fontSettingsChanged()
 {
-    KConfigGroup cg(KGlobal::config(), "General");
-    QFont font = cg.readEntry("desktopFont", QFont("Sans Serif", 10));
+    QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
 
     if (m_font != font) {
         m_font = font;
