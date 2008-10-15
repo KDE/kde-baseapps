@@ -143,7 +143,7 @@ KonqView* KonqViewManager::splitView( KonqView* currentView,
   assert( newView->frame() );
   assert( newView->part() );
   newContainer->setActiveChild( newView->frame() );
-  setActivePart( newView->part(), false );
+  setActivePart( newView->part() );
 
 #ifdef DEBUG_VIEWMGR
   m_pMainWindow->dumpViewList();
@@ -366,7 +366,7 @@ void KonqViewManager::removeTab( KonqFrameBase* currentFrame, bool emitAboutToRe
     emit aboutToRemoveTab(currentFrame);
 
   if (currentFrame->asQWidget() == m_tabContainer->currentWidget())
-    setActivePart( 0L, true );
+    setActivePart(0);
 
   m_tabContainer->childFrameRemoved(currentFrame);
 
@@ -374,7 +374,7 @@ void KonqViewManager::removeTab( KonqFrameBase* currentFrame, bool emitAboutToRe
   foreach ( KonqView* view, viewList )
   {
     if (view == m_pMainWindow->currentView())
-      setActivePart( 0L, true );
+      setActivePart(0);
     m_pMainWindow->removeChildView( view );
     delete view;
   }
@@ -512,7 +512,7 @@ void KonqViewManager::removeView( KonqView *view )
 
   if (parentContainer->frameType()=="Container")
   {
-    setActivePart( 0L, true );
+    setActivePart(0);
 
     kDebug(1202) << "parentContainer is a KonqFrameContainer";
 
@@ -628,17 +628,17 @@ void KonqViewManager::viewCountChanged()
 void KonqViewManager::clear()
 {
     //kDebug(1202);
-    setActivePart( 0L, true /* immediate */ );
+    setActivePart(0);
 
     if (m_pMainWindow->childFrame() == 0) return;
 
     const QList<KonqView*> viewList = KonqViewCollector::collect(m_pMainWindow);
     if ( !viewList.isEmpty() ) {
-        kDebug(1202) << viewList.count() << "items";
+        //kDebug(1202) << viewList.count() << "items";
 
         foreach ( KonqView* view, viewList ) {
             m_pMainWindow->removeChildView( view );
-            kDebug(1202) << "Deleting" << view;
+            //kDebug(1202) << "Deleting" << view;
             delete view;
         }
     }
@@ -701,7 +701,6 @@ KonqViewFactory KonqViewManager::createView( const QString &serviceType,
                                              KService::List &appServiceOffers,
                                              bool forceAutoEmbed )
 {
-  kDebug(1202) << serviceName;
   KonqViewFactory viewFactory;
 
   if( serviceType.isEmpty() && m_pMainWindow->currentView() ) {
@@ -904,7 +903,7 @@ void KonqViewManager::loadViewProfileFromGroup( const KConfigGroup &profileGroup
     KonqView *nextChildView = 0;
     nextChildView = m_pMainWindow->activeChildView();
     if (nextChildView == 0) nextChildView = chooseNextView(0);
-    setActivePart(nextChildView ? nextChildView->part() : 0L, true /* immediate */);
+    setActivePart(nextChildView ? nextChildView->part() : 0);
 
     // #71164
     if (!req.browserArgs.frameName.isEmpty() && nextChildView) {
@@ -943,10 +942,10 @@ void KonqViewManager::loadViewProfileFromGroup( const KConfigGroup &profileGroup
 
 void KonqViewManager::setActivePart(KParts::Part *part, QWidget *)
 {
-    setActivePart(part, false);
+    doSetActivePart( part );
 }
 
-void KonqViewManager::setActivePart( KParts::Part *part, bool immediate )
+void KonqViewManager::doSetActivePart( KParts::Part *part )
 {
     //kDebug(1202) << part;
     //if ( part )
@@ -954,7 +953,7 @@ void KonqViewManager::setActivePart( KParts::Part *part, bool immediate )
 
     KParts::Part* mainWindowActivePart = m_pMainWindow->currentView()
                                          ? m_pMainWindow->currentView()->part() : 0;
-    if (part == activePart() && (!immediate || mainWindowActivePart == part))
+    if (part == activePart() && mainWindowActivePart == part)
     {
       if ( part )
         kDebug(1202) << "Part is already active!";
@@ -1099,10 +1098,14 @@ void KonqViewManager::loadItem( const KConfigGroup &cfg, KonqFrameContainerBase 
         } else {
             serviceType = cfg.readEntry( QString::fromLatin1( "ServiceType" ).prepend( prefix ), QString("inode/directory"));
             serviceName = cfg.readEntry( QString::fromLatin1( "ServiceName" ).prepend( prefix ), QString() );
-            if (serviceName == "konq_aboutpage" && forcedUrl.protocol() != "about") {
-                // No point in loading the about page if we're going to replace it with a KHTML part right away
-                serviceType = "text/html";
-                serviceName = "html";
+            if (serviceName == "konq_aboutpage") {
+                if ( (!forcedUrl.isEmpty() && forcedUrl.protocol() != "about") ||
+                     (forcedUrl.isEmpty() && openUrl == false)) // e.g. window.open
+                {
+                    // No point in loading the about page if we're going to replace it with a KHTML part right away
+                    serviceType = "text/html";
+                    serviceName = "html";
+                }
             }
         }
         //kDebug(1202) << "serviceType" << serviceType << serviceName;
@@ -1334,7 +1337,7 @@ void KonqViewManager::slotProfileActivated(QAction* action)
     const QString fileName = KUrl(profilePath).fileName();
     KConfig cfg(profilePath);
     KConfigGroup profileGroup( &cfg, "Profile" );
-    const QString xmluiFile = profileGroup.readEntry("XMLUIFile","konqueror.rc");
+    const QString xmluiFile = normalizedXMLFileName(profileGroup.readEntry("XMLUIFile","konqueror.rc"));
 
     //If the profile specifies an xmlgui file that differs from the currently
     //loaded one, then we have no choice but to recreate the window.  I've
@@ -1515,6 +1518,15 @@ KonqMainWindow* KonqViewManager::duplicateWindow()
     mainWindow->viewManager()->printFullHierarchy();
 #endif
     return mainWindow;
+}
+
+QString KonqViewManager::normalizedXMLFileName(const QString& xmluiFile)
+{
+    // Compatibility with pre-kde-4.2 times where there were 2 forks of konqueror.rc
+    // Those have been merged back again, so convert to "konqueror.rc".
+    if (xmluiFile == "konq-filemanagement.rc" || xmluiFile == "konq-webbrowsing.rc")
+        return "konqueror.rc";
+    return xmluiFile;
 }
 
 #include "konqviewmanager.moc"

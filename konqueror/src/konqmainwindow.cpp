@@ -259,7 +259,7 @@ KonqMainWindow::KonqMainWindow( const KUrl &initialURL, const QString& xmluiFile
   connect( KGlobalSettings::self(), SIGNAL( kdisplayFontChanged()), SLOT(slotReconfigure()));
 
   //load the xmlui file specified in the profile or the default konqueror.rc
-  setXMLFile( xmluiFile );
+  setXMLFile( KonqViewManager::normalizedXMLFileName(xmluiFile) );
 
   setStandardToolBarMenuEnabled( true );
 
@@ -612,7 +612,7 @@ void KonqMainWindow::openUrl(KonqView *_view, const KUrl &_url,
     }
 
 
-  kDebug(1202) << "trying openView for" << url << "( mimeType" << mimeType << ")";
+    //kDebug(1202) << "trying openView for" << url << "( mimeType" << mimeType << ")";
   if ( ( !mimeType.isEmpty() && mimeType != "application/octet-stream") ||
        url.url() == "about:" || url.url() == "about:konqueror" || url.url() == "about:plugins" )
   {
@@ -732,6 +732,7 @@ bool KonqMainWindow::openView( QString mimeType, const KUrl &_url, KonqView *chi
         abortLoading();
         setLocationBarURL( _url );
         KonqOpenURLRequest newreq;
+        newreq.forceAutoEmbed = true;
         newreq.followMode = true;
         newreq.args = req.args;
         newreq.browserArgs = req.browserArgs;
@@ -1007,29 +1008,10 @@ void KonqMainWindow::slotOpenURLRequest( const KUrl &url, const KParts::OpenUrlA
 void KonqMainWindow::openUrlRequestHelper( KonqView *childView, const KUrl &url, const KParts::OpenUrlArguments& args, const KParts::BrowserArguments &browserArgs )
 {
     //kDebug(1202) << "url=" << url;
-  KonqOpenURLRequest req;
-  req.args = args;
-  req.browserArgs = browserArgs;
-
-  // Clicking on a link that points to the page itself (e.g. anchor)
-  if ( !browserArgs.doPost() && !args.reload() &&
-       childView && !childView->aborted() && // #164495
-       urlcmp( url.url(), childView->url().url(),
-               KUrl::CompareWithoutTrailingSlash | KUrl::CompareWithoutFragment ) )
-  {
-    QString serviceType = args.mimeType();
-    if ( serviceType.isEmpty() )
-      serviceType = childView->serviceType();
-
-    childView->stop();
-    req.forceAutoEmbed = true;
-
-    req.openAfterCurrentPage = KonqSettings::openAfterCurrentPage();
-    openView( serviceType, url, childView, req );
-    return;
-  }
-
-  openUrl( childView, url, args.mimeType(), req, browserArgs.trustedSource );
+    KonqOpenURLRequest req;
+    req.args = args;
+    req.browserArgs = browserArgs;
+    openUrl(childView, url, args.mimeType(), req, browserArgs.trustedSource);
 }
 
 QObject *KonqMainWindow::lastFrame( KonqView *view )
@@ -1056,6 +1038,7 @@ bool KonqMainWindow::makeViewsFollow( const KUrl & url,
   bool res = false;
   //kDebug(1202) << senderView->metaObject()->className() << "url=" << url << "serviceType=" << serviceType;
   KonqOpenURLRequest req;
+  req.forceAutoEmbed = true;
   req.followMode = true;
   req.args = args;
   req.browserArgs = browserArgs;
@@ -1133,7 +1116,8 @@ static bool isPopupWindow( const KParts::WindowArgs &windowArgs )
         !windowArgs.isStatusBarVisible();
 }
 
-// This is called for the javascript window.open call. Also called for MMB on link.
+// This is called for the javascript window.open call.
+// Also called for MMB on link, target="_blank" link, MMB on folder, etc.
 void KonqMainWindow::slotCreateNewWindow( const KUrl &url,
                                           const KParts::OpenUrlArguments& args,
                                           const KParts::BrowserArguments &browserArgs,
@@ -1202,8 +1186,9 @@ void KonqMainWindow::slotCreateNewWindow( const KUrl &url,
         return;
     }
 
-    mainWindow = new KonqMainWindow;
-    mainWindow->setInitialFrameName( browserArgs.frameName );
+    // Pass the URL to createNewWindow so that it can select the right profile for it
+    // Note that it's always empty in case of window.open, though.
+    mainWindow = KonqMisc::createNewWindow(url, args, browserArgs, false, QStringList(), false, false /*do not open URL*/);
     mainWindow->resetAutoSaveSettings(); // Don't autosave
 
     KonqOpenURLRequest req;
@@ -1211,10 +1196,10 @@ void KonqMainWindow::slotCreateNewWindow( const KUrl &url,
     req.browserArgs = browserArgs;
     req.forceAutoEmbed = true;
 
-    if ( args.mimeType().isEmpty() )
+    // Do we know the mimetype? If not, go to generic openUrl which will use a KonqRun.
+    if ( args.mimeType().isEmpty() ) {
       mainWindow->openUrl( 0, url, QString(), req );
-    else if ( !mainWindow->openView( args.mimeType(), url, 0, req ) )
-    {
+    } else if (!mainWindow->openView(args.mimeType(), url, m_currentView, req)) {
       // we have problems. abort.
       delete mainWindow;
 
@@ -1226,6 +1211,7 @@ void KonqMainWindow::slotCreateNewWindow( const KUrl &url,
     KonqView * view = 0;
     // cannot use activePart/currentView, because the activation through the partmanager
     // is delayed by a singleshot timer (see KonqViewManager::setActivePart)
+    // ### TODO: not true anymore
     if ( mainWindow->viewMap().count() )
     {
       MapViews::ConstIterator it = mainWindow->viewMap().begin();
@@ -1235,23 +1221,15 @@ void KonqMainWindow::slotCreateNewWindow( const KUrl &url,
         *part = it.key();
     }
 
-    // activate the view _now_ in order to make the menuBar() hide call work
+    // activate the view now in order to make the menuBar() hide call work
     if ( part && *part ) {
-       mainWindow->viewManager()->setActivePart( *part, true );
+       mainWindow->viewManager()->setActivePart(*part);
     }
-
-    QString profileName(url.isLocalFile() ? "konqueror/profiles/filemanagement" : "konqueror/profiles/webbrowsing");
 
     if ( windowArgs.x() != -1 )
         mainWindow->move( windowArgs.x(), mainWindow->y() );
     if ( windowArgs.y() != -1 )
         mainWindow->move( mainWindow->x(), windowArgs.y() );
-
-    KSharedConfigPtr cfg = KSharedConfig::openConfig(KStandardDirs::locate("data",profileName), KConfig::SimpleConfig);
-    KConfigGroup profileGroup(cfg, "Profile");
-
-    // First, apply default size from profile
-    mainWindow->applyWindowSizeFromProfile(profileGroup);
 
     int width;
     if ( windowArgs.width() != -1 )
@@ -1838,7 +1816,7 @@ void KonqMainWindow::slotConfigureDone()
 void KonqMainWindow::slotConfigureSpellChecking()
 {
     Sonnet::ConfigDialog dialog( KGlobal::config().data(), this);
-    setWindowIcon( KIcon( "konqueror" ));
+    dialog.setWindowIcon( KIcon( "konqueror" ));
     dialog.exec();
 }
 
@@ -1880,7 +1858,7 @@ void KonqMainWindow::slotPartChanged( KonqView *childView, KParts::ReadOnlyPart 
 
   m_pViewManager->replacePart( oldPart, newPart, false );
   // Set active immediately
-  m_pViewManager->setActivePart( newPart, true );
+  m_pViewManager->setActivePart(newPart);
 
   viewsChanged();
 }
@@ -1976,80 +1954,69 @@ void KonqMainWindow::slotViewCompleted( KonqView * view )
   }
 }
 
-void KonqMainWindow::slotPartActivated( KParts::Part *part )
+void KonqMainWindow::slotPartActivated(KParts::Part *part)
 {
-  kDebug(1202) << part
-               << (part && part->componentData().isValid() && part->componentData().aboutData() ? part->componentData().aboutData()->appName() : "");
+    //kDebug(1202) << part
+    //           << (part && part->componentData().isValid() && part->componentData().aboutData() ? part->componentData().aboutData()->appName() : "");
 
-  KonqView *newView = 0;
-  KonqView *oldView = m_currentView;
+    KonqView *newView = 0;
+    KonqView *oldView = m_currentView;
 
-  if ( part )
-  {
-    newView = m_mapViews.value( static_cast<KParts::ReadOnlyPart *>( part ) );
+    if (part) {
+        newView = m_mapViews.value( static_cast<KParts::ReadOnlyPart *>(part) );
+        if (newView->isPassiveMode()) {
+            // Passive view. Don't connect anything, don't change m_currentView
+            // Another view will become the current view very soon
+            //kDebug(1202) << "Passive mode - return";
+            return;
+        }
+    }
 
-    if ( newView->isPassiveMode() )
-    {
-      // Passive view. Don't connect anything, don't change m_currentView
-      // Another view will become the current view very soon
-      kDebug(1202) << "Passive mode - return";
+    KParts::BrowserExtension *ext = 0;
+
+    if (oldView) {
+        ext = oldView->browserExtension();
+        if (ext) {
+            //kDebug(1202) << "Disconnecting extension for view" << oldView;
+            disconnectExtension( ext );
+        }
+    }
+
+    //kDebug(1202) << "New current view" << newView;
+    m_currentView = newView;
+    if (!part) {
+      //kDebug(1202) << "No part activated - returning";
+      unplugViewModeActions();
+      createGUI(0);
+      KParts::MainWindow::setCaption(QString());
       return;
     }
-  }
 
-  KParts::BrowserExtension *ext = 0;
+    ext = m_currentView->browserExtension();
 
-  if ( oldView )
-  {
-    ext = oldView->browserExtension();
-    if ( ext )
-    {
-      //kDebug(1202) << "Disconnecting extension for view" << oldView;
-      disconnectExtension( ext );
-    }
-  }
+    if (ext) {
+        connectExtension(ext);
+    } else {
+        kDebug(1202) << "No Browser Extension for the new part";
+        // Disable all browser-extension actions
 
-  kDebug(1202) << "New current view" << newView;
-  m_currentView = newView;
-  if ( !part )
-  {
-    kDebug(1202) << "No part activated - returning";
-    unplugViewModeActions();
-    createGUI( 0 );
-    KParts::MainWindow::setCaption( "" );
-    return;
-  }
+        KParts::BrowserExtension::ActionSlotMap * actionSlotMap = KParts::BrowserExtension::actionSlotMapPtr();
+        KParts::BrowserExtension::ActionSlotMap::ConstIterator it = actionSlotMap->begin();
+        const KParts::BrowserExtension::ActionSlotMap::ConstIterator itEnd = actionSlotMap->end();
+        for (; it != itEnd ; ++it) {
+            QAction * act = actionCollection()->action(QString::fromLatin1(it.key()));
+            Q_ASSERT(act);
+            if (act)
+                act->setEnabled( false );
+        }
 
-  ext = m_currentView->browserExtension();
-
-  if ( ext )
-  {
-    connectExtension( ext );
-  }
-  else
-  {
-    kDebug(1202) << "No Browser Extension for the new part";
-    // Disable all browser-extension actions
-
-    KParts::BrowserExtension::ActionSlotMap * actionSlotMap = KParts::BrowserExtension::actionSlotMapPtr();
-    KParts::BrowserExtension::ActionSlotMap::ConstIterator it = actionSlotMap->begin();
-    KParts::BrowserExtension::ActionSlotMap::ConstIterator itEnd = actionSlotMap->end();
-
-    for ( ; it != itEnd ; ++it )
-    {
-      QAction * act = actionCollection()->action( it.key().data() );
-      Q_ASSERT(act);
-      if (act)
-        act->setEnabled( false );
+        if (m_paCopyFiles)
+            m_paCopyFiles->setEnabled(false);
+        if (m_paMoveFiles)
+            m_paMoveFiles->setEnabled(false);
     }
 
-    if ( m_paCopyFiles )
-      m_paCopyFiles->setEnabled( false );
-    if ( m_paMoveFiles )
-      m_paMoveFiles->setEnabled( false );
-  }
-
-  createGUI( part );
+    createGUI(part);
 
   // View-dependent GUI
 
@@ -2118,7 +2085,7 @@ void KonqMainWindow::removeChildView( KonqView *childView )
       return;
   }
 
-  kDebug(1202) << "Removing view" << childView;
+  //kDebug(1202) << "Removing view" << childView;
 
   m_mapViews.erase( it );
 
@@ -2126,7 +2093,7 @@ void KonqMainWindow::removeChildView( KonqView *childView )
   emit viewRemoved( childView );
 
 #ifndef NDEBUG
-  dumpViewList();
+  //dumpViewList();
 #endif
 
   // KonqViewManager takes care of m_currentView
@@ -2298,18 +2265,26 @@ void KonqMainWindow::slotSplitViewHorizontal()
 {
     if ( !m_currentView )
         return;
-    KonqView * newView = m_pViewManager->splitView( m_currentView, Qt::Horizontal );
-    if (newView == 0) return;
-    newView->openUrl( m_currentView->url(), m_currentView->locationBarURL() );
+    KonqView* oldView = m_currentView;
+    KonqView* newView = m_pViewManager->splitView(m_currentView, Qt::Horizontal);
+    if (newView == 0)
+        return;
+    KonqOpenURLRequest req;
+    req.forceAutoEmbed = true;
+    openView(oldView->serviceType(), oldView->url(), newView, req);
 }
 
 void KonqMainWindow::slotSplitViewVertical()
 {
     if ( !m_currentView )
         return;
-    KonqView * newView = m_pViewManager->splitView( m_currentView, Qt::Vertical );
-    if (newView == 0) return;
-    newView->openUrl( m_currentView->url(), m_currentView->locationBarURL() );
+    KonqView* oldView = m_currentView;
+    KonqView* newView = m_pViewManager->splitView(m_currentView, Qt::Vertical);
+    if (newView == 0)
+        return;
+    KonqOpenURLRequest req;
+    req.forceAutoEmbed = true;
+    openView(oldView->serviceType(), oldView->url(), newView, req);
 }
 
 void KonqMainWindow::slotAddTab()
@@ -3010,7 +2985,7 @@ void KonqMainWindow::initCombo()
   connect( m_pURLCompletion, SIGNAL( match(const QString&) ),
            SLOT( slotMatch(const QString&) ));
 
-  m_combo->lineEdit()->installEventFilter(this);
+  m_combo->installEventFilter(this);
 
   static bool bookmarkCompletionInitialized = false;
   if ( !bookmarkCompletionInitialized )
@@ -3162,7 +3137,7 @@ void KonqMainWindow::slotClearComboHistory()
 bool KonqMainWindow::eventFilter(QObject*obj,QEvent *ev)
 {
   if ( ( ev->type()==QEvent::FocusIn || ev->type()==QEvent::FocusOut ) &&
-       m_combo && m_combo->lineEdit() == obj )
+       m_combo && m_combo->lineEdit() && m_combo == obj )
   {
     //kDebug(1202) << obj << obj->metaObject()->className() << obj->name();
 
@@ -3484,7 +3459,7 @@ void KonqMainWindow::setAnimatedLogoSize()
 
     m_paAnimatedLogo->setFixedSize(QSize(buttonHeight, buttonHeight));
 
-    kDebug() << "buttonHeight=" << buttonHeight << "max iconSize=" << iconSize;
+    //kDebug() << "buttonHeight=" << buttonHeight << "max iconSize=" << iconSize;
     if ( iconSize < KIconLoader::SizeSmallMedium )
         iconSize = KIconLoader::SizeSmall;
     else if ( iconSize < KIconLoader::SizeMedium  )
@@ -3493,7 +3468,7 @@ void KonqMainWindow::setAnimatedLogoSize()
         iconSize = KIconLoader::SizeMedium ;
     else if ( iconSize < KIconLoader::SizeHuge )
         iconSize = KIconLoader::SizeLarge;
-    kDebug() << "final iconSize=" << iconSize;
+    //kDebug() << "final iconSize=" << iconSize;
     m_paAnimatedLogo->setIconSize(QSize(iconSize, iconSize));
 }
 
@@ -4808,8 +4783,12 @@ void KonqMainWindow::saveProperties( KConfigGroup& config )
 
 void KonqMainWindow::readProperties( const KConfigGroup& configGroup )
 {
+    // ######### THIS CANNOT WORK. It's too late to change the xmlfile, the GUI has been built already!
+    // We need to delay doing setXMLFile+createGUI until we know which profile we are going to use, then...
+    // TODO: Big refactoring needed for this feature. On the other hand, all default profiles shipped with
+    // konqueror use konqueror.rc again, so the need for this is almost zero now.
     const QString xmluiFile = configGroup.readEntry("XMLUIFile","konqueror.rc");
-    setXMLFile(xmluiFile);
+    setXMLFile( KonqViewManager::normalizedXMLFileName(xmluiFile) );
 
     m_pViewManager->loadViewProfileFromGroup( configGroup, QString() /*no profile name*/ );
     // read window settings

@@ -67,6 +67,7 @@ KCMFilter::KCMFilter( QWidget *parent, const QVariantList& )
 
     mListBox = new QListWidget;
     mListBox->setSelectionMode(QListWidget::ExtendedSelection);
+    mListBox->setSortingEnabled( true );
     vbox->addWidget(mListBox);
     vbox->addWidget(new QLabel( i18n("Expression (e.g. http://www.site.com/ad/*):")));
     mString = new QLineEdit;
@@ -108,7 +109,6 @@ KCMFilter::KCMFilter( QWidget *parent, const QVariantList& )
                                    "a filename style wildcard e.g. http://www.site.com/ads* or as a full "
                                    "regular expression by surrounding the string with '/' e.g. "
                                    " //(ad|banner)\\./"));
-    load();
     updateButton();
 }
 
@@ -197,12 +197,12 @@ void KCMFilter::importFilters()
                         if (!rx.isValid())
                             continue;
                     }
-                }
 
-                if (!line.isEmpty() &&
-                     mListBox->findItems(line,
-                                        Qt::MatchCaseSensitive|Qt::MatchExactly).isEmpty()) {
-                    paths.append(line);
+                    if (!line.isEmpty() &&
+                        mListBox->findItems(line, Qt::MatchCaseSensitive|Qt::MatchExactly).isEmpty())
+                    {
+                        paths.append(line);
+                    }
                 }
             }
             f.close();
