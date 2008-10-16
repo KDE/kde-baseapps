@@ -37,6 +37,7 @@
 #include <KAuthorized>
 #include <KBookmarkManager>
 #include <KConfigDialog>
+#include <KDesktopFile>
 #include <KDirModel>
 #include <KFileItemDelegate>
 #include <kfileplacesmodel.h>
@@ -2112,11 +2113,20 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
     KFileItemList items;
     bool hasRemoteFiles = false;
+    bool isTrashLink = false;
 
     foreach (const QModelIndex &index, indexes) {
         KFileItem item = m_model->itemForIndex(index);
         hasRemoteFiles |= item.localPath().isEmpty();
         items.append(item);
+    }
+
+    // Check if we're showing the menu for the trash link
+    if (items.count() == 1 && items.at(0).isDesktopFile()) {
+        KDesktopFile file(items.at(0).localPath());
+        if (file.readType() == "Link" && file.readUrl() == "trash:/") {
+            isTrashLink = true;
+        }
     }
 
     QAction* pasteTo = m_actionCollection.action("pasteto");
@@ -2130,10 +2140,14 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
     KConfigGroup configGroup(KGlobal::config(), "KDE");
     bool showDeleteCommand = configGroup.readEntry("ShowDeleteCommand", false);
-    if (!hasRemoteFiles) {
-        editActions.append(m_actionCollection.action("trash"));
-    } else {
-        showDeleteCommand = true;
+
+    // Don't add the "Move to Trash" action if we're showing the menu for the trash link
+    if (!isTrashLink) {
+        if (!hasRemoteFiles) {
+            editActions.append(m_actionCollection.action("trash"));
+        } else {
+            showDeleteCommand = true;
+        }
     }
     if (showDeleteCommand) {
         editActions.append(m_actionCollection.action("del"));
@@ -2142,8 +2156,13 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
     KParts::BrowserExtension::ActionGroupMap actionGroups;
     actionGroups.insert("editactions", editActions);
 
-    KParts::BrowserExtension::PopupFlags flags = 
-         KParts::BrowserExtension::ShowUrlOperations | KParts::BrowserExtension::ShowProperties;
+    KParts::BrowserExtension::PopupFlags flags = KParts::BrowserExtension::ShowProperties;
+
+    // Use the Dolphin setting for showing the "Copy To" and "Move To" actions
+    KConfig dolphin("dolphinrc");
+    if (KConfigGroup(&dolphin, "General").readEntry("ShowCopyMoveMenu", false)) {
+        flags |= KParts::BrowserExtension::ShowUrlOperations;
+    }
 
     // m_newMenu can be NULL here but KonqPopupMenu does handle this.
     KonqPopupMenu *contextMenu = new KonqPopupMenu(items, m_url, m_actionCollection, m_newMenu,
