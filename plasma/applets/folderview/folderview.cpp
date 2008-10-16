@@ -37,7 +37,6 @@
 #include <KAuthorized>
 #include <KBookmarkManager>
 #include <KConfigDialog>
-#include <KDirLister>
 #include <KDirModel>
 #include <KFileItemDelegate>
 #include <kfileplacesmodel.h>
@@ -56,6 +55,7 @@
 #include <konq_operations.h>
 #include <konq_popupmenu.h>
 
+#include "dirlister.h"
 #include "proxymodel.h"
 #include "previewpluginsmodel.h"
 #include "plasma/theme.h"
@@ -314,10 +314,13 @@ void FolderView::init()
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
-    KDirLister *lister = new KDirLister(this);
+    DirLister *lister = new DirLister(this);
     lister->setDelayedMimeTypes(true);
+    lister->setAutoErrorHandlingEnabled(false, 0);
+    connect(lister, SIGNAL(started(KUrl)), SLOT(listingStarted(KUrl)));
     connect(lister, SIGNAL(completed()), SLOT(listingCompleted()));
     connect(lister, SIGNAL(canceled()), SLOT(listingCanceled()));
+    connect(lister, SIGNAL(showErrorMessage(QString)), SLOT(listingError(QString)));
 
     m_model->setFilterFixedString(m_filterFiles);
     m_dirModel->setDirLister(lister);
@@ -1325,6 +1328,55 @@ void FolderView::updateTextShadows(const QColor &textColor)
     }
 }
 
+void FolderView::paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const
+{
+    const QColor themeTextColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
+    const QColor textColor = (m_textColor.alpha() > 0 ? m_textColor : themeTextColor);
+
+    QIcon icon = KIconLoader::global()->loadIcon("dialog-error", KIconLoader::NoGroup, KIconLoader::SizeHuge,
+                                                 KIconLoader::DefaultState, QStringList(), 0, true);
+    const QSize iconSize = icon.isNull() ? QSize() :
+                               icon.actualSize(QSize(KIconLoader::SizeHuge, KIconLoader::SizeHuge));
+    const int flags = Qt::AlignCenter | Qt::TextWordWrap;
+    const int blur = qCeil(m_delegate->shadowBlur());
+
+    QFontMetrics fm = painter->fontMetrics();
+    QRect r = fm.boundingRect(rect.adjusted(0, 0, -iconSize.width() - 4, 0), flags, message);
+    QPixmap pm(r.size());
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setFont(painter->font());
+    p.setPen(textColor);
+    p.drawText(pm.rect(), flags, message);
+    p.end();
+
+    QImage shadow;
+    if (m_delegate->shadowColor().alpha() > 0) {
+        shadow = QImage(pm.size() + QSize(blur * 2, blur * 2), QImage::Format_ARGB32_Premultiplied);
+        p.begin(&shadow);
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        p.fillRect(shadow.rect(), Qt::transparent);
+        p.drawPixmap(blur, blur, pm);
+        p.end();
+
+        Plasma::PaintUtils::shadowBlur(shadow, blur, m_delegate->shadowColor());
+    }
+
+    const QSize size(pm.width() + iconSize.width() + 4, qMax(iconSize.height(), pm.height()));
+    const QPoint iconPos = rect.topLeft() + QPoint((rect.width() - size.width()) / 2,
+                                                   (rect.height() - size.height()) / 2);
+    const QPoint textPos = iconPos + QPoint(iconSize.width() + 4, (iconSize.height() - pm.height()) / 2);
+
+    if (!icon.isNull()) {
+        icon.paint(painter, QRect(iconPos, iconSize));
+    }
+
+    if (!shadow.isNull()) {
+        painter->drawImage(textPos - QPoint(blur, blur) + m_delegate->shadowOffset().toPoint(), shadow);
+    }
+    painter->drawPixmap(textPos, pm);
+}
+
 void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentRect)
 {
     // Make sure the backbuffer pixmap has the same size as the content rect
@@ -1500,6 +1552,11 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
         painter->drawPixmap(contentRect.topLeft(), m_pixmap);
     }
 
+    if (!m_errorMessage.isEmpty()) {
+        paintErrorMessage(painter, contentRect, m_errorMessage);
+    }
+
+    // Show the spinning animation
     if (m_validRows < m_items.size() || m_initialListing) {
         if (!m_animTimer.isActive()) {
             m_animFrame = 0;
@@ -1958,6 +2015,17 @@ void FolderView::updateSortActionsState()
     }
 }
 
+void FolderView::listingStarted(const KUrl &url)
+{
+    Q_UNUSED(url)
+
+    // Reset any error message that may have resulted from an earlier listing
+    if (!m_errorMessage.isEmpty()) {
+        m_errorMessage.clear();
+        update();
+    }
+}
+
 void FolderView::listingCompleted()
 {
     m_delayedCacheClearTimer.start(5000, this);
@@ -1968,6 +2036,13 @@ void FolderView::listingCanceled()
 {
     m_delayedCacheClearTimer.start(5000, this);
     m_initialListing = false;
+}
+
+void FolderView::listingError(const QString &message)
+{
+    m_errorMessage = message;
+    markEverythingDirty();
+    update();
 }
 
 void FolderView::commitData(QWidget *editor)
@@ -2126,7 +2201,9 @@ void FolderView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (!contentsRect().contains(event->pos()) ||
-        event->pos().y() < contentsRect().top() + m_titleHeight) {
+        event->pos().y() < contentsRect().top() + m_titleHeight ||
+        !m_errorMessage.isEmpty())
+    {
         Plasma::Applet::mousePressEvent(event);
         return;
     }

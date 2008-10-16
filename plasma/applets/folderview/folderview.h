@@ -67,6 +67,7 @@ public:
     void init();
     void saveState(KConfigGroup &config) const;
     void createAnimationFrames();
+    void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
     QRect visualRect(const QModelIndex &index) const;
@@ -117,8 +118,10 @@ private slots:
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
 
+    void listingStarted(const KUrl &url);
     void listingCompleted();
     void listingCanceled();
+    void listingError(const QString &message);
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
@@ -219,6 +222,7 @@ private:
     bool m_showPreviews;
     bool m_drawShadows;
     QString m_customLabel;
+    QString m_errorMessage;
     QStringList m_previewPlugins;
     int m_customIconSize;
     int m_numTextLines;
