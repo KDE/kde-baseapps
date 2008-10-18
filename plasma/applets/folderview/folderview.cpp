@@ -1411,12 +1411,26 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
                                                              m_delegate->shadowColor(),
                                                              m_delegate->shadowOffset().toPoint());
         painter->drawPixmap(contentRect.topLeft(), titlePixmap);
+
         //Draw underline
         int width = contentRect.width() - (m_scrollBar->isVisible() ? m_scrollBar->geometry().width() + 4 : 0);
-        painter->fillRect(contentRect.left(), contentRect.top() + m_titleHeight - 2, width, 1,
-                          QColor(0, 0, 0, 64));
-        painter->fillRect(contentRect.left(), contentRect.top() + m_titleHeight - 1, width, 1,
-                          QColor(255, 255, 255, 64));
+        if (m_divider.width() != width) {
+            qreal fw = 1.0 / width * 20.0;
+            m_divider = QPixmap(width, 2);
+            m_divider.fill(Qt::transparent);
+            QLinearGradient g(0, 0, width, 0);
+            g.setColorAt(0, Qt::transparent);
+            g.setColorAt(fw, Qt::black);
+            g.setColorAt(1 - fw, Qt::black);
+            g.setColorAt(1, Qt::transparent);
+            QPainter p(&m_divider);
+            p.setCompositionMode(QPainter::CompositionMode_Source);
+            p.fillRect(0, 0, width, 1, QColor(0, 0, 0, 64));
+            p.fillRect(0, 1, width, 1, QColor(255, 255, 255, 64));
+            p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+            p.fillRect(m_divider.rect(), g);
+        }
+        painter->drawPixmap(contentRect.left(), contentRect.top() + m_titleHeight - 2, m_divider);
     }
 
     if (m_viewScrolled) {

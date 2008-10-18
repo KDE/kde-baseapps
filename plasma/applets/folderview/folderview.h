@@ -178,6 +178,7 @@ private:
     QPixmap m_pixmap;
     QPixmap m_topFadeTile;
     QPixmap m_bottomFadeTile;
+    QPixmap m_divider;
     QRegion m_dirtyRegion;
     QItemSelectionModel *m_selectionModel;
     KUrl m_url;
