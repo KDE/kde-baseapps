@@ -748,6 +748,7 @@ void FolderView::themeChanged()
 void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
+    m_regionCache.clear();
 
     if (!m_positionsLoaded) {
         loadIconPositions();
@@ -771,9 +772,9 @@ void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
         // reuse that position.
         if (first == last && !m_lastDeletedPos.isNull()) {
             const QModelIndex index = m_model->index(first, 0);
-            const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
-            m_items[first].rect = QRect(m_lastDeletedPos.x() + (grid.width() - size.width()) / 2,
-                                        m_lastDeletedPos.y(), size.width(), size.height());
+            QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+            size.rwidth() = grid.width();
+            m_items[first].rect = QRect(m_lastDeletedPos, size);
             m_items[first].layouted = true;
             markAreaDirty(m_items[first].rect);
             m_lastDeletedPos = QPoint();
@@ -801,6 +802,7 @@ void FolderView::rowsInserted(const QModelIndex &parent, int first, int last)
 void FolderView::rowsRemoved(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
+    m_regionCache.clear();
 
     if (!m_layoutBroken) {
         if (first < m_validRows) {
@@ -841,6 +843,7 @@ void FolderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bott
 {
     const QStyleOptionViewItemV4 option = viewOptions();
     const QSize grid = gridSize();
+    m_regionCache.clear();
 
     // Update the size of the items and center them in the grid cell
     for (int i = topLeft.row(); i <= bottomRight.row(); i++) {
@@ -848,12 +851,14 @@ void FolderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bott
             continue;
         }
         const QModelIndex index = m_model->index(i, 0);
-        const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+        QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+        size.rwidth() = grid.width();
+        QRect dirty = m_items[i].rect;
         if (size != m_items[i].rect.size()) {
-            m_items[i].rect.translate((m_items[i].rect.width() - size.width()) / 2, 0);
+            m_items[i].rect.setHeight(size.height());
+            dirty |= m_items[i].rect;
         }
-        markAreaDirty(QRect(m_items[i].rect.x() - (grid.width() - m_items[i].rect.width()) / 2,
-                             m_items[i].rect.y(), grid.width(), grid.height()));
+        markAreaDirty(dirty);
     }
 }
 
@@ -982,6 +987,7 @@ void FolderView::layoutItems()
 {
     QStyleOptionViewItemV4 option = viewOptions();
     m_items.resize(m_model->rowCount());
+    m_regionCache.clear();
 
     const QRect visibleRect = mapToViewport(contentsRect()).toAlignedRect();
     const QRect rect = contentsRect().toRect();
@@ -1022,12 +1028,13 @@ void FolderView::layoutItems()
             // ================================================================
             for (int i = m_validRows; i < count; i++) {
                 const QModelIndex index = m_model->index(i, 0);
-                const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
                 KFileItem item = m_model->itemForIndex(index);
+                QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+                size.rwidth() = grid.width();
 
                 const QPoint pos = m_savedPositions.value(item.name(), QPoint(-1, -1));
                 if (pos != QPoint(-1, -1)) {
-                    m_items[i].rect = QRect(pos + QPoint((grid.width() - size.width()) / 2, 0), size);
+                    m_items[i].rect = QRect(pos, size);
                     m_items[i].layouted = true;
                     if (m_items[i].rect.intersects(visibleRect)) {
                         needUpdate = true;
@@ -1051,11 +1058,11 @@ void FolderView::layoutItems()
             QPoint pos = m_currentLayoutPos;
             for (int i = m_validRows; i < count; i++) {
                 const QModelIndex index = m_model->index(i, 0);
-                const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+                QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
+                size.rwidth() = grid.width();
 
                 pos = nextGridPosition(pos, grid, rect);
-                m_items[i].rect = QRect(pos.x() + (grid.width() - size.width()) / 2, pos.y(),
-                                        size.width(), size.height());
+                m_items[i].rect = QRect(pos, size);
                 m_items[i].layouted = true;
                 if (m_items[i].rect.intersects(visibleRect)) {
                     needUpdate = true;
@@ -1174,9 +1181,8 @@ void FolderView::saveIconPositions() const
         for (int i = 0; i < m_items.size(); i++) {
             QModelIndex index = m_model->index(i, 0);
             KFileItem item = m_model->itemForIndex(index);
-            int x = m_items[i].rect.x() - (size.width() - m_items[i].rect.width()) / 2;
             data << item.name();
-            data << QString::number(x);
+            data << QString::number(m_items[i].rect.x());
             data << QString::number(m_items[i].rect.y());
         }
 
@@ -1589,14 +1595,50 @@ void FolderView::paintInterface(QPainter *painter, const QStyleOptionGraphicsIte
     }
 }
 
+bool FolderView::indexIntersectsRect(const QModelIndex &index, const QRect &rect) const
+{
+    QRect r = m_items[index.row()].rect;
+    if (!r.intersects(rect)) {
+        return false;
+    }
+
+    // If the item is fully contained in the rect
+    if (r.left() > rect.left() && r.right() < rect.right() &&
+        r.top() > rect.top() && r.bottom() < rect.bottom())
+    {
+        return true;
+    }
+
+    // If the item is partially inside the rect
+    return visualRegion(index).intersects(rect);
+}
+
 QModelIndex FolderView::indexAt(const QPointF &point) const
 {
     if (!mapToViewport(contentsRect()).contains(point))
         return QModelIndex();
 
+    const QPoint pt = point.toPoint();
+
+    // If we have a hovered index, check it before walking the list
+    if (m_hoveredIndex.isValid()) {
+        if (m_items[m_hoveredIndex.row()].rect.contains(pt) &&
+            visualRegion(m_hoveredIndex).contains(pt))
+        {
+            return m_hoveredIndex;
+        }
+    }
+
     for (int i = 0; i < m_validRows; i++) {
-        if (m_items[i].layouted && m_items[i].rect.contains(point.toPoint()))
-            return m_model->index(i, 0);
+        if (!m_items[i].layouted || !m_items[i].rect.contains(pt)) {
+            continue;
+        }
+
+        const QModelIndex index = m_model->index(i, 0);
+        if (visualRegion(index).contains(pt)) {
+            return index;
+        }
+        break;
     }
 
     return QModelIndex();
@@ -1610,6 +1652,32 @@ QRect FolderView::visualRect(const QModelIndex &index) const
     }
 
     return m_items[index.row()].rect;
+}
+
+QRegion FolderView::visualRegion(const QModelIndex &index) const
+{
+    QStyleOptionViewItemV4 option = viewOptions();
+    option.rect = m_items[index.row()].rect;
+    if (m_selectionModel->isSelected(index)) {
+        option.state |= QStyle::State_Selected;
+    }
+    if (index == m_hoveredIndex) {
+        option.state |= QStyle::State_MouseOver;
+    }
+
+    quint64 key = quint64(option.state) << 32 | index.row();
+    if (QRegion *region = m_regionCache.object(key)) {
+        return *region;
+    }
+
+    QRegion region;
+    // Make this a virtual function in KDE 5
+    QMetaObject::invokeMethod(m_delegate, "shape", Q_RETURN_ARG(QRegion, region),
+                              Q_ARG(QStyleOptionViewItem, option),
+                              Q_ARG(QModelIndex, index));
+
+    m_regionCache.insert(key, new QRegion(region));
+    return region;
 }
 
 void FolderView::constraintsEvent(Plasma::Constraints constraints)
@@ -2391,6 +2459,7 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (r != m_rubberBand)
     {
+        const QPoint pt = pos.toPoint();
         QRectF dirtyRect = m_rubberBand | r;
         m_rubberBand = r;
 
@@ -2404,20 +2473,21 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QItemSelection selection;
         for (int i = 0; i < m_items.size(); i++)
         {
-            if (!m_items[i].rect.intersects(m_rubberBand))
+            QModelIndex index = m_model->index(i, 0);
+            if (!indexIntersectsRect(index, m_rubberBand))
                 continue;
 
             int start = i;
-            int end = i;
 
-            while (i < m_items.size() && m_items[i].rect.intersects(m_rubberBand)) {
+            do {
                 dirtyRect |= m_items[i].rect;
-                if (m_items[i].rect.contains(pos.toPoint()))
-                    m_hoveredIndex = m_model->index(i, 0);
-                end = i++;
-            }
+                if (m_items[i].rect.contains(pt) && visualRegion(index).contains(pt)) {
+                    m_hoveredIndex = index;
+                }
+                index = m_model->index(++i, 0);
+            } while (i < m_items.size() && indexIntersectsRect(index, m_rubberBand));
 
-            selection.select(m_model->index(start, 0), m_model->index(end, 0));
+            selection.select(m_model->index(start, 0), m_model->index(i - 1, 0));
         }
         m_selectionModel->select(selection, QItemSelectionModel::ToggleCurrent);
 
@@ -2547,6 +2617,7 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
     doLayoutSanityCheck();
     updateScrollBar();
     markEverythingDirty();
+    m_regionCache.clear();
 
     m_layoutBroken = true;
     updateSortActionsState();

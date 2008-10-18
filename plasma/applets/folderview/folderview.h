@@ -21,6 +21,7 @@
 #ifndef FOLDERVIEW_H
 #define FOLDERVIEW_H
 
+#include <QCache>
 #include <QPersistentModelIndex>
 #include <QSortFilterProxyModel>
 #include <QListView>
@@ -71,6 +72,7 @@ public:
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
     QRect visualRect(const QModelIndex &index) const;
+    QRegion visualRegion(const QModelIndex &index) const;
     QModelIndex indexAt(const QPointF &point) const;
     QSize iconSize() const;
     QSize gridSize() const;
@@ -86,6 +88,8 @@ protected:
     QPointF mapFromViewport(const QPointF &point) const;
     QRectF mapToViewport(const QRectF &point) const;
     QRectF mapFromViewport(const QRectF &point) const;
+
+    bool indexIntersectsRect(const QModelIndex &index, const QRect &rect) const;
 
 private slots:
     void rowsInserted(const QModelIndex &parent, int first, int last);
@@ -196,6 +200,7 @@ private:
     QActionGroup *m_sortingGroup;
     QVector<ViewItem> m_items;
     QHash<QString, QPoint> m_savedPositions;
+    mutable QCache<quint64, QRegion> m_regionCache;
     int m_columns;
     int m_rows;
     int m_validRows;
