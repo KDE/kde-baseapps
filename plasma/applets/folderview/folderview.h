@@ -98,7 +98,6 @@ private slots:
     void layoutChanged();
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void configAccepted();
-    void customFolderToggled(bool checked);
     void fontSettingsChanged();
     void iconSettingsChanged(int group);
     void themeChanged();

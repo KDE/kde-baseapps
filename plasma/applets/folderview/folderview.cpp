@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QDebug>
+#include <QDesktopServices>
 #include <QDrag>
 #include <QGraphicsView>
 #include <QGraphicsSceneHoverEvent>
@@ -211,6 +212,25 @@ bool ProxyMimeModel::filterAcceptsRow(int source_row, const QModelIndex &source_
 
 
 // ---------------------------------------------------------------------------
+
+
+
+// Proxy model for KFilePlacesModel that filters out hidden items.
+class PlacesFilterModel : public QSortFilterProxyModel
+{
+public:
+    PlacesFilterModel(QObject *parent = 0) : QSortFilterProxyModel(parent) {}
+    bool filterAcceptsRow(int row, const QModelIndex &parent) const {
+        KFilePlacesModel *model = static_cast<KFilePlacesModel*>(sourceModel());
+        const QModelIndex index = model->index(row, 0, parent);
+        return !model->isHidden(index);
+    }
+};
+
+
+
+// ---------------------------------------------------------------------------
+
 
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
@@ -415,13 +435,33 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.setupUi(widgetDisplay);
     uiLocation.setupUi(widgetLocation);
 
+    KFilePlacesModel *placesModel = new KFilePlacesModel(parent);
+    PlacesFilterModel *placesFilter = new PlacesFilterModel(parent);
+    placesFilter->setSourceModel(placesModel);
+    uiLocation.placesCombo->setModel(placesFilter);
+
     if (m_url == KUrl("desktop:/")) {
         uiLocation.showDesktopFolder->setChecked(true);
-        uiLocation.selectLabel->setEnabled(false);
+        uiLocation.placesCombo->setEnabled(false);
         uiLocation.lineEdit->setEnabled(false);
     } else {
-        uiLocation.showCustomFolder->setChecked(true);
-        uiLocation.lineEdit->setUrl(m_url);
+        QModelIndex index;
+        for (int i = 0; i < placesFilter->rowCount(); i++) {
+            KUrl url = placesModel->url(placesFilter->mapToSource(placesFilter->index(i, 0)));
+            if (url.equals(m_url, KUrl::CompareWithoutTrailingSlash)) {
+                index = placesFilter->index(i, 0);
+                break;
+            }
+        }
+        if (index.isValid()) {
+            uiLocation.placesCombo->setCurrentIndex(index.row());
+            uiLocation.showPlace->setChecked(true);
+            uiLocation.lineEdit->setEnabled(false);
+        } else {
+            uiLocation.showCustomFolder->setChecked(true);
+            uiLocation.lineEdit->setUrl(m_url);
+            uiLocation.placesCombo->setEnabled(false);
+        }
     }
 
     uiLocation.lineEdit->setMode(KFile::Directory);
@@ -492,16 +532,30 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     parent->addPage(widgetLocation, i18n("Location"), "folder");
     parent->addPage(widgetDisplay, i18n("Display"), "preferences-desktop-display");
     parent->addPage(widgetFilter, i18n("Filter"), "view-filter");
-
     parent->setButtons(KDialog::Ok | KDialog::Cancel | KDialog::Apply);
+
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
-    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), this, SLOT(customFolderToggled(bool)));
+    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
+    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
     connect(uiFilter.filterType, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
     connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
     connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
+
+    // We can't use KGlobalSettings::desktopPath() here, since it returns the home dir if
+    // the desktop folder doesn't exist.
+    QString desktopPath = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+    if (desktopPath.isEmpty()) {
+        desktopPath = QDir::homePath() + "/Desktop";
+    }
+
+    // Don't show the warning label if the desktop folder exists
+    if (QFile::exists(desktopPath)) {
+        uiLocation.warningSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        uiLocation.warningLabel->setVisible(false);
+    }
 
     KConfigGroup cg = config();
     int filter = cg.readEntry("filter", 0);
@@ -528,6 +582,10 @@ void FolderView::configAccepted()
 
     if (uiLocation.showDesktopFolder->isChecked()) {
         url = KUrl("desktop:/");
+    } else if (uiLocation.showPlace->isChecked()) {
+        PlacesFilterModel *filter = static_cast<PlacesFilterModel*>(uiLocation.placesCombo->model());
+        KFilePlacesModel *model = static_cast<KFilePlacesModel*>(filter->sourceModel());
+        url = model->url(filter->mapToSource(filter->index(uiLocation.placesCombo->currentIndex(), 0)));
     } else {
         url = uiLocation.lineEdit->url();
     }
@@ -684,12 +742,6 @@ void FolderView::configAccepted()
     }
 
     emit configNeedsSaving();
-}
-
-void FolderView::customFolderToggled(bool checked)
-{
-    uiLocation.selectLabel->setEnabled(checked);
-    uiLocation.lineEdit->setEnabled(checked);
 }
 
 void FolderView::showPreviewConfigDialog()
