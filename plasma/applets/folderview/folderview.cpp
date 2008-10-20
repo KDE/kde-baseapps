@@ -1229,13 +1229,14 @@ void FolderView::saveIconPositions() const
         data << QString::number(version);
         data << QString::number(m_items.size());
 
+        const QPoint offset = (contentsRect().topLeft() + QPointF(0, m_titleHeight)).toPoint();
         const QSize size = gridSize();
         for (int i = 0; i < m_items.size(); i++) {
             QModelIndex index = m_model->index(i, 0);
             KFileItem item = m_model->itemForIndex(index);
             data << item.name();
-            data << QString::number(m_items[i].rect.x());
-            data << QString::number(m_items[i].rect.y());
+            data << QString::number(m_items[i].rect.x() - offset.x());
+            data << QString::number(m_items[i].rect.y() - offset.y());
         }
 
         config().writeEntry("savedPositions", data);
@@ -1257,11 +1258,12 @@ void FolderView::loadIconPositions()
         return;
     }
 
+    const QPoint offset = (contentsRect().topLeft() + QPointF(0, m_titleHeight)).toPoint();
     for (int i = 2; i < data.size(); i += 3) {
         const QString &name = data.at(i);
         int x = data.at(i + 1).toInt();
         int y = data.at(i + 2).toInt();
-        m_savedPositions.insert(name, QPoint(x, y));
+        m_savedPositions.insert(name, QPoint(x, y) + offset);
     }
 }
 
