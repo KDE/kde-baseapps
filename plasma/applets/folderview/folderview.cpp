@@ -275,7 +275,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
     m_delegate = new KFileItemDelegate(this);
     connect(m_delegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
-            SLOT(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));    
+            SLOT(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));
     connect(m_delegate, SIGNAL(commitData(QWidget*)), SLOT(commitData(QWidget*)));
 
     m_selectionModel = new QItemSelectionModel(m_model, this);
@@ -2560,6 +2560,11 @@ void FolderView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void FolderView::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
+    if (event->modifiers() == Qt::CTRL) {
+        Containment::wheelEvent(event);
+        return;
+    }
+
     if (event->orientation() == Qt::Horizontal) {
         return;
     }
