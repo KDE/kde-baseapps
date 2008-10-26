@@ -148,7 +148,7 @@ By default it contains the name of the place being shown in the applet, but if y
            <string>Click this button to choose for which types of files previews will be shown.</string>
           </property>
           <property name="text" >
-           <string>Advanced...</string>
+           <string>Advanced Options</string>
           </property>
          </widget>
         </item>

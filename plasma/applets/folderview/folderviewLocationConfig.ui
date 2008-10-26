@@ -55,7 +55,7 @@ p, li { white-space: pre-wrap; }
    <item>
     <widget class="QRadioButton" name="showPlace" >
      <property name="text" >
-      <string>Show a Place:</string>
+      <string>Show a place:</string>
      </property>
     </widget>
    </item>
