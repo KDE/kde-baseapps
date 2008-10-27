@@ -19,7 +19,7 @@
 
 #include "folderviewadapter.h"
 
-FolderViewAdapter::FolderViewAdapter(FolderView *view)
+FolderViewAdapter::FolderViewAdapter(IconView *view)
     : KAbstractViewAdapter(view), m_view(view)
 {
 }

@@ -14,6 +14,8 @@ include_directories(
 
 set(folderview_SRCS
     folderview.cpp
+    label.cpp
+    iconview.cpp
     dirlister.cpp
     proxymodel.cpp
     folderviewadapter.cpp

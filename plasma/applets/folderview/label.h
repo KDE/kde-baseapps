@@ -17,27 +17,36 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#ifndef FOLDERVIEWADAPTER_H
-#define FOLDERVIEWADAPTER_H
+#ifndef LABEL_H
+#define LABEL_H
 
-#include "kabstractviewadapter_p.h"
-#include "iconview.h"
+#include <QGraphicsWidget>
 
-#include <QScrollBar>
+class QString;
+class QPainter;
 
-class FolderViewAdapter : public KAbstractViewAdapter
+class Label : public QGraphicsWidget
 {
+    Q_OBJECT
+    Q_PROPERTY(QString text READ text WRITE setText)
+    Q_PROPERTY(bool drawShadow READ drawShadow WRITE setDrawShadow)
+
 public:
-    FolderViewAdapter(IconView *view);
-    QAbstractItemModel *model() const;
-    QSize iconSize() const;
-    QPalette palette() const;
-    QRect visibleArea() const;
-    QRect visualRect(const QModelIndex &index) const;
-    void connect(Signal signal, QObject *receiver, const char *slot);
+    Label(QGraphicsWidget *parent);
+    ~Label();
+
+    void setText(const QString &text);
+    QString text() const;
+
+    void setDrawShadow(bool on);
+    bool drawShadow() const;
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 private:
-    IconView *m_view;
+    QString m_text;
+    QPixmap m_divider;
+    bool m_drawShadow;
 };
 
 #endif

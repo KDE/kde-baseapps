@@ -44,18 +44,9 @@ class KFilePreviewGenerator;
 class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
+class IconView;
+class Label;
 
-namespace Plasma
-{
-    class ScrollBar;
-}
-
-struct ViewItem
-{
-    ViewItem() : rect(QRect()), layouted(false) {}
-    QRect rect;
-    bool layouted;
-};
 
 class FolderView : public Plasma::Containment
 {
@@ -67,179 +58,95 @@ public:
 
     void init();
     void saveState(KConfigGroup &config) const;
-    void createAnimationFrames();
-    void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
-    QRect visualRect(const QModelIndex &index) const;
-    QRegion visualRegion(const QModelIndex &index) const;
-    QModelIndex indexAt(const QPointF &point) const;
-    QSize iconSize() const;
-    QSize gridSize() const;
-    QScrollBar *verticalScrollBar() const;
-    QAbstractItemModel *model() const;
-    QRect visibleArea() const;
 
 protected:
     void createConfigurationInterface(KConfigDialog *parent);
     QList<QAction*> contextualActions();
+    void constraintsEvent(Plasma::Constraints);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+    void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
+    void dropEvent(QGraphicsSceneDragDropEvent *event);
 
-    QPointF mapToViewport(const QPointF &point) const;
-    QPointF mapFromViewport(const QPointF &point) const;
-    QRectF mapToViewport(const QRectF &point) const;
-    QRectF mapFromViewport(const QRectF &point) const;
-
-    bool indexIntersectsRect(const QModelIndex &index, const QRect &rect) const;
-
-private slots:
-    void rowsInserted(const QModelIndex &parent, int first, int last);
-    void rowsRemoved(const QModelIndex &parent, int first, int last);
-    void modelReset();
-    void layoutChanged();
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    void configAccepted();
-    void fontSettingsChanged();
-    void iconSettingsChanged(int group);
-    void themeChanged();
-    void aboutToShowCreateNew();
-    void clipboardDataChanged();
-    void scrollBarValueChanged(int);
     void showPreviewConfigDialog();
 
+protected slots:
     // These slots are for KonqPopupMenu
     void copy();
     void cut();
     void paste();
     void pasteTo();
     void refreshIcons();
-    void renameSelectedIcon();
     void moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers);
     void deleteSelectedIcons();
+
     void undoTextChanged(const QString &text);
     void toggleIconsLocked(bool locked);
     void toggleAlignToGrid(bool align);
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
+    void aboutToShowCreateNew();
 
-    void listingStarted(const KUrl &url);
-    void listingCompleted();
-    void listingCanceled();
-    void listingError(const QString &message);
+    void activated(const QModelIndex &index);
+    void indexesMoved(const QModelIndexList &indexes);
+    void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
 
-    void commitData(QWidget *editor);
-    void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
-
+    void configAccepted();
     void filterChanged(int index);
     void selectUnselectAll();
+    void fontSettingsChanged();
+    void iconSettingsChanged(int group);
+    void themeChanged();
+    void clipboardDataChanged();
 
 private:
+    void setupIconView();
     void setUrl(const KUrl &url);
+    QSize iconSize() const;
+    QSize gridSize() const;
     void createActions();
     void updateSortActionsState();
+    void updateIconViewState();
+    void saveIconPositions() const;
     KUrl::List selectedUrls() const;
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
-    int columnsForWidth(qreal width) const;
-    int rowsForHeight(qreal height) const;
-    QPoint nextGridPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
-    QPoint findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
-    void layoutItems();
-    void alignIconsToGrid();
-    bool doLayoutSanityCheck();
-    void saveIconPositions() const;
-    void loadIconPositions();
-    void updateScrollBar();
-    void updateScrollBarGeometry();
-    QRect scrollBackbufferContents();
-    void markAreaDirty(const QRect &rect);
-    void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
-    void markEverythingDirty();
-    void updateTextShadows(const QColor &textColor);
-    QStyleOptionViewItemV4 viewOptions() const;
     void timerEvent(QTimerEvent *event);
-    void startDrag(const QPointF &pos, QWidget *widget);
-    void constraintsEvent(Plasma::Constraints constraints);
-    void focusInEvent(QFocusEvent *event);
-    void focusOutEvent(QFocusEvent *event);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-    void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    void wheelEvent(QGraphicsSceneWheelEvent *event);
-    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-    void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
-    void dropEvent(QGraphicsSceneDragDropEvent *event);
 
 private:
     KFileItemDelegate *m_delegate;
     KFilePreviewGenerator *m_previewGenerator;
-    KDirModel *m_dirModel;
-    ProxyModel *m_model;
-    Plasma::ScrollBar *m_scrollBar;
-    QPixmap m_pixmap;
-    QPixmap m_topFadeTile;
-    QPixmap m_bottomFadeTile;
-    QPixmap m_divider;
-    QRegion m_dirtyRegion;
     QItemSelectionModel *m_selectionModel;
+    ProxyModel *m_model;
+    KDirModel *m_dirModel;
+    IconView *m_iconView;
+    Label *m_label;
     KUrl m_url;
+    QColor m_textColor;
     QString m_titleText;
-    int m_titleHeight;
-    int m_lastScrollValue;
-    bool m_viewScrolled;
     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
-    QFont m_font;
-    QColor m_textColor;
     QPointer<KNewMenu> m_newMenu;
     KActionCollection m_actionCollection;
     QActionGroup *m_sortingGroup;
-    QVector<ViewItem> m_items;
-    QHash<QString, QPoint> m_savedPositions;
-    mutable QCache<quint64, QRegion> m_regionCache;
-    int m_columns;
-    int m_rows;
-    int m_validRows;
     int m_sortColumn;
-    bool m_layoutBroken;
-    bool m_needPostLayoutPass;
-    bool m_initialListing;
-    bool m_positionsLoaded;
-    QPersistentModelIndex m_hoveredIndex;
-    QPersistentModelIndex m_pressedIndex;
-    QPersistentModelIndex m_editorIndex;
-    QRect m_rubberBand;
-    QRectF m_viewportRect;
-    QPointF m_buttonDownPos;
-    QTime m_pressTime;
     Ui::folderviewFilterConfig uiFilter;
     Ui::folderviewDisplayConfig uiDisplay;
     Ui::folderviewLocationConfig uiLocation;
     Ui::folderviewPreviewConfig uiPreviewConfig;
-    bool m_doubleClick;
-    bool m_dragInProgress;
-    bool m_iconsLocked;
-    bool m_alignToGrid;
     bool m_sortDirsFirst;
     bool m_showPreviews;
     bool m_drawShadows;
+    bool m_iconsLocked;
+    bool m_alignToGrid;
     QString m_customLabel;
-    QString m_errorMessage;
     QStringList m_previewPlugins;
     int m_customIconSize;
     int m_numTextLines;
     QListView::Flow m_flow;
-    QPoint m_lastDeletedPos;
-    QPoint m_currentLayoutPos;
-    int m_animFrame;
-    QPixmap m_animFrames;
     QBasicTimer m_delayedSaveTimer;
-    QBasicTimer m_delayedCacheClearTimer;
-    QBasicTimer m_delayedLayoutTimer;
-    QBasicTimer m_animTimer;
 };
 
 
