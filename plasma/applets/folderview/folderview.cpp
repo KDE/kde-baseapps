@@ -290,8 +290,6 @@ void FolderView::init()
     m_flow = isContainment() ? QListView::TopToBottom : QListView::LeftToRight;
     m_flow = static_cast<QListView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
 
-    createActions();
-
     m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
     m_model->setFilterFixedString(m_filterFiles);
@@ -313,8 +311,11 @@ void FolderView::init()
 
     lister->openUrl(m_url);
 
+    setupIconView();
+
+    createActions();
+
     if (isContainment()) {
-        setupIconView();
 
         // Set a low Z value so applets don't end up below the icon view
         m_iconView->setZValue(INT_MIN);
@@ -679,6 +680,10 @@ void FolderView::updateIconViewState()
 
 void FolderView::setupIconView()
 {
+    if (m_iconView) {
+        return;
+    }
+
     m_iconView = new IconView(this);
     m_iconView->setModel(m_model);
     m_iconView->setItemDelegate(m_delegate);
@@ -930,7 +935,7 @@ void FolderView::createActions()
 
     KAction *rename = new KAction(KIcon("edit-rename"), i18n("&Rename"), this);
     rename->setShortcut(Qt::Key_F2);
-    connect(rename, SIGNAL(triggered()), SLOT(renameSelectedIcon()));
+    connect(rename, SIGNAL(triggered()), m_iconView, SLOT(renameSelectedIcon()));
 
     KAction *trash = new KAction(KIcon("user-trash"), i18n("&Move to Trash"), this);
     trash->setShortcut(Qt::Key_Delete);
