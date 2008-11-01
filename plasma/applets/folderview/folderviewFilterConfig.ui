@@ -184,10 +184,10 @@
            </sizepolicy>
           </property>
           <property name="toolTip" >
-           <string>Space-separated list of extensions, e.g. *.txt * .od*</string>
+           <string>Space-separated list of extensions, e.g. *.txt *.od*</string>
           </property>
           <property name="whatsThis" >
-           <string>Space-separated list of extensions, e.g. *.txt * .od* to display only office- and text-files</string>
+           <string>Space-separated list of extensions, e.g. *.txt *.od* to display only office- and text-files</string>
           </property>
           <property name="alignment" >
            <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
