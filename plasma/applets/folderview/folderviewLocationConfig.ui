@@ -38,12 +38,7 @@
      <item>
       <widget class="QLabel" name="warningLabel" >
        <property name="text" >
-        <string>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
-p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style="font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">Note: The Desktop folder currently does not exist.&lt;/span>&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;">If you select this option and click OK it will be created for you.&lt;/p>&lt;/body>&lt;/html></string>
+        <string>&lt;html>&lt;body>&lt;b>Note: The Desktop folder currently does not exist.&lt;br />If you select this option and click OK it will be created for you.&lt;/b>&lt;/body>&lt;/html></string>
        </property>
        <property name="textFormat" >
         <enum>Qt::RichText</enum>
@@ -115,7 +110,7 @@ p, li { white-space: pre-wrap; }
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="clickMessage" stdset="0" >
+       <property name="clickMessage" >
         <string>Type a path or a URL here</string>
        </property>
       </widget>
