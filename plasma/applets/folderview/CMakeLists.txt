@@ -1,8 +1,5 @@
 project(plasma-folderview)
 
-# Find the required Libaries
-find_package(Plasma REQUIRED)
-
 add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 include_directories(
    ${CMAKE_SOURCE_DIR}
