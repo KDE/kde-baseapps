@@ -438,9 +438,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
 
     connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
 
-    parent->addPage(widgetLocation, i18n("Location"), "folder");
-    parent->addPage(widgetDisplay, i18n("Display"), "preferences-desktop-display");
-    parent->addPage(widgetFilter, i18n("Filter"), "view-filter");
+    parent->addPage(widgetLocation, i18nc("Title of the page that lets the user choose which location should the folderview show", "Location"), "folder");
+    parent->addPage(widgetDisplay, i18nc("Title of the page that lets the user choose how the folderview should be shown", "Display"), "preferences-desktop-display");
+    parent->addPage(widgetFilter, i18nc("Title of the page that lets the user choose how to filter the folderview contents", "Filter"), "view-filter");
     parent->setButtons(KDialog::Ok | KDialog::Cancel | KDialog::Apply);
 
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
