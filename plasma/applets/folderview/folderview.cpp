@@ -988,7 +988,7 @@ void FolderView::createActions()
         sortByDate->setCheckable(true);
         sortByDate->setData(int(KDirModel::ModifiedTime));
 
-        KAction *dirsFirst = new KAction(i18nc("Sort icons", "Directories First"), this);
+        KAction *dirsFirst = new KAction(i18nc("Sort icons", "Folders First"), this);
         dirsFirst->setCheckable(true);
         dirsFirst->setChecked(m_sortDirsFirst);
         connect(dirsFirst, SIGNAL(toggled(bool)), SLOT(toggleDirectoriesFirst(bool)));
