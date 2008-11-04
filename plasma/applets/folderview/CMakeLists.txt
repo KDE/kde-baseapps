@@ -1,12 +1,5 @@
 project(plasma-folderview)
 
-add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
-include_directories(
-   ${CMAKE_SOURCE_DIR}
-   ${CMAKE_BINARY_DIR}
-   ${KDE4_INCLUDES}
-   )
-
 set(folderview_SRCS
     folderview.cpp
     label.cpp
