@@ -582,13 +582,13 @@ void FolderView::configAccepted()
     if (m_alignToGrid != uiDisplay.alignToGrid->isChecked()) {
         m_alignToGrid = uiDisplay.alignToGrid->isChecked();
         cg.writeEntry("alignToGrid", m_alignToGrid);
-        m_actionCollection.action("grid_align")->setChecked(m_alignToGrid);
+        m_actionCollection.action("auto_align")->setChecked(m_alignToGrid);
     }
 
     if (m_iconsLocked != uiDisplay.lockInPlace->isChecked()) {
         m_iconsLocked = uiDisplay.lockInPlace->isChecked();
         cg.writeEntry("iconsLocked", m_iconsLocked);
-        m_actionCollection.action("lock_icons")->setChecked(m_alignToGrid);
+        m_actionCollection.action("lock_icons")->setChecked(m_iconsLocked);
     }
 
     const QString label = uiDisplay.labelEdit->text();
