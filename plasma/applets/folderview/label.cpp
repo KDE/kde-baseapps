@@ -30,6 +30,7 @@ Label::Label(QGraphicsWidget *parent)
 {
     setMinimumHeight(QFontMetrics(font()).lineSpacing() + 4);
     setMaximumHeight(QFontMetrics(font()).lineSpacing() + 4);
+    setCacheMode(DeviceCoordinateCache);
 }
 
 Label::~Label()
