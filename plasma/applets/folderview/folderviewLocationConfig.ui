@@ -50,7 +50,7 @@
    <item>
     <widget class="QRadioButton" name="showPlace" >
      <property name="text" >
-      <string>Show a place:</string>
+      <string>Show a Place:</string>
      </property>
     </widget>
    </item>
