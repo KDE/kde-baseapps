@@ -72,6 +72,7 @@ IconView::IconView(QGraphicsItem *parent)
       m_dragInProgress(false),
       m_iconsLocked(false),
       m_alignToGrid(false),
+      m_wordWrap(false),
       m_drawShadows(true),
       m_flow(QListView::LeftToRight)
 {
