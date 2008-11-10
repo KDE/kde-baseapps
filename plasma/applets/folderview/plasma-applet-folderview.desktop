@@ -87,6 +87,7 @@ Comment[zh_TW]=顯示資料夾內容（預設顯示桌面資料夾）
 Type=Service
 Icon=folder
 X-KDE-ServiceTypes=Plasma/Applet,Plasma/Containment
+X-Plasma-ContainmentCategories=desktop
 X-Plasma-DropMimeTypes=inode/directory
 
 X-KDE-Library=plasma_applet_folderview
