@@ -825,6 +825,35 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             // TODO: Icon mode
         }
     }
+
+    if (constraints & Plasma::ScreenConstraint) {
+        Plasma::Corona *c = corona();
+        disconnect(c, SIGNAL(availableScreenRegionChanged()), this, SLOT(updateScreenRegion()));
+        if (isContainment()) {
+            if (screen() >= 0) {
+                updateScreenRegion();
+                connect(c, SIGNAL(availableScreenRegionChanged()), this, SLOT(updateScreenRegion()));
+            } else {
+                m_iconView->setContentsMargins(0, 0, 0, 0);
+            }
+        }
+    }
+}
+
+void FolderView::updateScreenRegion()
+{
+    Plasma::Corona *c = corona();
+
+    if (!c) {
+        return;
+    }
+
+    QRect availRect = c->availableScreenRegion(screen()).boundingRect();
+    QRect screenRect = c->screenGeometry(screen());
+    m_iconView->setContentsMargins(availRect.x() - screenRect.x(),
+                                   availRect.y() - screenRect.y(),
+                                   availRect.right() - screenRect.right(),
+                                   availRect.bottom() - screenRect.bottom());
 }
 
 void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)

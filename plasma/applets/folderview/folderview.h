@@ -100,6 +100,7 @@ protected slots:
     void iconSettingsChanged(int group);
     void themeChanged();
     void clipboardDataChanged();
+    void updateScreenRegion();
 
 private:
     void setupIconView();
