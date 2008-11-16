@@ -70,8 +70,6 @@ protected:
     void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
     void dropEvent(QGraphicsSceneDragDropEvent *event);
 
-    void showPreviewConfigDialog();
-
 protected slots:
     // These slots are for KonqPopupMenu
     void copy();
@@ -101,6 +99,7 @@ protected slots:
     void themeChanged();
     void clipboardDataChanged();
     void updateScreenRegion();
+    void showPreviewConfigDialog();
 
 private:
     void setupIconView();
