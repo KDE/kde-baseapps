@@ -2,6 +2,7 @@
 Type=Service
 Name=KDED Favicon Module
 Name[af]=Kded Favicon Module
+Name[ar]=وحدة KDED Favicon
 Name[be]=Модуль любімай значкі KDED
 Name[bn]=KDED ফ্যাভ-আইকন মডিউল
 Name[bn_IN]=KDED Favicon মডিউল
@@ -29,7 +30,7 @@ Name[hr]=KDED Favicon modul
 Name[hu]=KDED favicon-kezelő
 Name[is]=KDED Favicon íhlutur
 Name[it]=Modulo Favicon di KDED
-Name[ja]=KDED Favicon モジュール
+Name[ja]=KDED ファビコン用モジュール
 Name[ka]=KDED Favicon მოდული
 Name[kk]=KDED сайт жарлықтар модулі
 Name[km]=ម៉ូឌុល Favicon KDED

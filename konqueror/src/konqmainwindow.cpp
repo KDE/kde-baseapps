@@ -226,6 +226,9 @@ KonqMainWindow::KonqMainWindow( const KUrl &initialURL, const QString& xmluiFile
   if ( !s_pCompletion ) {
       s_bookmarkManager = KBookmarkManager::userBookmarksManager();
 
+      // let the KBookmarkManager know that we are a browser, equals to "keditbookmarks --browser"
+      s_bookmarkManager->setEditorOptions("konqueror", true);
+
       KonqHistoryManager* mgr = new KonqHistoryManager(s_bookmarkManager);
       s_pCompletion = mgr->completionObject();
 
@@ -2021,7 +2024,11 @@ void KonqMainWindow::slotPartActivated(KParts::Part *part)
   // View-dependent GUI
 
   KParts::MainWindow::setCaption( m_currentView->caption() );
-  m_currentView->frame()->setTitle( m_currentView->caption() , 0);
+    // This line causes #170470 when removing the current tab, because QTabBar
+    // emits currentChanged before calling tabRemoved, so KTabWidget gets confused.
+    // I don't see a need for it anyway...
+    //m_currentView->frame()->setTitle(m_currentView->caption(), 0);
+
   updateOpenWithActions();
   updateViewActions(); // undo, lock, link and other view-dependent actions
   updateViewModeActions();
