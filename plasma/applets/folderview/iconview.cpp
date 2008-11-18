@@ -116,6 +116,7 @@ void IconView::setModel(QAbstractItemModel *model)
 
     if (m_model->rowCount() > 0) {
         m_delayedLayoutTimer.start(10, this);
+        emit busy(true);
     }
 }
 
@@ -307,37 +308,6 @@ QRect IconView::visibleArea() const
     return mapToViewport(contentsRect()).toAlignedRect();
 }
 
-void IconView::createAnimationFrames()
-{
-    m_animFrames = QPixmap(100, 100 * 20);
-    m_animFrames.fill(Qt::transparent);
-
-    QPainterPath path;
-    path.addRect(-2, -40, 4, 16);
-
-    QPainter p(&m_animFrames);
-    p.setRenderHint(QPainter::Antialiasing);
-    p.translate(50, 50);
-
-    for (int i = 0; i < 20; i++)
-    {
-        p.translate(1, 1);
-        for (int j = 0; j < 20; j++)
-        {
-            p.fillPath(path, QColor(0, 0, 0, 128));
-            p.rotate(360 / 20);
-        }
-        p.translate(-1, -1);
-        for (int j = 0; j < 20; j++)
-        {
-            const QColor color = (i == j) ? Qt::white : QColor(200, 200, 200);
-            p.fillPath(path, color);
-            p.rotate(360 / 20);
-        }
-        p.translate(0, 100);
-    }
-}
-
 void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
@@ -348,6 +318,7 @@ void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
             m_validRows = 0;
         }
         m_delayedLayoutTimer.start(10, this);
+        emit busy(true);
     } else {
         const QStyleOptionViewItemV4 option = viewOptions();
         const QRect cr = contentsRect().toRect();
@@ -396,6 +367,7 @@ void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
             m_validRows = 0;
         }
         m_delayedLayoutTimer.start(10, this);
+        emit busy(true);
     } else {
         for (int i = first; i <= last; i++) {
             markAreaDirty(m_items[i].rect);
@@ -418,7 +390,9 @@ void IconView::modelReset()
     m_savedPositions.clear();
     m_layoutBroken = false;
     m_validRows = 0;
-    layoutItems();
+
+    m_delayedLayoutTimer.start(10, this);
+    emit busy(true);
 }
 
 void IconView::layoutChanged()
@@ -426,7 +400,9 @@ void IconView::layoutChanged()
     m_savedPositions.clear();
     m_layoutBroken = false;
     m_validRows = 0;
-    layoutItems();
+
+    m_delayedLayoutTimer.start(10, this);
+    emit busy(true);
 }
 
 void IconView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
@@ -461,6 +437,8 @@ void IconView::listingStarted(const KUrl &url)
         m_errorMessage.clear();
         update();
     }
+
+    emit busy(true);
 }
 
 void IconView::listingClear()
@@ -474,12 +452,20 @@ void IconView::listingCompleted()
 {
     m_delayedCacheClearTimer.start(5000, this);
     m_initialListing = false;
+
+    if (m_validRows == m_model->rowCount()) {
+        emit busy(false);
+    }
 }
 
 void IconView::listingCanceled()
 {
     m_delayedCacheClearTimer.start(5000, this);
     m_initialListing = false;
+
+    if (m_validRows == m_model->rowCount()) {
+        emit busy(false);
+    }
 }
 
 void IconView::listingError(const QString &message)
@@ -487,6 +473,10 @@ void IconView::listingError(const QString &message)
     m_errorMessage = message;
     markEverythingDirty();
     update();
+
+    if (m_validRows == m_model->rowCount()) {
+        emit busy(false);
+    }
 }
 
 void IconView::scrollBarValueChanged(int value)
@@ -696,6 +686,8 @@ void IconView::layoutItems()
 
     if (m_validRows < m_items.size() || m_needPostLayoutPass) {
         m_delayedLayoutTimer.start(10, this);
+    } else if (!m_initialListing) {
+        emit busy(false);
     }
 
     if (needUpdate) {
@@ -962,23 +954,6 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
     if (!m_errorMessage.isEmpty()) {
         paintErrorMessage(painter, cr, m_errorMessage);
-    }
-
-    // Show the spinning animation
-    if (m_validRows < m_items.size() || m_initialListing) {
-        if (!m_animTimer.isActive()) {
-            m_animFrame = 0;
-            m_animTimer.start(150, this);
-        }
-        if (m_animFrames.isNull()) {
-            createAnimationFrames();
-        }
-        const QSize size(m_animFrames.width(), m_animFrames.width());
-        QPoint pos = cr.center() - QPoint(size.width() / 2, size.width() / 2);
-        painter->drawPixmap(pos, m_animFrames, QRect(QPoint(0, size.height() * m_animFrame), size));
-    } else if (m_animTimer.isActive()) {
-        m_animTimer.stop();
-        update();
     }
 }
 
@@ -1758,12 +1733,6 @@ void IconView::timerEvent(QTimerEvent *event)
     } else if (event->timerId() == m_delayedLayoutTimer.timerId()) {
         m_delayedLayoutTimer.stop();
         layoutItems();
-    } else if (event->timerId() == m_animTimer.timerId()) {
-        if (++m_animFrame >= 20) {
-            m_animFrame = 0;
-        }
-        const QSizeF size(m_animFrames.width(), m_animFrames.width());
-        update(QRectF(contentsRect().center() - QPointF(size.width() / 2, size.width() / 2), size));
     }
 }
 

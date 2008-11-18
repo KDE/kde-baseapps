@@ -113,6 +113,7 @@ signals:
     void activated(const QModelIndex &index);
     void indexesMoved(const QModelIndexList &indexes);
     void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
+    void busy(bool);
 
 protected:
     QPointF mapToViewport(const QPointF &point) const;
@@ -159,7 +160,6 @@ private slots:
     void renameSelectedIcon();
 
 private:
-    void createAnimationFrames();
     void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
     int columnsForWidth(qreal width) const;
     int rowsForHeight(qreal height) const;
@@ -216,7 +216,6 @@ private:
     QTime m_pressTime;
     QListView::Flow m_flow;
     int m_animFrame;
-    QPixmap m_animFrames;
     QString m_errorMessage;
     QPoint m_lastDeletedPos;
     QPoint m_currentLayoutPos;
@@ -224,7 +223,6 @@ private:
     QSize m_iconSize;
     QBasicTimer m_delayedLayoutTimer;
     QBasicTimer m_delayedCacheClearTimer;
-    QBasicTimer m_animTimer;
 };
 
 #endif

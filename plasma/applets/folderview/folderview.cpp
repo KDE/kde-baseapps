@@ -702,6 +702,7 @@ void FolderView::setupIconView()
     connect(m_iconView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
     connect(m_iconView, SIGNAL(indexesMoved(QModelIndexList)), SLOT(indexesMoved(QModelIndexList)));
     connect(m_iconView, SIGNAL(contextMenuRequest(QWidget*,QPoint)), SLOT(contextMenuRequest(QWidget*,QPoint)));
+    connect(m_iconView, SIGNAL(busy(bool)), SLOT(setBusy(bool)));
 
     FolderViewAdapter *adapter = new FolderViewAdapter(m_iconView);
     m_previewGenerator = new KFilePreviewGenerator(adapter, m_model);
