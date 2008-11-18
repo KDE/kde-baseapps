@@ -117,6 +117,7 @@ private:
     QSize gridSize() const;
     void createActions();
     void updateSortActionsState();
+    void updateListViewState();
     void updateIconViewState();
     void saveIconPositions() const;
     KUrl::List selectedUrls() const;

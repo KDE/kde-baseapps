@@ -636,6 +636,10 @@ void FolderView::configAccepted()
         updateIconViewState();
     }
 
+    if (m_listView) {
+        updateListViewState();
+    }
+
     if (needReload) {
         m_dirModel->dirLister()->openUrl(m_url);
     }
@@ -664,6 +668,22 @@ void FolderView::showPreviewConfigDialog()
     delete widget;
     delete dialog;
     delete model;
+}
+
+void FolderView::updateListViewState()
+{
+    QPalette palette = m_listView->palette();
+    palette.setColor(QPalette::Text, m_textColor != Qt::transparent ? m_textColor :
+                     Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    m_listView->setPalette(palette);
+
+    const QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
+    if (m_listView->font() != font) {
+        m_listView->setFont(font);
+    }
+    m_listView->setDrawShadows(m_drawShadows);
+    m_listView->setIconSize(iconSize());
+    m_listView->setWordWrap(m_numTextLines > 1);
 }
 
 void FolderView::updateIconViewState()
@@ -870,14 +890,11 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             m_listView->setModel(m_model);
             m_listView->setItemDelegate(m_delegate);
             m_listView->setSelectionModel(m_selectionModel);
-            m_listView->setIconSize(iconSize());
 
             connect(m_listView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
             connect(m_listView, SIGNAL(contextMenuRequest(QWidget*,QPoint)), SLOT(contextMenuRequest(QWidget*,QPoint)));
 
-            QPalette pal = m_listView->palette();
-            pal.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
-            m_listView->setPalette(pal);
+            updateListViewState();
 
             m_dialog = new Dialog;
 
