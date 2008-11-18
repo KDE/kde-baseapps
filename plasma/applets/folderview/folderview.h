@@ -33,6 +33,8 @@
 #include <KMimeType>
 
 #include <plasma/containment.h>
+#include "plasma/widgets/iconwidget.h"
+
 #include "ui_folderviewFilterConfig.h"
 #include "ui_folderviewDisplayConfig.h"
 #include "ui_folderviewLocationConfig.h"
@@ -40,13 +42,18 @@
 
 class KDirModel;
 class KFileItemDelegate;
+class KFilePlacesModel;
 class KFilePreviewGenerator;
 class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
 class IconView;
+class ListView;
 class Label;
 
+namespace Plasma {
+    class Dialog;
+}
 
 class FolderView : public Plasma::Containment
 {
@@ -86,6 +93,8 @@ protected slots:
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
     void aboutToShowCreateNew();
+    void updateIconWidget();
+    void iconWidgetClicked();
 
     void activated(const QModelIndex &index);
     void indexesMoved(const QModelIndexList &indexes);
@@ -116,12 +125,17 @@ private:
 
 private:
     KFileItemDelegate *m_delegate;
-    KFilePreviewGenerator *m_previewGenerator;
+    QPointer<KFilePreviewGenerator> m_previewGenerator;
     QItemSelectionModel *m_selectionModel;
     ProxyModel *m_model;
     KDirModel *m_dirModel;
+    KFilePlacesModel *m_placesModel;
     IconView *m_iconView;
+    ListView *m_listView;
     Label *m_label;
+    Plasma::IconWidget *m_iconWidget;
+    Plasma::Dialog *m_dialog;
+    QIcon m_icon;
     KUrl m_url;
     QColor m_textColor;
     QString m_titleText;

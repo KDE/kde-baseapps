@@ -2,6 +2,8 @@ project(plasma-folderview)
 
 set(folderview_SRCS
     folderview.cpp
+    listview.cpp
+    dialog.cpp
     label.cpp
     iconview.cpp
     dirlister.cpp

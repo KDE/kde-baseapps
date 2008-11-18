@@ -24,6 +24,7 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QDesktopServices>
+#include <QDesktopWidget>
 #include <QDrag>
 #include <QGraphicsLinearLayout>
 #include <QGraphicsView>
@@ -59,13 +60,16 @@
 #include "plasma/corona.h"
 #include "plasma/paintutils.h"
 #include "plasma/theme.h"
+#include "plasma/tooltipmanager.h"
 
 #include "dirlister.h"
+#include "dialog.h"
 #include "folderviewadapter.h"
 #include "iconview.h"
 #include "label.h"
 #include "previewpluginsmodel.h"
 #include "proxymodel.h"
+#include "listview.h"
 
 
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
@@ -229,8 +233,12 @@ public:
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
       m_previewGenerator(0),
+      m_placesModel(0),
       m_iconView(0),
+      m_listView(0),
       m_label(0),
+      m_iconWidget(0),
+      m_dialog(0),
       m_newMenu(0),
       m_actionCollection(this)
 {
@@ -311,7 +319,9 @@ void FolderView::init()
 
     lister->openUrl(m_url);
 
-    setupIconView();
+    if (isContainment()) {
+        setupIconView();
+    }
 
     createActions();
 
@@ -344,9 +354,12 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.setupUi(widgetDisplay);
     uiLocation.setupUi(widgetLocation);
 
-    KFilePlacesModel *placesModel = new KFilePlacesModel(parent);
+    if (!m_placesModel) {
+        m_placesModel = new KFilePlacesModel(this);
+    }
+
     PlacesFilterModel *placesFilter = new PlacesFilterModel(parent);
-    placesFilter->setSourceModel(placesModel);
+    placesFilter->setSourceModel(m_placesModel);
     uiLocation.placesCombo->setModel(placesFilter);
 
     if (m_url == KUrl("desktop:/")) {
@@ -356,7 +369,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     } else {
         QModelIndex index;
         for (int i = 0; i < placesFilter->rowCount(); i++) {
-            KUrl url = placesModel->url(placesFilter->mapToSource(placesFilter->index(i, 0)));
+            KUrl url = m_placesModel->url(placesFilter->mapToSource(placesFilter->index(i, 0)));
             if (url.equals(m_url, KUrl::CompareWithoutTrailingSlash)) {
                 index = placesFilter->index(i, 0);
                 break;
@@ -524,7 +537,7 @@ void FolderView::configAccepted()
     }
 
     if (m_showPreviews != uiDisplay.showPreviews->isChecked() ||
-        m_previewPlugins != m_previewGenerator->enabledPlugins())
+        (m_previewGenerator && m_previewPlugins != m_previewGenerator->enabledPlugins()))
     {
         m_showPreviews = uiDisplay.showPreviews->isChecked();
         cg.writeEntry("showPreviews", m_showPreviews);
@@ -819,11 +832,66 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
         }
 
         if (formFactor() == Plasma::Planar || formFactor() == Plasma::MediaCenter) {
+            // Clean up the icon widget
+            if (m_iconWidget) {
+                disconnect(m_dirModel->dirLister(), SIGNAL(newItems(KFileItemList)), this, SLOT(updateIconWidget()));
+                disconnect(m_dirModel->dirLister(), SIGNAL(itemsDeleted(KFileItemList)), this, SLOT(updateIconWidget()));
+                disconnect(m_dirModel->dirLister(), SIGNAL(clear()), this, SLOT(updateIconWidget()));
+            }
+            delete m_iconWidget;
+            delete m_dialog;
+            delete m_listView;
+            m_iconWidget = 0;
+            m_dialog = 0;
+            m_listView = 0;
             if (!isContainment()) {
                 setupIconView();
             }
         } else {
-            // TODO: Icon mode
+            // Clean up the icon view
+            delete m_label;
+            delete m_iconView;
+            m_label = 0;
+            m_iconView = 0;
+
+            // Set up the icon widget
+            m_iconWidget = new Plasma::IconWidget(this);
+            m_iconWidget->setIcon(m_icon.isNull() ? KIcon("user-folder") : m_icon);
+            connect(m_iconWidget, SIGNAL(clicked()), SLOT(iconWidgetClicked()));
+
+            updateIconWidget();
+
+            // We need to update the tooltip (and maybe the icon) when the contents of the folder changes
+            connect(m_dirModel->dirLister(), SIGNAL(newItems(KFileItemList)), SLOT(updateIconWidget()));
+            connect(m_dirModel->dirLister(), SIGNAL(itemsDeleted(KFileItemList)), SLOT(updateIconWidget()));
+            connect(m_dirModel->dirLister(), SIGNAL(clear()), SLOT(updateIconWidget()));
+
+            m_listView = new ListView;
+            m_listView->setModel(m_model);
+            m_listView->setItemDelegate(m_delegate);
+            m_listView->setSelectionModel(m_selectionModel);
+            m_listView->setIconSize(iconSize());
+
+            connect(m_listView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
+            connect(m_listView, SIGNAL(contextMenuRequest(QWidget*,QPoint)), SLOT(contextMenuRequest(QWidget*,QPoint)));
+
+            QPalette pal = m_listView->palette();
+            pal.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+            m_listView->setPalette(pal);
+
+            m_dialog = new Dialog;
+
+            QGraphicsScene *scene = new QGraphicsScene(m_dialog);
+            scene->addItem(m_listView);
+
+            m_dialog->setGraphicsWidget(m_listView);
+
+            QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+            layout->setContentsMargins(0, 0, 0, 0);
+            layout->setSpacing(0);
+            layout->addItem(m_iconWidget);
+
+            setLayout(layout);
         }
     }
 
@@ -899,10 +967,12 @@ void FolderView::setUrl(const KUrl &url)
     } else {
         m_titleText = m_url.pathOrUrl();
 
-        KFilePlacesModel places;
-        const QModelIndex index = places.closestItem(url);
+        if (!m_placesModel) {
+            m_placesModel = new KFilePlacesModel(this);
+        }
+        const QModelIndex index = m_placesModel->closestItem(url);
         if (index.isValid()) {
-            m_titleText = m_titleText.right(m_titleText.length() - places.url(index).pathOrUrl().length());
+            m_titleText = m_titleText.right(m_titleText.length() - m_placesModel->url(index).pathOrUrl().length());
 
             if (!m_titleText.isEmpty()) {
                 if (m_titleText.at(0) == '/') {
@@ -916,13 +986,15 @@ void FolderView::setUrl(const KUrl &url)
                 }
             }
 
-            m_titleText.prepend(places.text(index));
+            m_titleText.prepend(m_placesModel->text(index));
         }
     }
 
     if (m_label) {
         m_label->setText(m_titleText);
     }
+
+    updateIconWidget();
 }
 
 void FolderView::createActions()
@@ -1268,6 +1340,10 @@ void FolderView::activated(const QModelIndex &index)
     const KFileItem item = m_model->itemForIndex(index);
     item.run();
 
+    if (m_dialog && m_dialog->isVisible()) {
+        m_dialog->hide();
+    }
+
     emit releaseVisualFocus();
 }
 
@@ -1361,6 +1437,81 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
     if (pasteTo) {
         pasteTo->setEnabled(false);
+    }
+}
+
+void FolderView::updateIconWidget()
+{
+    if (!m_iconWidget) {
+        return;
+    }
+
+    if (!m_placesModel) {
+        m_placesModel = new KFilePlacesModel(this);
+    }
+
+    const QModelIndex index = m_placesModel->closestItem(m_url);
+
+    // TODO: Custom icon
+
+    KFileItem item = m_dirModel->itemForIndex(QModelIndex());
+    if (!item.isNull() && item.iconName() != "inode-directory") {
+        m_icon = KIcon(item.iconName(), 0, item.overlays());
+    } else if (m_url.protocol() == "desktop") {
+        m_icon = KIcon("user-desktop");
+    } else if (m_url.protocol() == "trash") {
+        m_icon = m_model->rowCount() > 0 ? KIcon("user-trash-full") : KIcon("user-trash");
+    } else if (index.isValid()) {
+        m_icon = m_placesModel->icon(index);
+    } else {
+        m_icon = KIcon("user-folder");
+    }
+
+    m_iconWidget->setIcon(m_icon);
+    m_iconWidget->update();
+
+    int nFolders = 0;
+    int nFiles = 0;
+    foreach (const KFileItem &item, m_dirModel->dirLister()->items()) {
+        if (item.isDir()) {
+            nFolders++;
+        } else {
+            nFiles++;
+        }
+    }
+
+    const QString str1 = i18ncp("Inserted as %1 in the message below.", "1 folder", "%1 folders", nFolders);
+    const QString str2 = i18ncp("Inserted as %2 in the message below.", "1 file", "%1 files", nFiles);
+
+    QString subText;
+    if (nFolders > 0) {
+        subText = i18nc("%1 and %2 are the messages translated above.", "%1, %2.", str1, str2);
+    } else {
+        subText = i18np("1 file.", "%1 files.", nFiles);
+    }
+
+    // Update the tooltip
+    Plasma::ToolTipContent data;
+    data.setMainText(m_titleText);
+    data.setSubText(subText);
+    data.setImage(m_icon/*.pixmap(IconSize(KIconLoader::Desktop))*/);
+    Plasma::ToolTipManager::self()->setContent(m_iconWidget, data);
+}
+
+void FolderView::iconWidgetClicked()
+{
+    if (m_dialog->isVisible()) {
+        m_dialog->hide();
+    } else {
+        int left, top, right, bottom;
+        m_dialog->getContentsMargins(&left, &top, &right, &bottom);
+
+        const QRect rect = QApplication::desktop()->availableGeometry().adjusted(left, top, -right, -bottom);
+        m_listView->resize(m_listView->preferredSize().boundedTo(rect.size()));
+
+        m_dialog->resize(m_listView->size().toSize() + QSize(left + right, top + bottom));
+        m_dialog->move(popupPosition(m_dialog->size()));
+        m_dialog->show();
     }
 }
 
