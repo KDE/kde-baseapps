@@ -249,7 +249,7 @@ void IconView::setDrawShadows(bool on)
 {
     if (m_drawShadows != on) {
         m_drawShadows = on;
-        markEverythingDirty();
+        markAreaDirty(visibleArea());
         update();
     }
 }
@@ -445,7 +445,7 @@ void IconView::listingStarted(const KUrl &url)
 void IconView::listingClear()
 {
     m_initialListing = true;
-    markEverythingDirty();
+    markAreaDirty(visibleArea());
     update();
 }
 
@@ -472,7 +472,7 @@ void IconView::listingCanceled()
 void IconView::listingError(const QString &message)
 {
     m_errorMessage = message;
-    markEverythingDirty();
+    markAreaDirty(visibleArea());
     update();
 
     if (m_validRows == m_model->rowCount()) {
@@ -728,7 +728,7 @@ void IconView::alignIconsToGrid()
     if (layoutChanged) {
         doLayoutSanityCheck();
         updateScrollBar();
-        markEverythingDirty();
+        markAreaDirty(visibleArea());
         m_layoutBroken = true;
         m_savedPositions.clear();
     }
@@ -1030,12 +1030,6 @@ void IconView::markAreaDirty(const QRect &rect)
     update(mapFromViewport(rect));
 }
 
-void IconView::markEverythingDirty()
-{
-    m_dirtyRegion = QRegion(mapToViewport(contentsRect()).toAlignedRect());
-    update();
-}
-
 // This function scrolls the contents of the backbuffer the distance the scrollbar
 // has moved since the last time this function was called.
 QRect IconView::scrollBackbufferContents()
@@ -1245,7 +1239,7 @@ void IconView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint h
     editor->removeEventFilter(m_delegate);
     editor->deleteLater();
 
-    markEverythingDirty();
+    markAreaDirty(visibleArea());
 }
 
 void IconView::resizeEvent(QGraphicsSceneResizeEvent *)
@@ -1265,7 +1259,7 @@ void IconView::resizeEvent(QGraphicsSceneResizeEvent *)
             m_delayedLayoutTimer.start(10, this);
         } else {
             updateScrollBar();
-            markEverythingDirty();
+            markAreaDirty(visibleArea());
         }
     }
 }
@@ -1273,13 +1267,13 @@ void IconView::resizeEvent(QGraphicsSceneResizeEvent *)
 void IconView::focusInEvent(QFocusEvent *event)
 {
     Q_UNUSED(event)
-    markEverythingDirty();
+    markAreaDirty(visibleArea());
 }
 
 void IconView::focusOutEvent(QFocusEvent *event)
 {
     Q_UNUSED(event)
-    markEverythingDirty();
+    markAreaDirty(visibleArea());
 }
 
 void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -1329,12 +1323,12 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             if (!m_selectionModel->isSelected(index)) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                markEverythingDirty();
+                markAreaDirty(visibleArea());
             }
             event->ignore(); // Causes contextMenuEvent() to get called
         } else if (m_selectionModel->hasSelection()) {
             m_selectionModel->clearSelection();
-            markEverythingDirty();
+            markAreaDirty(visibleArea());
         }
         return;
     }
@@ -1352,7 +1346,7 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             } else if (!m_selectionModel->isSelected(index)) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                markEverythingDirty();
+                markAreaDirty(visibleArea());
             }
             m_pressedIndex = index;
             m_buttonDownPos = pos;
@@ -1379,7 +1373,7 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         if (m_selectionModel->hasSelection()) {
             if (!(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))) {
                 m_selectionModel->clearSelection();
-                markEverythingDirty();
+                markAreaDirty(visibleArea());
             }
         }
     }
@@ -1402,7 +1396,7 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             if (!m_doubleClick && KGlobalSettings::singleClick()) {
                 emit activated(index);
                 m_selectionModel->clearSelection();
-                markEverythingDirty();
+                markAreaDirty(visibleArea());
             }
             // We don't clear and update the selection and current index in
             // mousePressEvent() if the item is already selected when it's pressed,
@@ -1411,7 +1405,7 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 m_selectionModel->selectedIndexes().count() > 1) {
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                markEverythingDirty();
+                markAreaDirty(visibleArea());
             }
             m_doubleClick = false;
             return;
@@ -1446,7 +1440,7 @@ void IconView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     emit activated(index);
 
     m_selectionModel->clearSelection();
-    markEverythingDirty();
+    markAreaDirty(visibleArea());
 }
 
 void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -1644,7 +1638,7 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     // Make sure no icons have negative coordinates etc.
     doLayoutSanityCheck();
     updateScrollBar();
-    markEverythingDirty();
+    markAreaDirty(visibleArea());
     m_regionCache.clear();
 
     m_layoutBroken = true;
@@ -1665,7 +1659,7 @@ void IconView::changeEvent(QEvent *event)
 
     case QEvent::PaletteChange:
     case QEvent::StyleChange:
-        markEverythingDirty();
+        markAreaDirty(visibleArea());
         update();
         break;
 

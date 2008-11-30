@@ -175,7 +175,6 @@ private:
     QRect scrollBackbufferContents();
     void markAreaDirty(const QRect &rect);
     void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
-    void markEverythingDirty();
     void updateTextShadows(const QColor &textColor);
     QStyleOptionViewItemV4 viewOptions() const;
 
