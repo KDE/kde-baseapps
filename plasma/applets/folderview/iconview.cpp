@@ -29,6 +29,7 @@
 #include <QGraphicsProxyWidget>
 #include <QItemSelectionModel>
 #include <QPainter>
+#include <QPaintEngine>
 #include <QScrollBar>
 #include <QStyleOptionGraphicsItem>
 
@@ -821,10 +822,32 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     }
 
     // Make sure the backbuffer pixmap has the same size as the content rect
-    if (m_pixmap.isNull() || m_pixmap.size() != cr.size()) {
-        m_pixmap = QPixmap(cr.size());
-        m_pixmap.fill(Qt::transparent);
-        m_dirtyRegion = QRegion(visibleArea());
+    if (m_pixmap.size() != cr.size()) {
+        QPixmap pixmap(cr.size());
+        pixmap.fill(Qt::transparent);
+        if (!m_pixmap.isNull()) {
+            // Static content optimization
+#ifdef Q_WS_X11
+            if (m_pixmap.paintEngine()->type() == QPaintEngine::X11) {
+                GC gc = XCreateGC(QX11Info::display(), pixmap.handle(), 0, NULL);
+                XCopyArea(QX11Info::display(), m_pixmap.handle(), pixmap.handle(), gc, 0, 0,
+                          m_pixmap.width(), m_pixmap.height(), 0, 0);
+                XFreeGC(QX11Info::display(), gc);
+            } else
+#endif
+            {
+                QPainter p(&pixmap);
+                p.setCompositionMode(QPainter::CompositionMode_Source);
+                p.drawPixmap(0, 0, m_pixmap);
+            }
+            QRegion region(pixmap.rect());
+            region -= m_pixmap.rect();
+            region.translate(0, m_scrollBar->value());
+            m_dirtyRegion |= region;
+        } else {
+            m_dirtyRegion = QRegion(visibleArea());
+        }
+        m_pixmap = pixmap;
     }
 
     if (m_viewScrolled) {
