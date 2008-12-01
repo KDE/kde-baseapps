@@ -869,6 +869,7 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             if (!isContainment()) {
                 setupIconView();
             }
+            setAspectRatioMode(Plasma::IgnoreAspectRatio);
         } else {
             // Clean up the icon view
             delete m_label;
@@ -911,6 +912,7 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             layout->addItem(m_iconWidget);
 
             setLayout(layout);
+            setAspectRatioMode(Plasma::ConstrainedSquare);
         }
     }
 
