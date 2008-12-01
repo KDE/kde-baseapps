@@ -361,6 +361,7 @@ void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
 void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
+
     m_regionCache.clear();
 
     if (!m_layoutBroken) {
@@ -384,6 +385,9 @@ void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
         m_items.remove(first, last - first + 1);
         m_validRows = m_items.size();
     }
+
+    // check the folder to see if it exists!!!
+    emit checkFolder();
 }
 
 void IconView::modelReset()
@@ -440,6 +444,9 @@ void IconView::listingStarted(const KUrl &url)
     }
 
     emit busy(true);
+
+    // check the folder to see if it exists!!!
+    emit checkFolder();
 }
 
 void IconView::listingClear()
@@ -974,7 +981,6 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     {
         painter->drawPixmap(cr.topLeft(), m_pixmap);
     }
-
     if (!m_errorMessage.isEmpty()) {
         paintErrorMessage(painter, cr, m_errorMessage);
     }

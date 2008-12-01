@@ -109,6 +109,9 @@ protected slots:
     void clipboardDataChanged();
     void updateScreenRegion();
     void showPreviewConfigDialog();
+    
+
+    void checkFolder();
 
 private:
     void setupIconView();

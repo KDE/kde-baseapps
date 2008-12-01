@@ -114,6 +114,7 @@ signals:
     void indexesMoved(const QModelIndexList &indexes);
     void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
     void busy(bool);
+    void checkFolder();
 
 protected:
     QPointF mapToViewport(const QPointF &point) const;

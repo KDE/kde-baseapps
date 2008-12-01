@@ -397,6 +397,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     // The label is not shown when the applet is acting as a containment,
     // so don't confuse the user by making it editable.
     if (isContainment()) {
+        uiDisplay.lblCustomLabel->hide();
         uiDisplay.labelEdit->hide();
     }
 
@@ -736,6 +737,7 @@ void FolderView::setupIconView()
     connect(m_iconView, SIGNAL(indexesMoved(QModelIndexList)), SLOT(indexesMoved(QModelIndexList)));
     connect(m_iconView, SIGNAL(contextMenuRequest(QWidget*,QPoint)), SLOT(contextMenuRequest(QWidget*,QPoint)));
     connect(m_iconView, SIGNAL(busy(bool)), SLOT(setBusy(bool)));
+    connect(m_iconView, SIGNAL(checkFolder()), SLOT(checkFolder()));
 
     FolderViewAdapter *adapter = new FolderViewAdapter(m_iconView);
     m_previewGenerator = new KFilePreviewGenerator(adapter, m_model);
@@ -1454,6 +1456,22 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
     if (pasteTo) {
         pasteTo->setEnabled(false);
+    }
+}
+
+void FolderView::checkFolder()
+{
+    QDir dir(m_url.path());
+
+    if (!dir.exists()) {
+	if (isContainment()) {
+	    setUrl(KUrl("desktop:/"));
+	} else {
+	    setUrl(KUrl(QDir::homePath()));
+	}
+	    
+        m_dirModel->dirLister()->openUrl(m_url);
+        updateIconWidget();
     }
 }
 
