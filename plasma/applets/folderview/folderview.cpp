@@ -1225,15 +1225,14 @@ KUrl::List FolderView::selectedUrls() const
 
 void FolderView::copy()
 {
-    QMimeData *mimeData = new QMimeData;
-    KonqMimeData::populateMimeData(mimeData, selectedUrls(), KUrl::List(), false);
+    QMimeData *mimeData = m_model->mimeData(m_selectionModel->selectedIndexes());
     QApplication::clipboard()->setMimeData(mimeData);
 }
 
 void FolderView::cut()
 {
-    QMimeData *mimeData = new QMimeData;
-    KonqMimeData::populateMimeData(mimeData, selectedUrls(), KUrl::List(), true);
+    QMimeData *mimeData = m_model->mimeData(m_selectionModel->selectedIndexes());
+    KonqMimeData::addIsCutSelection(mimeData, true);
     QApplication::clipboard()->setMimeData(mimeData);
 }
 
@@ -1471,7 +1470,7 @@ void FolderView::checkFolder()
 	} else {
 	    setUrl(KUrl(QDir::homePath()));
 	}
-	    
+
         m_dirModel->dirLister()->openUrl(m_url);
         updateIconWidget();
     }
