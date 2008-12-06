@@ -111,6 +111,7 @@ void IconView::setModel(QAbstractItemModel *model)
     connect(lister, SIGNAL(completed()), SLOT(listingCompleted()));
     connect(lister, SIGNAL(canceled()), SLOT(listingCanceled()));
     connect(lister, SIGNAL(showErrorMessage(QString)), SLOT(listingError(QString)));
+    connect(lister, SIGNAL(itemsDeleted(KFileItemList)), SLOT(itemsDeleted(KFileItemList)));
 
     m_validRows = 0;
     m_layoutBroken = false;
@@ -368,8 +369,10 @@ void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
         if (first < m_validRows) {
             m_validRows = 0;
         }
-        m_delayedLayoutTimer.start(10, this);
-        emit busy(true);
+        if (m_model->rowCount() > 0) {
+            m_delayedLayoutTimer.start(10, this);
+            emit busy(true);
+        }
     } else {
         for (int i = first; i <= last; i++) {
             markAreaDirty(m_items[i].rect);
@@ -385,9 +388,6 @@ void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
         m_items.remove(first, last - first + 1);
         m_validRows = m_items.size();
     }
-
-    // check the folder to see if it exists!!!
-    emit checkFolder();
 }
 
 void IconView::modelReset()
@@ -444,9 +444,6 @@ void IconView::listingStarted(const KUrl &url)
     }
 
     emit busy(true);
-
-    // check the folder to see if it exists!!!
-    emit checkFolder();
 }
 
 void IconView::listingClear()
@@ -484,6 +481,15 @@ void IconView::listingError(const QString &message)
 
     if (m_validRows == m_model->rowCount()) {
         emit busy(false);
+    }
+}
+
+void IconView::itemsDeleted(const KFileItemList &items)
+{
+    // Check if the root item was deleted
+    if (items.contains(m_dirModel->dirLister()->rootItem())) {
+        const QString path = m_dirModel->dirLister()->url().path();
+        listingError(KIO::buildErrorString(KIO::ERR_DOES_NOT_EXIST, path));
     }
 }
 

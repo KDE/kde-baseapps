@@ -33,6 +33,7 @@
 class KUrl;
 class KDirModel;
 class KFileItemDelegate;
+class KFileItemList;
 class KFilePreviewGenerator;
 class KNewMenu;
 class QItemSelectionModel;
@@ -114,7 +115,6 @@ signals:
     void indexesMoved(const QModelIndexList &indexes);
     void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
     void busy(bool);
-    void checkFolder();
 
 protected:
     QPointF mapToViewport(const QPointF &point) const;
@@ -155,6 +155,7 @@ private slots:
     void listingCompleted();
     void listingCanceled();
     void listingError(const QString &message);
+    void itemsDeleted(const KFileItemList &items);
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);

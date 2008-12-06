@@ -110,9 +110,6 @@ protected slots:
     void updateScreenRegion();
     void showPreviewConfigDialog();
     
-
-    void checkFolder();
-
 private:
     void setupIconView();
     void setUrl(const KUrl &url);
