@@ -1639,7 +1639,7 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 
     QModelIndexList indexes;
-    foreach (const QUrl &url, event->mimeData()->urls()) {
+    foreach (const KUrl &url, KUrl::List::fromMimeData(event->mimeData())) {
         const QModelIndex index = m_model->indexForUrl(url);
         if (index.isValid()) {
             m_items[index.row()].rect.translate(delta);
