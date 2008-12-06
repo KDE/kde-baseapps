@@ -417,7 +417,7 @@ void IconView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottom
     m_regionCache.clear();
 
     // Update the size of the items and center them in the grid cell
-    for (int i = topLeft.row(); i <= bottomRight.row(); i++) {
+    for (int i = topLeft.row(); i <= bottomRight.row() && i < m_items.size(); i++) {
         if (!m_items[i].layouted) {
             continue;
         }
