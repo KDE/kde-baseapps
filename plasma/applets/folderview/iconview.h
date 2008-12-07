@@ -21,7 +21,8 @@
 #ifndef ICONVIEW_H
 #define ICONVIEW_H
 
-#include <QGraphicsWidget>
+#include "abstractitemview.h"
+
 #include <QAbstractItemDelegate>
 #include <QListView>
 #include <QPointer>
@@ -53,12 +54,11 @@ struct ViewItem
     bool layouted;
 };
 
-class IconView : public QGraphicsWidget
+class IconView : public AbstractItemView
 {
     Q_OBJECT
 
     Q_PROPERTY(QSize gridSize READ gridSize WRITE setGridSize)
-    Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
     Q_PROPERTY(bool alignToGrid READ alignToGrid WRITE setAlignToGrid)
     Q_PROPERTY(bool iconsMoveable READ iconsMoveable WRITE setIconsMoveable)
@@ -66,23 +66,15 @@ class IconView : public QGraphicsWidget
     Q_PROPERTY(QListView::Flow flow READ flow WRITE setFlow)
 
 public:
-    IconView(QGraphicsItem *parent);
+    IconView(QGraphicsWidget *parent);
     ~IconView();
 
     void setModel(QAbstractItemModel *model);
-    QAbstractItemModel *model() const;
-
-    void setSelectionModel(QItemSelectionModel *model);
-    QItemSelectionModel *selectionModel() const;
-
-    void setItemDelegate(KFileItemDelegate *delegate);
-    KFileItemDelegate *itemDelegate() const;
 
     void setGridSize(const QSize &gridSize);
     QSize gridSize() const;
 
     void setIconSize(const QSize &gridSize);
-    QSize iconSize() const;
 
     void setWordWrap(bool on);
     bool wordWrap() const;
@@ -107,23 +99,14 @@ public:
     QRect visualRect(const QModelIndex &index) const;
     QRegion visualRegion(const QModelIndex &index) const;
     QModelIndex indexAt(const QPointF &point) const;
-    QScrollBar *verticalScrollBar() const;
-    QRect visibleArea() const;
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 signals:
-    void activated(const QModelIndex &index);
     void indexesMoved(const QModelIndexList &indexes);
-    void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
     void busy(bool);
 
 protected:
-    QPointF mapToViewport(const QPointF &point) const;
-    QPointF mapFromViewport(const QPointF &point) const;
-    QRectF mapToViewport(const QRectF &point) const;
-    QRectF mapFromViewport(const QRectF &point) const;
-
     bool indexIntersectsRect(const QModelIndex &index, const QRect &rect) const;
     void startDrag(const QPointF &pos, QWidget *widget);
     void focusInEvent(QFocusEvent *event);
@@ -144,23 +127,21 @@ protected:
     void changeEvent(QEvent *event);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
 
-private slots:
     void rowsInserted(const QModelIndex &parent, int first, int last);
     void rowsRemoved(const QModelIndex &parent, int first, int last);
     void modelReset();
     void layoutChanged();
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    void scrollBarValueChanged(int);
+    void commitData(QWidget *editor);
+    void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
 
+private slots:
     void listingStarted(const KUrl &url);
     void listingClear();
     void listingCompleted();
     void listingCanceled();
     void listingError(const QString &message);
     void itemsDeleted(const KFileItemList &items);
-
-    void commitData(QWidget *editor);
-    void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
 
 private:
     void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
@@ -175,23 +156,10 @@ private:
     void loadIconPositions();
     void updateScrollBar();
     void updateScrollBarGeometry();
-    QRect scrollBackbufferContents();
-    void markAreaDirty(const QRect &rect);
-    void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
     void updateTextShadows(const QColor &textColor);
     QStyleOptionViewItemV4 viewOptions() const;
 
 private:
-    KFileItemDelegate *m_delegate;
-    QPointer<KDirModel> m_dirModel;
-    QPointer<ProxyModel> m_model;
-    Plasma::ScrollBar *m_scrollBar;
-    QPixmap m_pixmap;
-    QPixmap m_topFadeTile;
-    QPixmap m_bottomFadeTile;
-    QRegion m_dirtyRegion;
-    QPointer<QItemSelectionModel> m_selectionModel;
-    int m_lastScrollValue;
     QVector<ViewItem> m_items;
     QHash<QString, QPoint> m_savedPositions;
     mutable QCache<quint64, QRegion> m_regionCache;
@@ -202,7 +170,6 @@ private:
     bool m_needPostLayoutPass;
     bool m_initialListing;
     bool m_positionsLoaded;
-    bool m_viewScrolled;
     bool m_doubleClick;
     bool m_dragInProgress;
     bool m_iconsLocked;
@@ -217,12 +184,10 @@ private:
     QPointF m_buttonDownPos;
     QTime m_pressTime;
     QListView::Flow m_flow;
-    int m_animFrame;
     QString m_errorMessage;
     QPoint m_lastDeletedPos;
     QPoint m_currentLayoutPos;
     QSize m_gridSize;
-    QSize m_iconSize;
     QBasicTimer m_delayedLayoutTimer;
     QBasicTimer m_delayedCacheClearTimer;
 };

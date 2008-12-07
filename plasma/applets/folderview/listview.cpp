@@ -40,20 +40,11 @@
 #include "plasma/corona.h"
 #include "plasma/paintutils.h"
 #include "plasma/theme.h"
-#include "plasma/widgets/scrollbar.h"
 
-#ifdef Q_WS_X11
-#  include <QX11Info>
-#  include <X11/Xlib.h>
-
-#  undef FontChange
-#endif
 
 ListView::ListView(QGraphicsWidget *parent)
-    : QGraphicsWidget(parent),
-      m_lastScrollValue(0),
+    : AbstractItemView(parent),
       m_rowHeight(-1),
-      m_viewScrolled(false),
       m_dragInProgress(false),
       m_wordWrap(true),
       m_drawShadows(true)
@@ -61,12 +52,6 @@ ListView::ListView(QGraphicsWidget *parent)
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
     setCacheMode(NoCache);
-
-    m_scrollBar = new Plasma::ScrollBar(Qt::Vertical, this);
-    connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
-
-    int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
-    m_iconSize = QSize(size, size);
 }
 
 ListView::~ListView()
@@ -75,40 +60,8 @@ ListView::~ListView()
 
 void ListView::setModel(QAbstractItemModel *model)
 {
-    m_model = static_cast<ProxyModel*>(model);
-
-    connect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(rowsInserted(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(rowsRemoved(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(modelReset()), SLOT(modelReset()));
-    connect(m_model, SIGNAL(layoutChanged()), SLOT(layoutChanged()));
-    connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), SLOT(dataChanged(QModelIndex,QModelIndex)));
-
+    AbstractItemView::setModel(model);
     updateSizeHint();
-}
-
-QAbstractItemModel *ListView::model() const
-{
-    return m_model;
-}
-
-void ListView::setSelectionModel(QItemSelectionModel *model)
-{
-    m_selectionModel = model;
-}
-
-QItemSelectionModel *ListView::selectionModel() const
-{
-    return m_selectionModel;
-}
-
-void ListView::setItemDelegate(KFileItemDelegate *delegate)
-{
-    m_delegate = static_cast<KFileItemDelegate*>(delegate);
-}
-
-KFileItemDelegate *ListView::itemDelegate() const
-{
-    return m_delegate;
 }
 
 void ListView::setIconSize(const QSize &size)
@@ -118,11 +71,6 @@ void ListView::setIconSize(const QSize &size)
         m_rowHeight = -1;
         markAreaDirty(visibleArea());
     }
-}
-
-QSize ListView::iconSize() const
-{
-    return m_iconSize;
 }
 
 void ListView::setWordWrap(bool on)
@@ -150,11 +98,6 @@ void ListView::setDrawShadows(bool on)
 bool ListView::drawShadows() const
 {
     return m_drawShadows;
-}
-
-QRect ListView::visibleArea() const
-{
-    return mapToViewport(contentsRect()).toAlignedRect();
 }
 
 void ListView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -196,14 +139,6 @@ void ListView::layoutChanged()
 void ListView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
     markAreaDirty(visualRect(topLeft) | visualRect(bottomRight));
-}
-
-void ListView::scrollBarValueChanged(int value)
-{
-    Q_UNUSED(value)
-
-    m_viewScrolled = true;
-    update();
 }
 
 void ListView::updateScrollBar()
@@ -250,35 +185,6 @@ void ListView::updateSizeHint()
     setPreferredSize(256, m_rowHeight * m_model->rowCount());
 }
 
-// Marks the given rect in viewport coordinates, as dirty and schedules a repaint.
-void ListView::markAreaDirty(const QRect &rect)
-{
-    if (!rect.isEmpty() && rect.intersects(visibleArea())) {
-        m_dirtyRegion += rect;
-        update(mapFromViewport(rect));
-    }
-}
-
-QPointF ListView::mapToViewport(const QPointF &point) const
-{
-    return point + QPointF(0, m_scrollBar->value());
-}
-
-QRectF ListView::mapToViewport(const QRectF &rect) const
-{
-    return rect.translated(0, m_scrollBar->value());
-}
-
-QPointF ListView::mapFromViewport(const QPointF &point) const
-{
-    return point - QPointF(0, m_scrollBar->value());
-}
-
-QRectF ListView::mapFromViewport(const QRectF &rect) const
-{
-    return rect.translated(0, -m_scrollBar->value());
-}
-
 QRect ListView::visualRect(const QModelIndex &index) const
 {
     if (!index.isValid() || index.row() >= m_model->rowCount()) {
@@ -318,47 +224,11 @@ void ListView::updateTextShadows(const QColor &textColor)
     }
 }
 
-// This function scrolls the contents of the backbuffer the distance the scrollbar
-// has moved since the last time this function was called.
-QRect ListView::scrollBackbufferContents()
-{
-    int value =  m_scrollBar->value();
-    int delta = m_lastScrollValue - value;
-    m_lastScrollValue = value;
-
-    if (qAbs(delta) >= m_pixmap.height()) {
-        return mapToViewport(contentsRect()).toAlignedRect();
-    }
-
-    int sy, dy, h;
-    QRect dirty;
-    if (delta < 0) {
-        dy = 0;
-        sy = -delta;
-        h = m_pixmap.height() - sy;
-        dirty = QRect(0, m_pixmap.height() - sy, m_pixmap.width(), sy);
-    } else {
-        dy = delta;
-        sy = 0;
-        h = m_pixmap.height() - dy;
-        dirty = QRect(0, 0, m_pixmap.width(), dy);
-    }
-#ifdef Q_WS_X11
-    // Avoid the overhead of creating a QPainter to do the blit.
-    Display *dpy = QX11Info::display();
-    GC gc = XCreateGC(dpy, m_pixmap.handle(), 0, 0);
-    XCopyArea(dpy, m_pixmap.handle(), m_pixmap.handle(), gc, 0, sy, m_pixmap.width(), h, 0, dy);
-    XFreeGC(dpy, gc);
-#else
-    m_pixmap = m_pixmap.copy(0, sy, m_pixmap.width(), h);
-#endif
-    return mapToViewport(dirty.translated(contentsRect().topLeft().toPoint())).toAlignedRect();
-}
-
 void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(widget)
 
+    int offset = m_scrollBar->value();
     const QRect cr = contentsRect().toRect();
     if (!cr.isValid()) {
         return;
@@ -369,19 +239,7 @@ void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         return;
     }
 
-    // Make sure the backbuffer pixmap has the same size as the content rect
-    if (m_pixmap.isNull() || m_pixmap.size() != cr.size()) {
-        m_pixmap = QPixmap(cr.size());
-        m_pixmap.fill(Qt::transparent);
-        m_dirtyRegion = QRegion(visibleArea());
-    }
-
-    if (m_viewScrolled) {
-        m_dirtyRegion += scrollBackbufferContents();
-        m_viewScrolled = false;
-    }
-
-    int offset = m_scrollBar->value();
+    prepareBackBuffer();
 
     painter->setClipRect(clipRect);
 
@@ -441,63 +299,7 @@ void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         m_dirtyRegion = QRegion();
     }
 
-    const int fadeHeight = 16;
-    const QRect topFadeRect(cr.x(), cr.y(), cr.width(), fadeHeight);
-    const QRect bottomFadeRect(cr.bottomLeft() - QPoint(0, fadeHeight), QSize(cr.width(), fadeHeight));
-    const int viewportHeight = m_model->rowCount() * m_rowHeight;
-
-    // Draw the backbuffer on the Applet
-    // =================================
-    if ((offset > 0 && topFadeRect.intersects(clipRect)) ||
-        (viewportHeight > (offset + cr.height()) && bottomFadeRect.intersects(clipRect)))
-    {
-        QPixmap pixmap = m_pixmap;
-        QPainter p(&pixmap);
-        p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-
-        // Fade out the top section of the pixmap if the scrollbar slider isn't at the top
-        if (offset > 0 && topFadeRect.intersects(clipRect))
-        {
-            if (m_topFadeTile.isNull())
-            {
-                m_topFadeTile = QPixmap(256, fadeHeight);
-                m_topFadeTile.fill(Qt::transparent);
-                QLinearGradient g(0, 0, 0, fadeHeight);
-                g.setColorAt(0, Qt::transparent);
-                g.setColorAt(1, Qt::black);
-                QPainter p(&m_topFadeTile);
-                p.setCompositionMode(QPainter::CompositionMode_Source);
-                p.fillRect(0, 0, 256, fadeHeight, g);
-                p.end();
-            }
-            p.drawTiledPixmap(0, 0, m_pixmap.width(), fadeHeight, m_topFadeTile);
-        }
-
-        // Fade out the bottom part of the pixmap if the scrollbar slider isn't at the bottom
-        if (viewportHeight > (offset + cr.height()) && bottomFadeRect.intersects(clipRect))
-        {
-            if (m_topFadeTile.isNull())
-            {
-                m_bottomFadeTile = QPixmap(256, fadeHeight);
-                m_bottomFadeTile.fill(Qt::transparent);
-                QLinearGradient g(0, 0, 0, fadeHeight);
-                g.setColorAt(0, Qt::black);
-                g.setColorAt(1, Qt::transparent);
-                QPainter p(&m_bottomFadeTile);
-                p.setCompositionMode(QPainter::CompositionMode_Source);
-                p.fillRect(0, 0, 256, fadeHeight, g);
-                p.end();
-            }
-            p.drawTiledPixmap(0, m_pixmap.height() - fadeHeight, m_pixmap.width(), fadeHeight, m_bottomFadeTile);
-        }
-        p.end();
-
-        painter->drawPixmap(cr.topLeft(), pixmap);
-    }
-    else
-    {
-        painter->drawPixmap(cr.topLeft(), m_pixmap);
-    }
+    syncBackBuffer(painter, clipRect);
 }
 
 QModelIndex ListView::indexAt(const QPointF &pos) const

@@ -48,19 +48,10 @@
 #include "plasma/corona.h"
 #include "plasma/paintutils.h"
 #include "plasma/theme.h"
-#include "plasma/widgets/scrollbar.h"
-
-#ifdef Q_WS_X11
-#  include <QX11Info>
-#  include <X11/Xlib.h>
-
-#  undef FontChange
-#endif
 
 
-IconView::IconView(QGraphicsItem *parent)
-    : QGraphicsWidget(parent),
-      m_lastScrollValue(0),
+IconView::IconView(QGraphicsWidget *parent)
+    : AbstractItemView(parent),
       m_columns(0),
       m_rows(0),
       m_validRows(0),
@@ -68,7 +59,6 @@ IconView::IconView(QGraphicsItem *parent)
       m_needPostLayoutPass(false),
       m_initialListing(true),
       m_positionsLoaded(false),
-      m_viewScrolled(false),
       m_doubleClick(false),
       m_dragInProgress(false),
       m_iconsLocked(false),
@@ -81,9 +71,7 @@ IconView::IconView(QGraphicsItem *parent)
     setAcceptDrops(true);
     setCacheMode(NoCache);
 
-    m_scrollBar = new Plasma::ScrollBar(Qt::Vertical, this);
     m_scrollBar->hide();
-    connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
 
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
@@ -96,14 +84,7 @@ IconView::~IconView()
 
 void IconView::setModel(QAbstractItemModel *model)
 {
-    m_model = static_cast<ProxyModel*>(model);
-    m_dirModel = static_cast<KDirModel*>(m_model->sourceModel());
-
-    connect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)), SLOT(rowsInserted(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(rowsRemoved(QModelIndex,int,int)));
-    connect(m_model, SIGNAL(modelReset()), SLOT(modelReset()));
-    connect(m_model, SIGNAL(layoutChanged()), SLOT(layoutChanged()));
-    connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), SLOT(dataChanged(QModelIndex,QModelIndex)));
+    AbstractItemView::setModel(model);
 
     KDirLister *lister = m_dirModel->dirLister();
     connect(lister, SIGNAL(started(KUrl)), SLOT(listingStarted(KUrl)));
@@ -122,35 +103,6 @@ void IconView::setModel(QAbstractItemModel *model)
     }
 }
 
-QAbstractItemModel *IconView::model() const
-{
-    return m_model;
-}
-
-void IconView::setSelectionModel(QItemSelectionModel *model)
-{
-    m_selectionModel = model;
-}
-
-QItemSelectionModel *IconView::selectionModel() const
-{
-    return m_selectionModel;
-}
-
-void IconView::setItemDelegate(KFileItemDelegate *delegate)
-{
-    m_delegate = static_cast<KFileItemDelegate*>(delegate);
-
-    connect(m_delegate, SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)),
-            SLOT(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));
-    connect(m_delegate, SIGNAL(commitData(QWidget*)), SLOT(commitData(QWidget*)));
-}
-
-KFileItemDelegate *IconView::itemDelegate() const
-{
-    return m_delegate;
-}
-
 void IconView::setIconSize(const QSize &size)
 {
     if (size != m_iconSize) {
@@ -162,11 +114,6 @@ void IconView::setIconSize(const QSize &size)
             m_delayedLayoutTimer.start(10, this);
         }
     }
-}
-
-QSize IconView::iconSize() const
-{
-    return m_iconSize;
 }
 
 void IconView::setGridSize(const QSize &size)
@@ -298,16 +245,6 @@ QStringList IconView::iconPositionsData() const
     }
 
     return data;
-}
-
-QScrollBar *IconView::verticalScrollBar() const
-{
-    return m_scrollBar->nativeWidget();
-}
-
-QRect IconView::visibleArea() const
-{
-    return mapToViewport(contentsRect()).toAlignedRect();
 }
 
 void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -493,14 +430,6 @@ void IconView::itemsDeleted(const KFileItemList &items)
     }
 }
 
-void IconView::scrollBarValueChanged(int value)
-{
-    Q_UNUSED(value)
-
-    m_viewScrolled = true;
-    update();
-}
-
 int IconView::columnsForWidth(qreal width) const
 {
     int spacing = 10;
@@ -517,26 +446,6 @@ int IconView::rowsForHeight(qreal height) const
 
     qreal available = height - 2 * margin;
     return qFloor(available / (gridSize().height() + spacing));
-}
-
-QPointF IconView::mapToViewport(const QPointF &point) const
-{
-    return point + QPointF(0, m_scrollBar->value());
-}
-
-QRectF IconView::mapToViewport(const QRectF &rect) const
-{
-    return rect.translated(0, m_scrollBar->value());
-}
-
-QPointF IconView::mapFromViewport(const QPointF &point) const
-{
-    return point - QPointF(0, m_scrollBar->value());
-}
-
-QRectF IconView::mapFromViewport(const QRectF &rect) const
-{
-    return rect.translated(0, -m_scrollBar->value());
 }
 
 QPoint inline IconView::nextGridPosition(const QPoint &lastPos, const QSize &grid, const QRect &contentRect) const
@@ -824,6 +733,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 {
     Q_UNUSED(widget)
 
+    int offset = m_scrollBar->value();
     const QRect cr = contentsRect().toRect();
     if (!cr.isValid()) {
         return;
@@ -834,44 +744,9 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         return;
     }
 
-    // Make sure the backbuffer pixmap has the same size as the content rect
-    if (m_pixmap.size() != cr.size()) {
-        QPixmap pixmap(cr.size());
-        pixmap.fill(Qt::transparent);
-        if (!m_pixmap.isNull()) {
-            // Static content optimization
-#ifdef Q_WS_X11
-            if (m_pixmap.paintEngine()->type() == QPaintEngine::X11) {
-                GC gc = XCreateGC(QX11Info::display(), pixmap.handle(), 0, NULL);
-                XCopyArea(QX11Info::display(), m_pixmap.handle(), pixmap.handle(), gc, 0, 0,
-                          m_pixmap.width(), m_pixmap.height(), 0, 0);
-                XFreeGC(QX11Info::display(), gc);
-            } else
-#endif
-            {
-                QPainter p(&pixmap);
-                p.setCompositionMode(QPainter::CompositionMode_Source);
-                p.drawPixmap(0, 0, m_pixmap);
-            }
-            QRegion region(pixmap.rect());
-            region -= m_pixmap.rect();
-            region.translate(0, m_scrollBar->value());
-            m_dirtyRegion |= region;
-        } else {
-            m_dirtyRegion = QRegion(visibleArea());
-        }
-        m_pixmap = pixmap;
-    }
-
-    if (m_viewScrolled) {
-        m_dirtyRegion += scrollBackbufferContents();
-        m_viewScrolled = false;
-    }
-
-    int offset = m_scrollBar->value();
+    prepareBackBuffer();
 
     painter->setClipRect(clipRect);
-
 
     // Update the dirty region in the backbuffer
     // =========================================
@@ -932,61 +807,8 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         m_dirtyRegion = QRegion();
     }
 
-    const QRect topFadeRect(cr.x(), cr.y(), cr.width(), 16);
-    const QRect bottomFadeRect(cr.bottomLeft() - QPoint(0, 16), QSize(cr.width(), 16));
+    syncBackBuffer(painter, clipRect);
 
-    // Draw the backbuffer on the Applet
-    // =================================
-    if ((offset > 0 && topFadeRect.intersects(clipRect)) ||
-        (m_viewportRect.height() > (offset + cr.height()) && bottomFadeRect.intersects(clipRect)))
-    {
-        QPixmap pixmap = m_pixmap;
-        QPainter p(&pixmap);
-        p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-
-        // Fade out the top section of the pixmap if the scrollbar slider isn't at the top
-        if (offset > 0 && topFadeRect.intersects(clipRect))
-        {
-            if (m_topFadeTile.isNull())
-            {
-                m_topFadeTile = QPixmap(256, 16);
-                m_topFadeTile.fill(Qt::transparent);
-                QLinearGradient g(0, 0, 0, 16);
-                g.setColorAt(0, Qt::transparent);
-                g.setColorAt(1, Qt::black);
-                QPainter p(&m_topFadeTile);
-                p.setCompositionMode(QPainter::CompositionMode_Source);
-                p.fillRect(0, 0, 256, 16, g);
-                p.end();
-            }
-            p.drawTiledPixmap(0, 0, m_pixmap.width(), 16, m_topFadeTile);
-        }
-
-        // Fade out the bottom part of the pixmap if the scrollbar slider isn't at the bottom
-        if (m_viewportRect.height() > (offset + cr.height()) && bottomFadeRect.intersects(clipRect))
-        {
-            if (m_topFadeTile.isNull())
-            {
-                m_bottomFadeTile = QPixmap(256, 16);
-                m_bottomFadeTile.fill(Qt::transparent);
-                QLinearGradient g(0, 0, 0, 16);
-                g.setColorAt(0, Qt::black);
-                g.setColorAt(1, Qt::transparent);
-                QPainter p(&m_bottomFadeTile);
-                p.setCompositionMode(QPainter::CompositionMode_Source);
-                p.fillRect(0, 0, 256, 16, g);
-                p.end();
-            }
-            p.drawTiledPixmap(0, m_pixmap.height() - 16, m_pixmap.width(), 16, m_bottomFadeTile);
-        }
-        p.end();
-
-        painter->drawPixmap(cr.topLeft(), pixmap);
-    }
-    else
-    {
-        painter->drawPixmap(cr.topLeft(), m_pixmap);
-    }
     if (!m_errorMessage.isEmpty()) {
         paintErrorMessage(painter, cr, m_errorMessage);
     }
@@ -1024,59 +846,6 @@ void IconView::updateScrollBar()
     } else {
         m_scrollBar->hide();
     }
-}
-
-// Marks the supplied rect, in viewport coordinates, as dirty and schedules a repaint.
-void IconView::markAreaDirty(const QRect &rect)
-{
-    if (rect.isEmpty()) {
-        return;
-    }
-
-    const QRect visibleRect = mapToViewport(contentsRect()).toAlignedRect();
-    if (!rect.intersects(visibleRect)) {
-        return;
-    }
-
-    m_dirtyRegion += rect;
-    update(mapFromViewport(rect));
-}
-
-// This function scrolls the contents of the backbuffer the distance the scrollbar
-// has moved since the last time this function was called.
-QRect IconView::scrollBackbufferContents()
-{
-    int value =  m_scrollBar->value();
-    int delta = m_lastScrollValue - value;
-    m_lastScrollValue = value;
-
-    if (qAbs(delta) >= m_pixmap.height()) {
-        return mapToViewport(contentsRect()).toAlignedRect();
-    }
-
-    int sy, dy, h;
-    QRect dirty;
-    if (delta < 0) {
-        dy = 0;
-        sy = -delta;
-        h = m_pixmap.height() - sy;
-        dirty = QRect(0, m_pixmap.height() - sy, m_pixmap.width(), sy);
-    } else {
-        dy = delta;
-        sy = 0;
-        h = m_pixmap.height() - dy;
-        dirty = QRect(0, 0, m_pixmap.width(), dy);
-    }
-#ifdef Q_WS_X11
-    // Avoid the overhead of creating a QPainter to do the blit.
-    Display *dpy = QX11Info::display();
-    GC gc = XCreateGC(dpy, m_pixmap.handle(), 0, 0);
-    XCopyArea(dpy, m_pixmap.handle(), m_pixmap.handle(), gc, 0, sy, m_pixmap.width(), h, 0, dy);
-    XFreeGC(dpy, gc);
-#else
-    m_pixmap = m_pixmap.copy(0, sy, m_pixmap.width(), h);
-#endif
-    return mapToViewport(dirty.translated(contentsRect().topLeft().toPoint())).toAlignedRect();
 }
 
 void IconView::updateTextShadows(const QColor &textColor)

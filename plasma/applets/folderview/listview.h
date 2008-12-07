@@ -21,7 +21,8 @@
 #ifndef LISTVIEW_H
 #define LISTVIEW_H
 
-#include <QGraphicsWidget>
+#include "abstractitemview.h"
+
 #include <QAbstractItemDelegate>
 #include <QPointer>
 #include <QCache>
@@ -39,12 +40,8 @@ class ProxyModel;
 class QStyleOptionViewItemV4;
 class QScrollBar;
 
-namespace Plasma
-{
-    class ScrollBar;
-}
 
-class ListView : public QGraphicsWidget
+class ListView : public AbstractItemView
 {
     Q_OBJECT
 
@@ -53,16 +50,8 @@ public:
     ~ListView();
 
     void setModel(QAbstractItemModel *model);
-    QAbstractItemModel *model() const;
-
-    void setSelectionModel(QItemSelectionModel *model);
-    QItemSelectionModel *selectionModel() const;
-
-    void setItemDelegate(KFileItemDelegate *delegate);
-    KFileItemDelegate *itemDelegate() const;
 
     void setIconSize(const QSize &gridSize);
-    QSize iconSize() const;
 
     void setWordWrap(bool on);
     bool wordWrap() const;
@@ -70,26 +59,14 @@ public:
     void setDrawShadows(bool on);
     bool drawShadows() const;
 
-    QRect visibleArea() const;
     QModelIndex indexAt(const QPointF &point) const;
     QRect visualRect(const QModelIndex &index) const;
 
-signals:
-    void activated(const QModelIndex &index);
-    void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
-
 protected:
     void startDrag(const QPointF &pos, QWidget *widget);
-    QRect scrollBackbufferContents();
     void updateTextShadows(const QColor &textColor);
-    void markAreaDirty(const QRect &rect);
     void updateScrollBar();
     void updateSizeHint();
-
-    QPointF mapToViewport(const QPointF &point) const;
-    QRectF mapToViewport(const QRectF &rect) const;
-    QPointF mapFromViewport(const QPointF &point) const;
-    QRectF mapFromViewport(const QRectF &rect) const;
     QStyleOptionViewItemV4 viewOptions() const;
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
@@ -104,30 +81,16 @@ protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
 
-private slots:
     void rowsInserted(const QModelIndex &parent, int first, int last);
     void rowsRemoved(const QModelIndex &parent, int first, int last);
     void modelReset();
     void layoutChanged();
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    void scrollBarValueChanged(int value);
 
 private:
-    KFileItemDelegate *m_delegate;
-    QPointer<KDirModel> m_dirModel;
-    QPointer<ProxyModel> m_model;
-    Plasma::ScrollBar *m_scrollBar;
-    QPixmap m_pixmap;
-    QPixmap m_topFadeTile;
-    QPixmap m_bottomFadeTile;
-    QRegion m_dirtyRegion;
-    QPointer<QItemSelectionModel> m_selectionModel;
-    QSize m_iconSize;
-    int m_lastScrollValue;
     int m_rowHeight;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
-    bool m_viewScrolled;
     bool m_dragInProgress;
     bool m_wordWrap;
     bool m_drawShadows;
