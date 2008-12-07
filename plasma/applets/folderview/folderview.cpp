@@ -288,7 +288,7 @@ void FolderView::init()
     m_textColor           = cg.readEntry("textColor", QColor(Qt::transparent));
     m_iconsLocked         = cg.readEntry("iconsLocked", false);
     m_alignToGrid         = cg.readEntry("alignToGrid", false);
-    m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail");
+    m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail" << "jpegthumbnail");
     m_sortDirsFirst       = cg.readEntry("sortDirsFirst", true);
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
     m_filterFiles         = cg.readEntry("filterFiles", "*");
