@@ -182,7 +182,9 @@ void ListView::updateSizeHint()
         const QSize size = m_delegate->sizeHint(viewOptions(), m_model->index(0, 0));
         m_rowHeight = size.height();
     }
-    setPreferredSize(256, m_rowHeight * m_model->rowCount());
+
+    QFontMetrics fm(font());
+    setPreferredSize(m_iconSize.width() + fm.lineSpacing() * 18, m_rowHeight * m_model->rowCount());
 }
 
 QRect ListView::visualRect(const QModelIndex &index) const
