@@ -141,15 +141,26 @@ QRect AbstractItemView::scrollBackBuffer()
         h = m_pixmap.height() - dy;
         dirty = QRect(0, 0, m_pixmap.width(), dy);
     }
-#ifdef Q_WS_X11
-    // Avoid the overhead of creating a QPainter to do the blit.
-    Display *dpy = QX11Info::display();
-    GC gc = XCreateGC(dpy, m_pixmap.handle(), 0, 0);
-    XCopyArea(dpy, m_pixmap.handle(), m_pixmap.handle(), gc, 0, sy, m_pixmap.width(), h, 0, dy);
-    XFreeGC(dpy, gc);
-#else
-    m_pixmap = m_pixmap.copy(0, sy, m_pixmap.width(), h);
+
+#if defined(Q_WS_X11)
+    const QPaintEngine::Type type = m_pixmap.paintEngine()->type();
+    if (type == QPaintEngine::X11) {
+        Display *dpy = QX11Info::display();
+        GC gc = XCreateGC(dpy, m_pixmap.handle(), 0, 0);
+        XCopyArea(dpy, m_pixmap.handle(), m_pixmap.handle(), gc, 0, sy, m_pixmap.width(), h, 0, dy);
+        XFreeGC(dpy, gc);
+    } else if (type == QPaintEngine::Raster) {
+        // Hack to prevent the image from detaching
+        const QImage image = m_pixmap.toImage();
+        const uchar *src = image.scanLine(sy);
+        uchar *dst = const_cast<uchar*>(image.scanLine(dy));
+        memmove((void*)dst, (const void*)src, h * image.bytesPerLine());
+    } else
 #endif
+    {
+        dirty = m_pixmap.rect();
+    }
+
     return mapToViewport(dirty.translated(contentsRect().topLeft().toPoint())).toAlignedRect();
 }
 
