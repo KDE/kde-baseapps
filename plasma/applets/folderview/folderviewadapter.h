@@ -21,14 +21,14 @@
 #define FOLDERVIEWADAPTER_H
 
 #include "kabstractviewadapter_p.h"
-#include "iconview.h"
+#include "abstractitemview.h"
 
 #include <QScrollBar>
 
 class FolderViewAdapter : public KAbstractViewAdapter
 {
 public:
-    FolderViewAdapter(IconView *view);
+    FolderViewAdapter(AbstractItemView *view);
     QAbstractItemModel *model() const;
     QSize iconSize() const;
     QPalette palette() const;
@@ -37,7 +37,7 @@ public:
     void connect(Signal signal, QObject *receiver, const char *slot);
 
 private:
-    IconView *m_view;
+    AbstractItemView *m_view;
 };
 
 #endif

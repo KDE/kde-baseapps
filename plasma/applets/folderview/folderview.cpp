@@ -896,6 +896,11 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             connect(m_listView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
             connect(m_listView, SIGNAL(contextMenuRequest(QWidget*,QPoint)), SLOT(contextMenuRequest(QWidget*,QPoint)));
 
+            FolderViewAdapter *adapter = new FolderViewAdapter(m_listView);
+            m_previewGenerator = new KFilePreviewGenerator(adapter, m_model);
+            m_previewGenerator->setPreviewShown(m_showPreviews);
+            m_previewGenerator->setEnabledPlugins(m_previewPlugins);
+
             updateListViewState();
 
             m_dialog = new Dialog;
