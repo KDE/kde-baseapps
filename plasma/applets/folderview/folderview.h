@@ -86,6 +86,7 @@ protected slots:
     void refreshIcons();
     void moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers);
     void deleteSelectedIcons();
+    void renameSelectedIcon();
 
     void undoTextChanged(const QString &text);
     void toggleIconsLocked(bool locked);

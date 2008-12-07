@@ -1057,7 +1057,7 @@ void FolderView::createActions()
 
     KAction *rename = new KAction(KIcon("edit-rename"), i18n("&Rename"), this);
     rename->setShortcut(Qt::Key_F2);
-    connect(rename, SIGNAL(triggered()), m_iconView, SLOT(renameSelectedIcon()));
+    connect(rename, SIGNAL(triggered()), SLOT(renameSelectedIcon()));
 
     KAction *trash = new KAction(KIcon("user-trash"), i18n("&Move to Trash"), this);
     trash->setShortcut(Qt::Key_Delete);
@@ -1345,6 +1345,13 @@ void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers mod
 void FolderView::deleteSelectedIcons()
 {
     KonqOperations::del(view(), KonqOperations::DEL, selectedUrls());
+}
+
+void FolderView::renameSelectedIcon()
+{
+    if (m_iconView) {
+        m_iconView->renameSelectedIcon();
+    }
 }
 
 void FolderView::undoTextChanged(const QString &text)

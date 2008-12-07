@@ -102,6 +102,8 @@ public:
     void setIconPositionsData(const QStringList &data);
     QStringList iconPositionsData() const;
 
+    void renameSelectedIcon();
+
     QRect visualRect(const QModelIndex &index) const;
     QRegion visualRegion(const QModelIndex &index) const;
     QModelIndex indexAt(const QPointF &point) const;
@@ -159,7 +161,6 @@ private slots:
 
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
-    void renameSelectedIcon();
 
 private:
     void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
