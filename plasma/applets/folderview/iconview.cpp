@@ -1013,11 +1013,11 @@ void IconView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint h
 {
     Q_UNUSED(hint)
 
+    editor->removeEventFilter(m_delegate);
     if (editor->hasFocus()) {
         setFocus();
     }
     editor->hide();
-    editor->removeEventFilter(m_delegate);
     editor->deleteLater();
 
     markAreaDirty(visibleArea());
