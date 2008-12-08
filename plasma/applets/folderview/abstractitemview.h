@@ -86,6 +86,13 @@ protected:
     QPointF mapFromViewport(const QPointF &point) const;
     QRectF mapFromViewport(const QRectF &rect) const;
 
+    void timerEvent(QTimerEvent *event);
+
+    void smoothScroll(int dx, int dy);
+    void startScrolling();
+    void stopScrolling();
+    void scrollTick();
+
 protected slots:
     virtual void rowsInserted(const QModelIndex &parent, int first, int last);
     virtual void rowsRemoved(const QModelIndex &parent, int first, int last);
@@ -110,6 +117,19 @@ protected:
     Plasma::ScrollBar *m_scrollBar;
     int m_lastScrollValue;
     bool m_viewScrolled;
+
+    // These variables are for the smooth scrolling code
+    int m_dx;
+    int m_ddx;
+    int m_dddx;
+    int m_rdx;
+    int m_dy;
+    int m_ddy;
+    int m_dddy;
+    int m_rdy;
+    bool m_smoothScrolling;
+    QBasicTimer m_smoothScrollTimer;
+
 };
 
 inline QPointF AbstractItemView::mapToViewport(const QPointF &point) const

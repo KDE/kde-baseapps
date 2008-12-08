@@ -431,8 +431,8 @@ void ListView::wheelEvent(QGraphicsSceneWheelEvent *event)
         return;
     }
 
-    int pixels = 40 * event->delta() / 120;
-    m_scrollBar->setValue(m_scrollBar->value() - pixels);
+    int pixels = 96 * event->delta() / 120;
+    smoothScroll(0, -pixels);
 }
 
 void ListView::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)

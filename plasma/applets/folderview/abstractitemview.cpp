@@ -1,6 +1,10 @@
 /*
  *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
  *
+ *   The smooth scrolling code is based on the code in KHTMLView,
+ *   Copyright © 2006-2008 Germain Garand <germain@ebooksfrance.org>
+ *   Copyright © 2008 Allan Sandfeld Jensen <kde@carewolf.com>
+ *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Library General Public
  *   License as published by the Free Software Foundation; either
@@ -30,10 +34,24 @@
 #  include <X11/Xlib.h>
 #endif
 
+
+static const int sSmoothScrollTime = 140;
+static const int sSmoothScrollTick = 14;
+
+
 AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
     : QGraphicsWidget(parent),
       m_lastScrollValue(0),
-      m_viewScrolled(false)
+      m_viewScrolled(false),
+      m_dx(0),
+      m_ddx(0),
+      m_dddx(0),
+      m_rdx(0),
+      m_dy(0),
+      m_ddy(0),
+      m_dddy(0),
+      m_rdy(0),
+      m_smoothScrolling(false)
 {
     m_scrollBar = new Plasma::ScrollBar(Qt::Vertical, this);
     connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
@@ -315,6 +333,118 @@ void AbstractItemView::scrollBarValueChanged(int value)
 
     m_viewScrolled = true;
     update();
+}
+
+void AbstractItemView::timerEvent(QTimerEvent *event)
+{
+    if (event->timerId() == m_smoothScrollTimer.timerId()) {
+        scrollTick();
+    }
+}
+
+void AbstractItemView::startScrolling()
+{
+    m_smoothScrolling = true;
+    m_smoothScrollTimer.start(sSmoothScrollTick, this);
+}
+
+void AbstractItemView::stopScrolling()
+{
+    m_smoothScrollTimer.stop();
+    m_dx = m_dy = 0;
+    m_ddx = m_ddy = 0;
+    m_rdx = m_rdy = 0;
+    m_dddx = m_dddy = 0;
+    m_smoothScrolling = false;
+}
+
+void AbstractItemView::smoothScroll(int dx, int dy)
+{
+    // full scroll is remaining scroll plus new scroll
+    m_dx = m_dx + dx;
+    m_dy = m_dy + dy;
+
+    if (m_dx == 0 && m_dy == 0) return;
+
+    int steps = sSmoothScrollTime/sSmoothScrollTick;
+
+    // average step size (stored in 1/16 px/step)
+    m_ddx = (m_dx*16)/(steps+1);
+    m_ddy = (m_dy*16)/(steps+1);
+
+    if (qAbs(m_ddx) < 64 && qAbs(m_ddy) < 64) {
+        // Don't move slower than average 4px/step in minimum one direction
+        if (m_ddx > 0) m_ddx = qMax(m_ddx, 64);
+        if (m_ddy > 0) m_ddy = qMax(m_ddy, 64);
+        if (m_ddx < 0) m_ddx = qMin(m_ddx, -64);
+        if (m_ddy < 0) m_ddy = qMin(m_ddy, -64);
+        // This means fewer than normal steps
+        steps = qMax(m_ddx ? (m_dx*16)/m_ddx : 0, m_ddy ? (m_dy*16)/m_ddy : 0);
+        if (steps < 1) steps = 1;
+        m_ddx = (m_dx*16)/(steps+1);
+        m_ddy = (m_dy*16)/(steps+1);
+    }
+
+    // step size starts at double average speed and ends at 0
+    m_ddx *= 2;
+    m_ddy *= 2;
+
+    // deacceleration speed
+    m_dddx = (m_ddx+1)/steps;
+    m_dddy = (m_ddy+1)/steps;
+
+    if (!m_smoothScrolling) {
+        startScrolling();
+        scrollTick();
+    }
+}
+
+void AbstractItemView::scrollTick() {
+    if (m_dx == 0 && m_dy == 0) {
+        stopScrolling();
+        return;
+    }
+
+    // step size + remaining partial step
+    int tddx = m_ddx + m_rdx;
+    int tddy = m_ddy + m_rdy;
+
+    // don't go under 1px/step
+    if (tddx > 0 && tddx < 16) tddx = 16;
+    if (tddy > 0 && tddy < 16) tddy = 16;
+    if (tddx < 0 && tddx > -16) tddx = -16;
+    if (tddy < 0 && tddy > -16) tddy = -16;
+
+    // full pixel steps to scroll in this step
+    int ddx = tddx / 16;
+    int ddy = tddy / 16;
+    // remaining partial step (this is especially needed for 1.x sized steps)
+    m_rdx = tddx % 16;
+    m_rdy = tddy % 16;
+
+    // limit step to requested scrolling distance
+    if (qAbs(ddx) > qAbs(m_dx)) ddx = m_dx;
+    if (qAbs(ddy) > qAbs(m_dy)) ddy = m_dy;
+
+    // Don't stop if deaccelerated too fast
+    if (!ddx) ddx = m_dx;
+    if (!ddy) ddy = m_dy;
+
+    // update remaining scroll
+    m_dx -= ddx;
+    m_dy -= ddy;
+
+    m_scrollBar->setValue(m_scrollBar->value() + ddy);
+
+    // update scrolling speed
+    int dddx = m_dddx;
+    int dddy = m_dddy;
+    // don't change direction
+    if (abs(dddx) > abs(m_ddx)) dddx = m_ddx;
+    if (abs(dddy) > abs(m_ddy)) dddy = m_ddy;
+
+    m_ddx -= dddx;
+    m_ddy -= dddy;
 }
 
 #include "abstractitemview.moc"

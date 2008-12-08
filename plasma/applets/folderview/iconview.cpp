@@ -1298,8 +1298,8 @@ void IconView::wheelEvent(QGraphicsSceneWheelEvent *event)
         return;
     }
 
-    int pixels = 40 * event->delta() / 120;
-    m_scrollBar->setValue(m_scrollBar->value() - pixels);
+    int pixels = 64 * event->delta() / 120;
+    smoothScroll(0, -pixels);
 }
 
 void IconView::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
@@ -1525,6 +1525,8 @@ QStyleOptionViewItemV4 IconView::viewOptions() const
 
 void IconView::timerEvent(QTimerEvent *event)
 {
+    AbstractItemView::timerEvent(event);
+
     if (event->timerId() == m_delayedCacheClearTimer.timerId()) {
         m_delayedCacheClearTimer.stop();
         m_savedPositions.clear();
