@@ -162,7 +162,7 @@ void ListView::updateScrollBar()
 
     m_scrollBar->setRange(0, max);
     m_scrollBar->setPageStep(contentsRect().height());
-    m_scrollBar->setSingleStep(10);
+    m_scrollBar->setSingleStep(m_rowHeight);
 
     if (updateValue) {
         m_scrollBar->setValue(max);
