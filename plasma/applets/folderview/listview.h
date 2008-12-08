@@ -79,6 +79,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void wheelEvent(QGraphicsSceneWheelEvent *event);
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
+    void dropEvent(QGraphicsSceneDragDropEvent *event);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
 
     void rowsInserted(const QModelIndex &parent, int first, int last);
@@ -89,7 +90,6 @@ protected:
 
 private:
     int m_rowHeight;
-    QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     bool m_dragInProgress;
     bool m_wordWrap;

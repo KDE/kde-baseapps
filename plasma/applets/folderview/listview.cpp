@@ -277,16 +277,12 @@ void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
             const QModelIndex index = m_model->index(i, 0);
             opt.state &= ~(QStyle::State_HasFocus | QStyle::State_MouseOver | QStyle::State_Selected);
 
-            if (index == m_hoveredIndex) {
-                opt.state |= QStyle::State_MouseOver;
-            }
-
             if (m_selectionModel->isSelected(index)) {
                 if (m_dragInProgress) {
                     continue;
                 }
                 updateTextShadows(palette().color(QPalette::HighlightedText));
-                opt.state |= QStyle::State_Selected;
+                opt.state |= QStyle::State_Selected | QStyle::State_MouseOver;
             } else {
                 updateTextShadows(palette().color(QPalette::Text));
             }
@@ -312,21 +308,28 @@ QModelIndex ListView::indexAt(const QPointF &pos) const
 
 void ListView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    QPoint pos = mapToViewport(event->pos()).toPoint();
+    const QPoint pos = mapToViewport(event->pos()).toPoint();
+    const QModelIndex index = indexAt(pos);
 
-    m_hoveredIndex = indexAt(pos);
-    markAreaDirty(visualRect(m_hoveredIndex));
+    if (m_selectionModel->currentIndex().isValid()) {
+        markAreaDirty(visualRect(m_selectionModel->currentIndex()));
+    }
+
+    if (index.isValid()) {
+        m_selectionModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
+        markAreaDirty(visualRect(index));
+    }
 }
 
 void ListView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    QPoint pos = mapToViewport(event->pos()).toPoint();
+    const QPoint pos = mapToViewport(event->pos()).toPoint();
+    const QModelIndex index = indexAt(pos);
 
-    QModelIndex index = indexAt(pos);
-    if (index != m_hoveredIndex) {
+    if (index != m_selectionModel->currentIndex()) {
         markAreaDirty(visualRect(index));
-        markAreaDirty(visualRect(m_hoveredIndex));
-        m_hoveredIndex = index;
+        markAreaDirty(visualRect(m_selectionModel->currentIndex()));
+        m_selectionModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
     }
 }
 
@@ -334,9 +337,9 @@ void ListView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event)
 
-    if (m_hoveredIndex.isValid()) {
-        markAreaDirty(visualRect(m_hoveredIndex));
-        m_hoveredIndex = QModelIndex();
+    if (!m_pressedIndex.isValid() && m_selectionModel->currentIndex().isValid()) {
+        markAreaDirty(visualRect(m_selectionModel->currentIndex()));
+        m_selectionModel->clear();
     }
 }
 
@@ -359,6 +362,7 @@ void ListView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             m_selectionModel->clearSelection();
             markAreaDirty(visibleArea());
         }
+        m_pressedIndex = index;
         return;
     }
 
@@ -444,6 +448,11 @@ void ListView::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     }
 }
 
+void ListView::dropEvent(QGraphicsSceneDragDropEvent *)
+{
+    m_pressedIndex = QModelIndex();
+}
+
 void ListView::resizeEvent(QGraphicsSceneResizeEvent *)
 {
     const QRectF cr = contentsRect();
@@ -472,7 +481,7 @@ void ListView::startDrag(const QPointF &pos, QWidget *widget)
     pixmap.fill(Qt::transparent);
 
     QStyleOptionViewItemV4 option = viewOptions();
-    option.state |= QStyle::State_Selected;
+    option.state |= QStyle::State_Selected | QStyle::State_MouseOver;
 
     updateTextShadows(palette().color(QPalette::HighlightedText));
 
@@ -480,10 +489,6 @@ void ListView::startDrag(const QPointF &pos, QWidget *widget)
     foreach (const QModelIndex &index, indexes)
     {
         option.rect = visualRect(index).translated(-boundingRect.topLeft());
-        if (index == m_hoveredIndex)
-            option.state |= QStyle::State_MouseOver;
-        else
-            option.state &= ~QStyle::State_MouseOver;
         m_delegate->paint(&p, option, index);
     }
     p.end();
@@ -493,9 +498,6 @@ void ListView::startDrag(const QPointF &pos, QWidget *widget)
     // before calling QDrag::exec(), since it's a blocking call.
     markAreaDirty(boundingRect);
 
-    // Unset the hovered index so dropEvent won't think the icons are being
-    // dropped on a dragged folder.
-    m_hoveredIndex = QModelIndex();
     m_dragInProgress = true;
 
     QDrag *drag = new QDrag(widget);
