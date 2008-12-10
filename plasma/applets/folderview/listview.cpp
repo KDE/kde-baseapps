@@ -524,7 +524,7 @@ QStyleOptionViewItemV4 ListView::viewOptions() const
     option.displayAlignment    = Qt::AlignLeft | Qt::AlignVCenter;
     option.textElideMode       = Qt::ElideMiddle;
     option.locale              = QLocale::system();
-    option.widget              = 0;
+    option.widget              = m_styleWidget;
     option.viewItemPosition    = QStyleOptionViewItemV4::OnlyOne;
 
     if (m_wordWrap) {

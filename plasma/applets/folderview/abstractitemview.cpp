@@ -23,6 +23,7 @@
 
 #include "abstractitemview.h"
 #include "proxymodel.h"
+#include "style.h"
 
 #include <QItemSelectionModel>
 #include <QPaintEngine>
@@ -55,6 +56,12 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
 {
     m_scrollBar = new Plasma::ScrollBar(Qt::Vertical, this);
     connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
+
+    // This is a dummy widget that's never shown - it's just passed to
+    // KFileItemDelegate in the style options, so it will use the widget's
+    // style to draw the view item backgrounds.
+    m_styleWidget = new QWidget;
+    m_styleWidget->setStyle(new FolderViewStyle);
 
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);

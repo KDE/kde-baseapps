@@ -115,6 +115,7 @@ protected:
     QPixmap m_topFadeTile;
     QPixmap m_bottomFadeTile;
     Plasma::ScrollBar *m_scrollBar;
+    QWidget *m_styleWidget;
     int m_lastScrollValue;
     bool m_viewScrolled;
 

@@ -10,7 +10,8 @@ set(folderview_SRCS
     dirlister.cpp
     proxymodel.cpp
     folderviewadapter.cpp
-    previewpluginsmodel.cpp)
+    previewpluginsmodel.cpp
+    style.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   folderviewFilterConfig.ui

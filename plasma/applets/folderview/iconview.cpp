@@ -1513,7 +1513,7 @@ QStyleOptionViewItemV4 IconView::viewOptions() const
     option.displayAlignment    = Qt::AlignHCenter;
     option.textElideMode       = Qt::ElideRight;
     option.locale              = QLocale::system();
-    option.widget              = 0;
+    option.widget              = m_styleWidget;
     option.viewItemPosition    = QStyleOptionViewItemV4::OnlyOne;
 
     if (m_wordWrap) {
