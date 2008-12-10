@@ -24,7 +24,7 @@
 #include <plasma/framesvg.h>
 
 FolderViewStyle::FolderViewStyle()
-    : QCommonStyle(), m_frame(0)
+    : QCommonStyle()
 {
     m_frame = new Plasma::FrameSvg(this);
     m_frame->setImagePath("widgets/viewitem");

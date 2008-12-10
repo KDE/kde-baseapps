@@ -61,7 +61,8 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
     // KFileItemDelegate in the style options, so it will use the widget's
     // style to draw the view item backgrounds.
     m_styleWidget = new QWidget;
-    m_styleWidget->setStyle(new FolderViewStyle);
+    m_style = new FolderViewStyle;
+    m_styleWidget->setStyle(m_style);
 
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
@@ -69,6 +70,8 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
 
 AbstractItemView::~AbstractItemView()
 {
+    delete m_styleWidget;
+    delete m_style;
 }
 
 void AbstractItemView::setModel(QAbstractItemModel *model)
