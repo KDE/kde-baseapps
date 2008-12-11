@@ -24,7 +24,6 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QDesktopServices>
-#include <QDesktopWidget>
 #include <QDrag>
 #include <QGraphicsLinearLayout>
 #include <QGraphicsView>
@@ -904,10 +903,6 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             updateListViewState();
 
             m_dialog = new Dialog;
-
-            QGraphicsScene *scene = new QGraphicsScene(m_dialog);
-            scene->addItem(m_listView);
-
             m_dialog->setGraphicsWidget(m_listView);
 
             QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, this);
@@ -1525,7 +1520,7 @@ void FolderView::updateIconWidget()
     Plasma::ToolTipContent data;
     data.setMainText(m_titleText);
     data.setSubText(subText);
-    data.setImage(m_icon/*.pixmap(IconSize(KIconLoader::Desktop))*/);
+    data.setImage(m_icon);
     Plasma::ToolTipManager::self()->setContent(m_iconWidget, data);
 }
 
@@ -1534,15 +1529,7 @@ void FolderView::iconWidgetClicked()
     if (m_dialog->isVisible()) {
         m_dialog->hide();
     } else {
-        int left, top, right, bottom;
-        m_dialog->getContentsMargins(&left, &top, &right, &bottom);
-
-        const QRect rect = QApplication::desktop()->availableGeometry().adjusted(left, top, -right, -bottom);
-        m_listView->resize(m_listView->preferredSize().boundedTo(rect.size()));
-
-        m_dialog->resize(m_listView->size().toSize() + QSize(left + right, top + bottom));
-        m_dialog->move(popupPosition(m_dialog->size()));
-        m_dialog->show();
+        m_dialog->show(this);
     }
 }
 

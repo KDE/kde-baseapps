@@ -50,10 +50,8 @@ class ProxyModel;
 class IconView;
 class ListView;
 class Label;
+class Dialog;
 
-namespace Plasma {
-    class Dialog;
-}
 
 class FolderView : public Plasma::Containment
 {
@@ -136,7 +134,7 @@ private:
     ListView *m_listView;
     Label *m_label;
     Plasma::IconWidget *m_iconWidget;
-    Plasma::Dialog *m_dialog;
+    Dialog *m_dialog;
     QIcon m_icon;
     KUrl m_url;
     QColor m_textColor;

@@ -20,16 +20,37 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include "plasma/dialog.h"
+#include <QWidget>
 
-class Dialog : public Plasma::Dialog
+namespace Plasma {
+    class Applet;
+    class FrameSvg;
+}
+
+class QGraphicsView;
+class QGraphicsWidget;
+class QGraphicsScene;
+
+
+class Dialog : public QWidget
 {
 public:
     Dialog(QWidget *parent = 0, Qt::WindowFlags f = Qt::Window);
     ~Dialog();
 
+    void setGraphicsWidget(QGraphicsWidget *widget);
+    void show(Plasma::Applet *applet);
+
 protected:
     void focusOutEvent(QFocusEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void paintEvent(QPaintEvent *event);
+
+private:
+    Plasma::FrameSvg *m_background;
+    QGraphicsScene *m_scene;
+    QGraphicsView *m_view;
+    QGraphicsWidget *m_widget;
 };
 
 #endif

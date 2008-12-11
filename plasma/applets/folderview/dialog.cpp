@@ -19,18 +19,130 @@
 
 #include "dialog.h"
 
+#include <QApplication>
+#include <QBitmap>
+#include <QDesktopWidget>
+#include <QGraphicsView>
 #include <QGraphicsWidget>
+#include <QGraphicsScene>
+
 #include <KWindowSystem>
 
+#include <Plasma/Applet>
+#include <Plasma/FrameSvg>
+
+#ifdef Q_WS_X11
+#  include <QX11Info>
+#endif
+
+
 Dialog::Dialog(QWidget *parent, Qt::WindowFlags f)
-    : Plasma::Dialog(parent, f)
+    : QWidget(parent, f), m_widget(0)
 {
     setWindowFlags(Qt::Popup | Qt::WindowStaysOnTopHint);
+    
+#ifdef Q_WS_X11
+    if (!QX11Info::isCompositingManagerRunning()) {
+        setAttribute(Qt::WA_NoSystemBackground);
+    }
+#endif
+
     KWindowSystem::setState(effectiveWinId(), NET::SkipTaskbar | NET::SkipPager);
+
+    QPalette pal = palette();
+    pal.setColor(backgroundRole(), Qt::transparent);
+    setPalette(pal);    
+    
+    m_background = new Plasma::FrameSvg(this);
+    m_background->setImagePath("dialogs/background");
+
+    m_scene = new QGraphicsScene(this);
+    m_view = new QGraphicsView(m_scene, this);
+    m_view->setFrameShape(QFrame::NoFrame);
+    m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_view->viewport()->setAutoFillBackground(false);
 }
 
 Dialog::~Dialog()
 {
+}
+
+void Dialog::setGraphicsWidget(QGraphicsWidget *widget)
+{
+    m_widget = widget;
+    m_scene->addItem(widget);
+}
+
+void Dialog::show(Plasma::Applet *applet)
+{
+    Plasma::FrameSvg::EnabledBorders borders = Plasma::FrameSvg::AllBorders;
+    int left   = m_background->marginSize(Plasma::LeftMargin);
+    int top    = m_background->marginSize(Plasma::TopMargin);
+    int right  = m_background->marginSize(Plasma::RightMargin);
+    int bottom = m_background->marginSize(Plasma::BottomMargin);
+
+    switch (applet->location())
+    {
+    case Plasma::BottomEdge:
+        borders &= ~Plasma::FrameSvg::BottomBorder;
+        bottom = 2;
+        break;
+
+    case Plasma::TopEdge:
+        borders &= ~Plasma::FrameSvg::TopBorder;
+        top = 2;
+        break;
+
+    case Plasma::LeftEdge:
+        borders &= ~Plasma::FrameSvg::LeftBorder;
+        left = 2;
+        break;
+
+    case Plasma::RightEdge:
+        borders &= ~Plasma::FrameSvg::RightBorder;
+        right = 2;
+        break;
+
+    default:
+        break;
+    }
+
+    const QRect rect = QApplication::desktop()->availableGeometry().adjusted(left, top, -right, -bottom);
+    m_widget->resize(m_widget->preferredSize().boundedTo(rect.size()));
+
+    m_background->setEnabledBorders(borders);
+    setContentsMargins(left, top, right, bottom);
+ 
+    resize(m_widget->size().toSize() + QSize(left + right, top + bottom));
+    move(applet->popupPosition(size()));
+
+    QWidget::show();
+}
+
+void Dialog::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event)
+
+    m_background->resizeFrame(rect().size());
+    m_view->setGeometry(contentsRect());
+
+#ifdef Q_WS_X11
+    if (!QX11Info::isCompositingManagerRunning()) {
+        setMask(m_background->mask());
+    }
+#endif
+}
+
+void Dialog::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event)
+
+    QPainter p(this);
+    p.setCompositionMode(QPainter::CompositionMode_Source);
+    p.fillRect(rect(), Qt::transparent);
+    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    m_background->paintFrame(&p);
 }
 
 void Dialog::focusOutEvent(QFocusEvent *event)
