@@ -1036,8 +1036,11 @@ void IconView::resizeEvent(QGraphicsSceneResizeEvent *)
             (m_flow == QListView::TopToBottom && rowsForHeight(maxHeight) != m_rows))
         {
             // The scrollbar range will be updated after the re-layout
-            m_validRows = 0;
-            m_delayedLayoutTimer.start(10, this);
+            if (m_validRows > 0) {
+                m_delayedRelayoutTimer.start(500, this);
+            } else {
+                m_delayedLayoutTimer.start(10, this);
+            }
         } else {
             updateScrollBar();
             markAreaDirty(visibleArea());
@@ -1531,8 +1534,17 @@ void IconView::timerEvent(QTimerEvent *event)
         m_delayedCacheClearTimer.stop();
         m_savedPositions.clear();
     } else if (event->timerId() == m_delayedLayoutTimer.timerId()) {
+        emit busy(true);
         m_delayedLayoutTimer.stop();
         layoutItems();
+    }
+    else if (event->timerId() == m_delayedRelayoutTimer.timerId()) {
+        emit busy(true);
+        m_delayedRelayoutTimer.stop();
+
+        // This is to give the busy animation a chance to appear.
+        m_delayedLayoutTimer.start(10, this);
+        m_validRows = 0;
     }
 }
 

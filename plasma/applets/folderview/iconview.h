@@ -189,6 +189,7 @@ private:
     QPoint m_currentLayoutPos;
     QSize m_gridSize;
     QBasicTimer m_delayedLayoutTimer;
+    QBasicTimer m_delayedRelayoutTimer;
     QBasicTimer m_delayedCacheClearTimer;
 };
 
