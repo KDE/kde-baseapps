@@ -54,8 +54,8 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
       m_rdy(0),
       m_smoothScrolling(false)
 {
-    m_scrollBar = new Plasma::ScrollBar(Qt::Vertical, this);
-    connect(m_scrollBar->nativeWidget(), SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
+    m_scrollBar = new Plasma::ScrollBar(this);
+    connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
 
     // This is a dummy widget that's never shown - it's just passed to
     // KFileItemDelegate in the style options, so it will use the widget's
