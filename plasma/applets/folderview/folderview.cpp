@@ -563,8 +563,7 @@ void FolderView::configAccepted()
 
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
     int size = iconSizes.at(uiDisplay.sizeSlider->value());
-    if ((m_customIconSize == 0 && size != KIconLoader::global()->currentSize(KIconLoader::Desktop)) ||
-        (m_customIconSize != 0 && size != m_customIconSize))
+    if (size != iconSize().width())
     {
         m_customIconSize = size;
         cg.writeEntry("customIconSize", m_customIconSize);
@@ -768,14 +767,19 @@ void FolderView::fontSettingsChanged()
 
 void FolderView::iconSettingsChanged(int group)
 {
-    if (group == KIconLoader::Desktop)
+    if (group == KIconLoader::Desktop && m_iconView)
     {
-        if (m_iconView) {
-            const int size = (m_customIconSize != 0) ?
-                    m_customIconSize : KIconLoader::global()->currentSize(KIconLoader::Desktop);
+        const int size = (m_customIconSize != 0) ?
+                m_customIconSize : KIconLoader::global()->currentSize(KIconLoader::Desktop);
 
-            m_iconView->setIconSize(QSize(size, size));
-        }
+        m_iconView->setIconSize(QSize(size, size));
+    }
+    else if (group == KIconLoader::Panel && m_listView)
+    {
+        const int size = (m_customIconSize != 0) ?
+                m_customIconSize : KIconLoader::global()->currentSize(KIconLoader::Panel);
+
+        m_listView->setIconSize(QSize(size, size));
     }
 }
 
@@ -1535,7 +1539,8 @@ void FolderView::iconWidgetClicked()
 
 QSize FolderView::iconSize() const
 {
-    const int size = (m_customIconSize != 0) ? m_customIconSize : KIconLoader::global()->currentSize(KIconLoader::Desktop);
+    const int defaultSize = KIconLoader::global()->currentSize(m_listView ? KIconLoader::Panel : KIconLoader::Desktop);
+    const int size = (m_customIconSize != 0) ? m_customIconSize : defaultSize;
     return QSize(size, size);
 }
 
