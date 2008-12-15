@@ -33,7 +33,6 @@
 #include <KMimeType>
 
 #include <plasma/containment.h>
-#include "plasma/widgets/iconwidget.h"
 
 #include "ui_folderviewFilterConfig.h"
 #include "ui_folderviewDisplayConfig.h"
@@ -48,6 +47,7 @@ class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
 class IconView;
+class IconWidget;
 class ListView;
 class Label;
 class Dialog;
@@ -133,7 +133,7 @@ private:
     IconView *m_iconView;
     ListView *m_listView;
     Label *m_label;
-    Plasma::IconWidget *m_iconWidget;
+    IconWidget *m_iconWidget;
     Dialog *m_dialog;
     QIcon m_icon;
     KUrl m_url;

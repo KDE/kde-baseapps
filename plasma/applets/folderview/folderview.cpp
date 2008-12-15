@@ -65,6 +65,7 @@
 #include "dialog.h"
 #include "folderviewadapter.h"
 #include "iconview.h"
+#include "iconwidget.h"
 #include "label.h"
 #include "previewpluginsmodel.h"
 #include "proxymodel.h"
@@ -880,7 +881,8 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             m_iconView = 0;
 
             // Set up the icon widget
-            m_iconWidget = new Plasma::IconWidget(this);
+            m_iconWidget = new IconWidget(this);
+            m_iconWidget->setModel(m_dirModel);
             m_iconWidget->setIcon(m_icon.isNull() ? KIcon("user-folder") : m_icon);
             connect(m_iconWidget, SIGNAL(clicked()), SLOT(iconWidgetClicked()));
 
