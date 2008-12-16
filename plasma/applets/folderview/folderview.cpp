@@ -311,7 +311,19 @@ void FolderView::init()
     m_dirModel->setDirLister(lister);
 
     if (!m_url.isValid()) {
-        setUrl(cg.readEntry("url", KUrl(isContainment() ? QString("desktop:/") : QDir::homePath())));
+
+        //FIXME: 4.3 Need to update folderview's description
+        QString path = QDir::homePath();
+        if (isContainment()) {
+            QString desktopPath = KGlobalSettings::desktopPath();
+            QDir desktopFolder(desktopPath);
+
+            if (desktopPath != QDir::homePath() && desktopFolder.exists()) {
+                path = QString("desktop:/");
+            }
+        }
+        setUrl(cg.readEntry("url", KUrl(path)));
+
     } else {
         KConfigGroup cg = config();
         cg.writeEntry("url", m_url);
@@ -362,7 +374,13 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     placesFilter->setSourceModel(m_placesModel);
     uiLocation.placesCombo->setModel(placesFilter);
 
-    if (m_url == KUrl("desktop:/")) {
+    QString desktopPath = KGlobalSettings::desktopPath();
+    QDir desktopFolder(desktopPath);
+
+    bool desktopVisible = desktopPath != QDir::homePath() && desktopFolder.exists();
+    uiLocation.showDesktopFolder->setVisible(desktopVisible);
+
+    if (desktopVisible && m_url == KUrl("desktop:/")) {
         uiLocation.showDesktopFolder->setChecked(true);
         uiLocation.placesCombo->setEnabled(false);
         uiLocation.lineEdit->setEnabled(false);
@@ -466,19 +484,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
-
-    // We can't use KGlobalSettings::desktopPath() here, since it returns the home dir if
-    // the desktop folder doesn't exist.
-    QString desktopPath = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-    if (desktopPath.isEmpty()) {
-        desktopPath = QDir::homePath() + "/Desktop";
-    }
-
-    // Don't show the warning label if the desktop folder exists
-    if (QFile::exists(desktopPath)) {
-        uiLocation.warningSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
-        uiLocation.warningLabel->setVisible(false);
-    }
 
     KConfigGroup cg = config();
     int filter = cg.readEntry("filter", 0);
