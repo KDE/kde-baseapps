@@ -56,6 +56,8 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
 {
     m_scrollBar = new Plasma::ScrollBar(this);
     connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
+    connect(m_scrollBar->nativeWidget(), SIGNAL(actionTriggered(int)), SLOT(scrollBarActionTriggered(int)));
+    connect(m_scrollBar->nativeWidget(), SIGNAL(sliderReleased()), SLOT(scrollBarSliderReleased()));
 
     // This is a dummy widget that's never shown - it's just passed to
     // KFileItemDelegate in the style options, so it will use the widget's
@@ -345,6 +347,31 @@ void AbstractItemView::scrollBarValueChanged(int value)
     update();
 }
 
+void AbstractItemView::scrollBarActionTriggered(int action)
+{
+    switch (action)
+    {
+    case QAbstractSlider::SliderSingleStepAdd:
+    case QAbstractSlider::SliderSingleStepSub:
+    case QAbstractSlider::SliderPageStepAdd:
+    case QAbstractSlider::SliderPageStepSub:
+    case QAbstractSlider::SliderToMinimum:
+    case QAbstractSlider::SliderToMaximum:
+        // Use a delayed call since the value won't propagate until after this function returns
+        QMetaObject::invokeMethod(this, "finishedScrolling", Qt::QueuedConnection);
+        break;
+    }
+}
+
+void AbstractItemView::scrollBarSliderReleased()
+{
+    finishedScrolling();
+}
+
+void AbstractItemView::finishedScrolling()
+{
+}
+
 void AbstractItemView::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == m_smoothScrollTimer.timerId()) {
@@ -366,6 +393,7 @@ void AbstractItemView::stopScrolling()
     m_rdx = m_rdy = 0;
     m_dddx = m_dddy = 0;
     m_smoothScrolling = false;
+    finishedScrolling();
 }
 
 void AbstractItemView::smoothScroll(int dx, int dy)

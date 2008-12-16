@@ -135,6 +135,8 @@ protected:
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
 
+    void finishedScrolling();
+
 private slots:
     void listingStarted(const KUrl &url);
     void listingClear();
@@ -151,6 +153,7 @@ private:
     QPoint findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
     void layoutItems();
     void alignIconsToGrid();
+    QRect itemsBoundingRect() const;
     bool doLayoutSanityCheck();
     void saveIconPositions() const;
     void loadIconPositions();
@@ -180,7 +183,6 @@ private:
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
     QRect m_rubberBand;
-    QRectF m_viewportRect;
     QPointF m_buttonDownPos;
     QTime m_pressTime;
     QListView::Flow m_flow;

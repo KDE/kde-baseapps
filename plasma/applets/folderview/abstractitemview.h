@@ -102,7 +102,12 @@ protected slots:
     virtual void commitData(QWidget *editor);
     virtual void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
 
+    virtual void finishedScrolling();
+
+private slots:
     void scrollBarValueChanged(int value);
+    void scrollBarActionTriggered(int action);
+    void scrollBarSliderReleased();
 
 protected:
     KFileItemDelegate *m_delegate;

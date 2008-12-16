@@ -649,38 +649,146 @@ void IconView::alignIconsToGrid()
 
     if (layoutChanged) {
         doLayoutSanityCheck();
-        updateScrollBar();
         markAreaDirty(visibleArea());
         m_layoutBroken = true;
         m_savedPositions.clear();
+        m_regionCache.clear();
     }
+}
+
+QRect IconView::itemsBoundingRect() const
+{
+    QRect boundingRect;
+    for (int i = 0; i < m_validRows; i++) {
+        if (m_items[i].layouted) {
+            boundingRect |= m_items[i].rect;
+        }
+    }
+
+    return boundingRect;
 }
 
 bool IconView::doLayoutSanityCheck()
 {
-    // Make sure that the distance from the top of the viewport to the
-    // topmost item is 10 pixels.
-    int minY = INT_MAX;
-    for (int i = 0; i < m_validRows; i++) {
-        if (!m_items[i].layouted) {
-            continue;
-        }
-        minY = qMin(minY, m_items[i].rect.y());
+    // Find the bounding rect of the items
+    QRect boundingRect = itemsBoundingRect();
+
+    // Add the margin
+    boundingRect.adjust(-10, -10, 10, 10);
+
+    const QRect cr = contentsRect().toRect();
+    int scrollValue = m_scrollBar->value();
+    QPoint delta(0, 0);
+
+    // Make sure no items have negative coordinates
+    if (boundingRect.y() < cr.top() || boundingRect.x() < cr.left()) {
+        delta.rx() = qMax(0, cr.left() - boundingRect.x());
+        delta.ry() = qMax(0, cr.top() - boundingRect.y());
     }
 
-    int topMargin = contentsRect().top() + 10;
-    if (minY != topMargin) {
-        int delta = topMargin - minY;
+    // Remove any empty space above the visible area
+    if (delta.y() == 0 && scrollValue > 0) {
+        delta.ry() = -qBound(0, boundingRect.top() - cr.top(), scrollValue);
+    }
+
+    if (!delta.isNull()) {
+        // Move the items
         for (int i = 0; i < m_validRows; i++) {
-            if (!m_items[i].layouted) {
-                continue;
+            if (m_items[i].layouted) {
+                m_items[i].rect.translate(delta);
             }
-            m_items[i].rect.translate(0, delta);
         }
+
+        // Adjust the bounding rect and the scrollbar value and range
+        boundingRect = boundingRect.translated(delta) | cr;
+        scrollValue += delta.y();
+
+        m_scrollBar->setRange(0, qMax(boundingRect.height() - cr.height(), scrollValue));
+        m_scrollBar->setValue(scrollValue);
+
+        if (m_scrollBar->minimum() != m_scrollBar->maximum()) {
+            m_scrollBar->show();
+        } else {
+            m_scrollBar->hide();
+        }
+
+        m_regionCache.clear();
         return true;
     }
 
+    boundingRect |= cr;
+    m_scrollBar->setRange(0, qMax(boundingRect.height() - cr.height(), scrollValue));
+    m_scrollBar->setValue(scrollValue);
+
+    if (m_scrollBar->minimum() != m_scrollBar->maximum()) {
+        m_scrollBar->show();
+    } else {
+        m_scrollBar->hide();
+    }
+
     return false;
+}
+
+void IconView::updateScrollBar()
+{
+    const QRect cr = contentsRect().toRect();
+    QRect boundingRect = itemsBoundingRect();
+
+    // Add the margin
+    boundingRect.adjust(-10, -10, 10, 10);
+    boundingRect |= cr;
+
+    m_scrollBar->setRange(0, boundingRect.height() - cr.height());
+    m_scrollBar->setPageStep(cr.height());
+    m_scrollBar->setSingleStep(10);
+
+    if (m_scrollBar->minimum() != m_scrollBar->maximum()) {
+        m_scrollBar->show();
+    } else {
+        m_scrollBar->hide();
+    }
+}
+
+void IconView::finishedScrolling()
+{
+    // Find the bounding rect of the items
+    QRect boundingRect = itemsBoundingRect();
+
+    // Add the margin
+    boundingRect.adjust(-10, -10, 10, 10);
+
+    const QRect cr = contentsRect().toRect();
+
+    // Remove any empty space above the visible area by shifting all the items
+    // and adjusting the scrollbar range.
+    int deltaY = qBound(0, boundingRect.top() - cr.top(), m_scrollBar->value());
+    if (deltaY > 0) {
+        for (int i = 0; i < m_validRows; i++) {
+            if (m_items[i].layouted) {
+                m_items[i].rect.translate(0, -deltaY);
+            }
+        }
+        m_scrollBar->setValue(m_scrollBar->value() - deltaY);
+        m_scrollBar->setRange(0, m_scrollBar->maximum() - deltaY);
+        markAreaDirty(visibleArea());
+        boundingRect.translate(0, -deltaY);
+        m_regionCache.clear();
+    }
+
+    // Remove any empty space below the visible area by adjusting the
+    // maximum value of the scrollbar.
+    boundingRect |= cr;
+    int max = qMax(m_scrollBar->value(), boundingRect.height() - cr.height());
+    if (m_scrollBar->maximum() > max) {
+        m_scrollBar->setRange(0, max);
+    }
+
+    // Update the scrollbar visibility
+    if (m_scrollBar->minimum() != m_scrollBar->maximum()) {
+        m_scrollBar->show();
+    } else {
+        m_scrollBar->hide();
+    }
 }
 
 void IconView::paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const
@@ -811,40 +919,6 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
     if (!m_errorMessage.isEmpty()) {
         paintErrorMessage(painter, cr, m_errorMessage);
-    }
-}
-
-void IconView::updateScrollBar()
-{
-    // Find the height of the viewport
-    int maxY = 0;
-    for (int i = 0; i < m_items.size(); i++) {
-        maxY = qMax(maxY, m_items[i].rect.bottom());
-    }
-
-    m_viewportRect = contentsRect();
-    m_viewportRect.setBottom(qMax<int>(m_viewportRect.bottom(), maxY + 10));
-    m_viewportRect.setWidth(m_viewportRect.width() - m_scrollBar->geometry().width());
-
-    int max = int(m_viewportRect.height() - contentsRect().height());
-
-    // Keep the scrollbar handle at the bottom if it was at the bottom and the viewport
-    // has grown vertically
-    bool updateValue = (m_scrollBar->minimum() != m_scrollBar->maximum()) &&
-            (max > m_scrollBar->maximum()) && (m_scrollBar->value() == m_scrollBar->maximum());
-
-    m_scrollBar->setRange(0, max);
-    m_scrollBar->setPageStep(contentsRect().height());
-    m_scrollBar->setSingleStep(10);
-
-    if (updateValue) {
-        m_scrollBar->setValue(max);
-    }
-
-    if (max > 0) {
-        m_scrollBar->show();
-    } else {
-        m_scrollBar->hide();
     }
 }
 
@@ -1244,9 +1318,10 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
 
+    const QRect viewportRect = visibleArea().adjusted(0, 0, int(-m_scrollBar->geometry().width()), 0);
     const QPointF pos = mapToViewport(event->pos());
     const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
-    const QRect r = QRectF(rubberBand & m_viewportRect).toAlignedRect();
+    const QRect r = QRectF(rubberBand & viewportRect).toAlignedRect();
 
     if (r != m_rubberBand)
     {
@@ -1411,17 +1486,43 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 
     QModelIndexList indexes;
+    QRect boundingRect;
     foreach (const KUrl &url, KUrl::List::fromMimeData(event->mimeData())) {
         const QModelIndex index = m_model->indexForUrl(url);
         if (index.isValid()) {
-            m_items[index.row()].rect.translate(delta);
+            boundingRect |= m_items[index.row()].rect;
             indexes.append(index);
         }
     }
 
+    const QRect cr = contentsRect().toRect();
+    boundingRect.adjust(-10, -10, 10, 10);
+    boundingRect.translate(delta);
+
+    // Don't allow the user to move icons outside the scrollable area of the view
+    if (m_flow == QListView::LeftToRight) {
+        if (boundingRect.left() < cr.left()) {
+            delta.rx() += cr.left() - boundingRect.left();
+        }
+        else if (boundingRect.right() > cr.right()) {
+            delta.rx() -= boundingRect.right() - cr.right();
+        }
+    } else {
+        if (boundingRect.top() < cr.top()) {
+            delta.ry() += cr.top() - boundingRect.top();
+        }
+        else if (boundingRect.bottom() > cr.bottom()) {
+            delta.ry() -= boundingRect.bottom() - cr.bottom();
+        }
+    }
+
+    // Move the items
+    foreach (const QModelIndex &index, indexes) {
+        m_items[index.row()].rect.translate(delta);
+    }
+
     // Make sure no icons have negative coordinates etc.
     doLayoutSanityCheck();
-    updateScrollBar();
     markAreaDirty(visibleArea());
     m_regionCache.clear();
 
