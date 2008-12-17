@@ -698,10 +698,6 @@ void FolderView::updateIconViewState()
                      Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     m_iconView->setPalette(palette);
 
-    const QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
-    if (m_iconView->font() != font) {
-        m_iconView->setFont(font);
-    }
     m_iconView->setDrawShadows(m_drawShadows);
     m_iconView->setIconSize(iconSize());
     m_iconView->setGridSize(gridSize());
@@ -726,6 +722,7 @@ void FolderView::setupIconView()
     m_iconView->setModel(m_model);
     m_iconView->setItemDelegate(m_delegate);
     m_iconView->setSelectionModel(m_selectionModel);
+    m_iconView->setFont(Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont));
 
     if (!isContainment()) {
         m_label = new Label(this);
