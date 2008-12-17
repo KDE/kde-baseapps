@@ -1567,7 +1567,10 @@ void IconView::startDrag(const QPointF &pos, QWidget *widget)
     pixmap.fill(Qt::transparent);
 
     QStyleOptionViewItemV4 option = viewOptions();
-    option.state |= QStyle::State_Selected;
+    // ### We can't draw the items as selected or hovered since Qt doesn't
+    //     use an ARGB window for the drag pixmap.
+    //option.state |= QStyle::State_Selected;
+    option.state &= ~(QStyle::State_Selected | QStyle::State_MouseOver);
 
     updateTextShadows(palette().color(QPalette::HighlightedText));
 
@@ -1575,10 +1578,13 @@ void IconView::startDrag(const QPointF &pos, QWidget *widget)
     foreach (const QModelIndex &index, indexes)
     {
         option.rect = visualRect(index).translated(-boundingRect.topLeft());
+#if 0
+        // ### Reenable this code when Qt uses an ARGB window for the drag pixmap
         if (index == m_hoveredIndex)
             option.state |= QStyle::State_MouseOver;
         else
             option.state &= ~QStyle::State_MouseOver;
+#endif
         m_delegate->paint(&p, option, index);
     }
     p.end();

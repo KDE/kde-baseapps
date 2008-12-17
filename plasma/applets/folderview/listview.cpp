@@ -481,7 +481,10 @@ void ListView::startDrag(const QPointF &pos, QWidget *widget)
     pixmap.fill(Qt::transparent);
 
     QStyleOptionViewItemV4 option = viewOptions();
-    option.state |= QStyle::State_Selected | QStyle::State_MouseOver;
+    // ### We can't draw the items as selected or hovered since Qt doesn't
+    //     use an ARGB window for the drag pixmap.
+    //option.state |= QStyle::State_Selected | QStyle::State_MouseOver;
+    option.state &= ~(QStyle::State_Selected | QStyle::State_MouseOver);
 
     updateTextShadows(palette().color(QPalette::HighlightedText));
 
