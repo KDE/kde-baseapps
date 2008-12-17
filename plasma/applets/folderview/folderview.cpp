@@ -279,6 +279,10 @@ void FolderView::init()
     // Find out about theme changes
     connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), SLOT(themeChanged()));
 
+    // Find out about network availability changes
+    connect(Solid::Networking::notifier(), SIGNAL(statusChanged(Solid::Networking::Status)),
+            SLOT(networkStatusChanged(Solid::Networking::Status)));
+
     KConfigGroup cg = config();
     m_customLabel         = cg.readEntry("customLabel", "");
     m_customIconSize      = cg.readEntry("customIconSize", 0);
@@ -329,6 +333,9 @@ void FolderView::init()
         cg.writeEntry("url", m_url);
     }
 
+    // TODO: 4.3 Check if the URL is a remote URL, and if it is check the network status
+    //       and display a message saying it's not available, instead of trying to open
+    //       the URL and waiting for the job to time out.
     lister->openUrl(m_url);
 
     if (isContainment()) {
@@ -802,6 +809,14 @@ void FolderView::themeChanged()
         QPalette palette = m_label->palette();
         palette.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
         m_label->setPalette(palette);
+    }
+}
+
+void FolderView::networkStatusChanged(Solid::Networking::Status status)
+{
+    if (status == Solid::Networking::Connected && !m_url.isLocalFile() &&
+        m_url.protocol() != "desktop") {
+        refreshIcons();
     }
 }
 

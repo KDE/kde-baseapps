@@ -32,6 +32,8 @@
 #include <KActionCollection>
 #include <KMimeType>
 
+#include <Solid/Networking>
+
 #include <plasma/containment.h>
 
 #include "ui_folderviewFilterConfig.h"
@@ -105,6 +107,7 @@ protected slots:
     void fontSettingsChanged();
     void iconSettingsChanged(int group);
     void themeChanged();
+    void networkStatusChanged(Solid::Networking::Status status);
     void clipboardDataChanged();
     void updateScreenRegion();
     void showPreviewConfigDialog();
