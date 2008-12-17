@@ -355,6 +355,9 @@ void AbstractItemView::scrollBarActionTriggered(int action)
     case QAbstractSlider::SliderSingleStepSub:
     case QAbstractSlider::SliderPageStepAdd:
     case QAbstractSlider::SliderPageStepSub:
+        smoothScroll(0, m_scrollBar->nativeWidget()->sliderPosition() - m_scrollBar->value());
+        break;
+
     case QAbstractSlider::SliderToMinimum:
     case QAbstractSlider::SliderToMaximum:
         // Use a delayed call since the value won't propagate until after this function returns

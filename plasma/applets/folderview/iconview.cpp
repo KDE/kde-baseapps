@@ -740,7 +740,7 @@ void IconView::updateScrollBar()
 
     m_scrollBar->setRange(0, boundingRect.height() - cr.height());
     m_scrollBar->setPageStep(cr.height());
-    m_scrollBar->setSingleStep(10);
+    m_scrollBar->setSingleStep(gridSize().height());
 
     if (m_scrollBar->minimum() != m_scrollBar->maximum()) {
         m_scrollBar->show();
