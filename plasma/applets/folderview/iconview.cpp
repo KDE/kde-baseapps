@@ -112,6 +112,7 @@ void IconView::setIconSize(const QSize &size)
         if (m_validRows > 0) {
             m_validRows = 0;
             m_delayedLayoutTimer.start(10, this);
+            emit busy(true);
         }
     }
 }
@@ -125,6 +126,7 @@ void IconView::setGridSize(const QSize &size)
         if (m_validRows > 0) {
             m_validRows = 0;
             m_delayedLayoutTimer.start(10, this);
+            emit busy(true);
         }
     }
 }
@@ -143,6 +145,7 @@ void IconView::setWordWrap(bool on)
         if (m_validRows > 0) {
             m_validRows = 0;
             m_delayedLayoutTimer.start(10, this);
+            emit busy(true);
         }
     }
 }
@@ -157,9 +160,11 @@ void IconView::setFlow(QListView::Flow flow)
     if (m_flow != flow) {
         m_flow = flow;
 
+        // Schedule a full relayout
         if (!m_layoutBroken && m_validRows > 0) {
             m_validRows = 0;
             m_delayedLayoutTimer.start(10, this);
+            emit busy(true);
         }
     }
 }
@@ -604,6 +609,7 @@ void IconView::layoutItems()
         }
         needUpdate |= doLayoutSanityCheck();
         m_needPostLayoutPass = false;
+        emit busy(false);
         return;
     }
 
@@ -1114,6 +1120,7 @@ void IconView::resizeEvent(QGraphicsSceneResizeEvent *)
                 m_delayedRelayoutTimer.start(500, this);
             } else {
                 m_delayedLayoutTimer.start(10, this);
+                emit busy(true);
             }
         } else {
             updateScrollBar();
@@ -1540,6 +1547,7 @@ void IconView::changeEvent(QEvent *event)
     case QEvent::ContentsRectChange:
         m_validRows = 0;
         m_delayedLayoutTimer.start(10, this);
+        emit busy(true);
         break;
 
     case QEvent::PaletteChange:
@@ -1641,7 +1649,6 @@ void IconView::timerEvent(QTimerEvent *event)
         m_delayedCacheClearTimer.stop();
         m_savedPositions.clear();
     } else if (event->timerId() == m_delayedLayoutTimer.timerId()) {
-        emit busy(true);
         m_delayedLayoutTimer.stop();
         layoutItems();
     }
