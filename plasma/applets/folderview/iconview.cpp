@@ -329,6 +329,7 @@ void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
         }
         m_items.remove(first, last - first + 1);
         m_validRows = m_items.size();
+        updateScrollBar();
     }
 }
 
@@ -392,6 +393,7 @@ void IconView::listingClear()
 {
     m_initialListing = true;
     markAreaDirty(visibleArea());
+    updateScrollBar();
     update();
 }
 
@@ -740,14 +742,20 @@ void IconView::updateScrollBar()
     const QRect cr = contentsRect().toRect();
     QRect boundingRect = itemsBoundingRect();
 
-    // Add the margin
-    boundingRect.adjust(-10, -10, 10, 10);
-    boundingRect |= cr;
+    if (boundingRect.isValid()) {
+        // Add the margin
+        boundingRect.adjust(-10, -10, 10, 10);
+        boundingRect |= cr;
 
-    m_scrollBar->setRange(0, boundingRect.height() - cr.height());
-    m_scrollBar->setPageStep(cr.height());
-    m_scrollBar->setSingleStep(gridSize().height());
+        m_scrollBar->setRange(0, boundingRect.height() - cr.height());
+        m_scrollBar->setPageStep(cr.height());
+        m_scrollBar->setSingleStep(gridSize().height());
+    } else {
+        // The view is empty
+        m_scrollBar->setRange(0, 0);
+    }
 
+    // Update the scrollbar visibility
     if (m_scrollBar->minimum() != m_scrollBar->maximum()) {
         m_scrollBar->show();
     } else {
@@ -759,34 +767,39 @@ void IconView::finishedScrolling()
 {
     // Find the bounding rect of the items
     QRect boundingRect = itemsBoundingRect();
+    
+    if (boundingRect.isValid()) {
+        // Add the margin
+        boundingRect.adjust(-10, -10, 10, 10);
 
-    // Add the margin
-    boundingRect.adjust(-10, -10, 10, 10);
+        const QRect cr = contentsRect().toRect();
 
-    const QRect cr = contentsRect().toRect();
-
-    // Remove any empty space above the visible area by shifting all the items
-    // and adjusting the scrollbar range.
-    int deltaY = qBound(0, boundingRect.top() - cr.top(), m_scrollBar->value());
-    if (deltaY > 0) {
-        for (int i = 0; i < m_validRows; i++) {
-            if (m_items[i].layouted) {
-                m_items[i].rect.translate(0, -deltaY);
+        // Remove any empty space above the visible area by shifting all the items
+        // and adjusting the scrollbar range.
+        int deltaY = qBound(0, boundingRect.top() - cr.top(), m_scrollBar->value());
+        if (deltaY > 0) {
+            for (int i = 0; i < m_validRows; i++) {
+                if (m_items[i].layouted) {
+                    m_items[i].rect.translate(0, -deltaY);
+                }
             }
+            m_scrollBar->setValue(m_scrollBar->value() - deltaY);
+            m_scrollBar->setRange(0, m_scrollBar->maximum() - deltaY);
+            markAreaDirty(visibleArea());
+            boundingRect.translate(0, -deltaY);
+            m_regionCache.clear();
         }
-        m_scrollBar->setValue(m_scrollBar->value() - deltaY);
-        m_scrollBar->setRange(0, m_scrollBar->maximum() - deltaY);
-        markAreaDirty(visibleArea());
-        boundingRect.translate(0, -deltaY);
-        m_regionCache.clear();
-    }
 
-    // Remove any empty space below the visible area by adjusting the
-    // maximum value of the scrollbar.
-    boundingRect |= cr;
-    int max = qMax(m_scrollBar->value(), boundingRect.height() - cr.height());
-    if (m_scrollBar->maximum() > max) {
-        m_scrollBar->setRange(0, max);
+        // Remove any empty space below the visible area by adjusting the
+        // maximum value of the scrollbar.
+        boundingRect |= cr;
+        int max = qMax(m_scrollBar->value(), boundingRect.height() - cr.height());
+        if (m_scrollBar->maximum() > max) {
+            m_scrollBar->setRange(0, max);
+        }
+    } else {
+        // The view is empty
+        m_scrollBar->setRange(0, 0);
     }
 
     // Update the scrollbar visibility
