@@ -247,7 +247,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     setHasConfigurationInterface(true);
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
-    resize(600, 400);
 
     m_dirModel = new KDirModel(this);
     m_dirModel->setDropsAllowed(KDirModel::DropOnDirectory | KDirModel::DropOnLocalExecutable);
@@ -882,11 +881,13 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             }
             delete m_iconWidget;
             delete m_dialog;
-            delete m_listView;
             m_iconWidget = 0;
             m_dialog = 0;
             m_listView = 0;
+
             if (!isContainment()) {
+                // Give the applet a sane size
+                resize(600, 400);
                 setupIconView();
             }
             setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -926,7 +927,7 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             updateListViewState();
 
             m_dialog = new Dialog;
-            m_dialog->setGraphicsWidget(m_listView);
+            m_dialog->setGraphicsWidget(m_listView); // Ownership is transferred to the scene in the dialog
 
             QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, this);
             layout->setContentsMargins(0, 0, 0, 0);
