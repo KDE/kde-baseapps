@@ -912,8 +912,8 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             connect(m_dirModel->dirLister(), SIGNAL(clear()), SLOT(updateIconWidget()));
 
             m_listView = new ListView;
-            m_listView->setModel(m_model);
             m_listView->setItemDelegate(m_delegate);
+            m_listView->setModel(m_model);
             m_listView->setSelectionModel(m_selectionModel);
 
             connect(m_listView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
