@@ -957,8 +957,7 @@ void IconView::updateTextShadows(const QColor &textColor)
         shadowColor = Qt::white;
     }
 
-    if (m_delegate->shadowColor() != shadowColor)
-    {
+    if (m_delegate->shadowColor() != shadowColor) {
         m_delegate->setShadowColor(shadowColor);
 
         // Center white shadows to create a halo effect, and offset dark shadows slightly.
@@ -972,6 +971,10 @@ void IconView::updateTextShadows(const QColor &textColor)
 
 bool IconView::indexIntersectsRect(const QModelIndex &index, const QRect &rect) const
 {
+    if (!index.isValid() || index.row() >= m_items.count()) {
+        return false;
+    }
+
     QRect r = m_items[index.row()].rect;
     if (!r.intersects(rect)) {
         return false;
@@ -979,8 +982,7 @@ bool IconView::indexIntersectsRect(const QModelIndex &index, const QRect &rect) 
 
     // If the item is fully contained in the rect
     if (r.left() > rect.left() && r.right() < rect.right() &&
-        r.top() > rect.top() && r.bottom() < rect.bottom())
-    {
+        r.top() > rect.top() && r.bottom() < rect.bottom()) {
         return true;
     }
 
@@ -1328,11 +1330,9 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     // If an item is pressed
-    if (m_pressedIndex.isValid())
-    {
+    if (m_pressedIndex.isValid()) {
         const QPointF point = event->pos() - event->buttonDownPos(Qt::LeftButton);
-        if (point.toPoint().manhattanLength() >= QApplication::startDragDistance())
-        {
+        if (point.toPoint().manhattanLength() >= QApplication::startDragDistance()) {
             startDrag(m_buttonDownPos, event->widget());
         }
         return;
@@ -1343,8 +1343,7 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
     const QRect r = QRectF(rubberBand & viewportRect).toAlignedRect();
 
-    if (r != m_rubberBand)
-    {
+    if (r != m_rubberBand) {
         const QPoint pt = pos.toPoint();
         QRectF dirtyRect = m_rubberBand | r;
         m_rubberBand = r;
@@ -1357,8 +1356,7 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
         // Select the indexes inside the rubber band
         QItemSelection selection;
-        for (int i = 0; i < m_items.size(); i++)
-        {
+        for (int i = 0; i < m_items.size(); i++) {
             QModelIndex index = m_model->index(i, 0);
             if (!indexIntersectsRect(index, m_rubberBand))
                 continue;
