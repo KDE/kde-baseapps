@@ -966,8 +966,8 @@ void FolderView::updateScreenRegion()
     QRect screenRect = c->screenGeometry(screen());
     m_iconView->setContentsMargins(availRect.x() - screenRect.x(),
                                    availRect.y() - screenRect.y(),
-                                   availRect.right() - screenRect.right(),
-                                   availRect.bottom() - screenRect.bottom());
+                                   screenRect.right() - availRect.right(),
+                                   screenRect.bottom() - availRect.bottom());
 }
 
 void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
