@@ -49,9 +49,10 @@ namespace Plasma
 
 struct ViewItem
 {
-    ViewItem() : rect(QRect()), layouted(false) {}
+    ViewItem() : rect(QRect()), layouted(false), needSizeAdjust(true) {}
     QRect rect;
-    bool layouted;
+    bool layouted:1;
+    bool needSizeAdjust:1;
 };
 
 class IconView : public AbstractItemView

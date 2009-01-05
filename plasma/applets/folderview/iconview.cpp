@@ -274,11 +274,9 @@ void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
         // If a single item was inserted and we have a saved position from a deleted file,
         // reuse that position.
         if (first == last && !m_lastDeletedPos.isNull()) {
-            const QModelIndex index = m_model->index(first, 0);
-            QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
-            size.rwidth() = grid.width();
-            m_items[first].rect = QRect(m_lastDeletedPos, size);
+            m_items[first].rect = QRect(m_lastDeletedPos, grid);
             m_items[first].layouted = true;
+            m_items[first].needSizeAdjust = true;
             markAreaDirty(m_items[first].rect);
             m_lastDeletedPos = QPoint();
             m_validRows = m_items.size();
@@ -287,12 +285,10 @@ void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
 
         // Lay out the newly inserted files
         for (int i = first; i <= last; i++) {
-            const QModelIndex index = m_model->index(i, 0);
-            const QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
             pos = findNextEmptyPosition(pos, grid, cr);
-            m_items[i].rect = QRect(pos.x() + (grid.width() - size.width()) / 2, pos.y(),
-                                    size.width(), size.height());
-            m_items[first].layouted = true;
+            m_items[i].rect = QRect(pos, grid);
+            m_items[i].layouted = true;
+            m_items[i].needSizeAdjust = true;
             markAreaDirty(m_items[i].rect);
         }
 
@@ -364,15 +360,9 @@ void IconView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottom
         if (!m_items[i].layouted) {
             continue;
         }
-        const QModelIndex index = m_model->index(i, 0);
-        QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
-        size.rwidth() = grid.width();
-        QRect dirty = m_items[i].rect;
-        if (size != m_items[i].rect.size()) {
-            m_items[i].rect.setHeight(size.height());
-            dirty |= m_items[i].rect;
-        }
-        markAreaDirty(dirty);
+        m_items[i].rect.setSize(grid);
+        m_items[i].needSizeAdjust = true;
+        markAreaDirty(m_items[i].rect);
     }
 }
 
@@ -550,21 +540,20 @@ void IconView::layoutItems()
             for (int i = m_validRows; i < count; i++) {
                 const QModelIndex index = m_model->index(i, 0);
                 KFileItem item = m_model->itemForIndex(index);
-                QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
-                size.rwidth() = grid.width();
-
                 const QPoint pos = m_savedPositions.value(item.name(), QPoint(-1, -1));
                 if (pos != QPoint(-1, -1)) {
-                    m_items[i].rect = QRect(pos, size);
+                    m_items[i].rect = QRect(pos, grid);
                     m_items[i].layouted = true;
+                    m_items[i].needSizeAdjust = true;
                     if (m_items[i].rect.intersects(visibleRect)) {
                         needUpdate = true;
                     }
                 } else {
                     // We don't have a saved position for this file, so we'll record the
                     // size and lay it out in a second layout pass.
-                    m_items[i].rect = QRect(QPoint(), size);
+                    m_items[i].rect = QRect(QPoint(), grid);
                     m_items[i].layouted = false;
+                    m_items[i].needSizeAdjust = true;
                     m_needPostLayoutPass = true;
                 }
             }
@@ -578,13 +567,10 @@ void IconView::layoutItems()
             // ================================================================
             QPoint pos = m_currentLayoutPos;
             for (int i = m_validRows; i < count; i++) {
-                const QModelIndex index = m_model->index(i, 0);
-                QSize size = m_delegate->sizeHint(option, index).boundedTo(grid);
-                size.rwidth() = grid.width();
-
                 pos = nextGridPosition(pos, grid, rect);
-                m_items[i].rect = QRect(pos, size);
+                m_items[i].rect = QRect(pos, grid);
                 m_items[i].layouted = true;
+                m_items[i].needSizeAdjust = true;
                 if (m_items[i].rect.intersects(visibleRect)) {
                     needUpdate = true;
                 }
@@ -604,7 +590,7 @@ void IconView::layoutItems()
                 continue;
             }
             pos = findNextEmptyPosition(pos, grid, rect);
-            m_items[i].rect.moveTo(pos.x() + (grid.width() - m_items[i].rect.width()) / 2, pos.y());
+            m_items[i].rect.moveTo(pos);
             if (m_items[i].rect.intersects(visibleRect)) {
                 needUpdate = true;
             }
@@ -915,6 +901,13 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
             if (hasFocus() && index == m_selectionModel->currentIndex()) {
                 opt.state |= QStyle::State_HasFocus;
+            }
+
+            if (m_items[i].needSizeAdjust) {
+                const QSize size = m_delegate->sizeHint(opt, index);
+                m_items[i].rect.setHeight(size.height());
+                m_items[i].needSizeAdjust = false;
+                opt.rect = m_items[i].rect;
             }
 
             m_delegate->paint(&p, opt, index);
