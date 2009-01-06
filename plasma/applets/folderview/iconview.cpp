@@ -1092,6 +1092,11 @@ void IconView::renameSelectedIcon()
     m_editorIndex = index;
 }
 
+bool IconView::renameInProgress() const
+{
+    return m_editorIndex.isValid();
+}
+
 void IconView::commitData(QWidget *editor)
 {
     m_delegate->setModelData(editor, m_model, m_editorIndex);
@@ -1105,8 +1110,10 @@ void IconView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint h
     if (editor->hasFocus()) {
         setFocus();
     }
+
     editor->hide();
     editor->deleteLater();
+    m_editorIndex = QModelIndex();
 
     markAreaDirty(visibleArea());
 }

@@ -96,6 +96,7 @@ public:
     QStringList iconPositionsData() const;
 
     void renameSelectedIcon();
+    bool renameInProgress() const;
 
     QRect visualRect(const QModelIndex &index) const;
     QRegion visualRegion(const QModelIndex &index) const;

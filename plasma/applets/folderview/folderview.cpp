@@ -1360,6 +1360,9 @@ void FolderView::selectUnselectAll()
 void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(buttons)
+    if (m_iconView && m_iconView->renameInProgress()) {
+        return;
+    }
 
     KonqOperations::Operation op = (modifiers & Qt::ShiftModifier) ?
             KonqOperations::DEL : KonqOperations::TRASH;
@@ -1369,6 +1372,10 @@ void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers mod
 
 void FolderView::deleteSelectedIcons()
 {
+    if (m_iconView && m_iconView->renameInProgress()) {
+        return;
+    }
+
     KonqOperations::del(view(), KonqOperations::DEL, selectedUrls());
 }
 
