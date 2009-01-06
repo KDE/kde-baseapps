@@ -806,6 +806,10 @@ void FolderView::themeChanged()
         m_iconView->setPalette(palette);
     }
 
+    if (m_listView) {
+        updateListViewState();
+    }
+
     if (m_label) {
         QPalette palette = m_label->palette();
         palette.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
