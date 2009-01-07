@@ -42,6 +42,7 @@ static const int sSmoothScrollTick = 14;
 
 AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
     : QGraphicsWidget(parent),
+      m_delegate(0),
       m_lastScrollValue(0),
       m_viewScrolled(false),
       m_dx(0),

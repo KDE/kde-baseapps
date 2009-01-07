@@ -1041,12 +1041,15 @@ QRegion IconView::visualRegion(const QModelIndex &index) const
     }
 
     QRegion region;
-    // Make this a virtual function in KDE 5
-    QMetaObject::invokeMethod(m_delegate, "shape", Q_RETURN_ARG(QRegion, region),
-                              Q_ARG(QStyleOptionViewItem, option),
-                              Q_ARG(QModelIndex, index));
 
-    m_regionCache.insert(key, new QRegion(region));
+    if (m_delegate) {
+        // Make this a virtual function in KDE 5
+        QMetaObject::invokeMethod(m_delegate, "shape", Q_RETURN_ARG(QRegion, region),
+                                  Q_ARG(QStyleOptionViewItem, option),
+                                  Q_ARG(QModelIndex, index));
+
+        m_regionCache.insert(key, new QRegion(region));
+    }
     return region;
 }
 
