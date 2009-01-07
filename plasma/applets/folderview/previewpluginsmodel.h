@@ -17,6 +17,9 @@
  *   Boston, MA 02110-1301, USA.
  */
 
+#ifndef PREVIEWPLUGINSMODEL_H
+#define PREVIEWPLUGINSMODEL_H
+
 #include <QAbstractListModel>
 #include <KServiceTypeTrader>
 #include <KService>
@@ -44,3 +47,4 @@ private:
     QList<int> checkedRows;
 };
 
+#endif

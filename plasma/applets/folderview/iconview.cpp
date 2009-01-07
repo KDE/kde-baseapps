@@ -19,7 +19,7 @@
  */
 
 #include "iconview.h"
-
+#include <fixx11h.h>
 #include <QApplication>
 #include <QDebug>
 #include <QDrag>
