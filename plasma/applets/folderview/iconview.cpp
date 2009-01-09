@@ -19,7 +19,9 @@
  */
 
 #include "iconview.h"
+#ifndef Q_WS_WIN
 #include <fixx11h.h>
+#endif
 #include <QApplication>
 #include <QDebug>
 #include <QDrag>
