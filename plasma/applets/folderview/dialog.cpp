@@ -77,6 +77,8 @@ void Dialog::setGraphicsWidget(QGraphicsWidget *widget)
 void Dialog::show(Plasma::Applet *applet)
 {
     Plasma::FrameSvg::EnabledBorders borders = Plasma::FrameSvg::AllBorders;
+    m_background->setEnabledBorders(borders);
+
     int left   = m_background->marginSize(Plasma::LeftMargin);
     int top    = m_background->marginSize(Plasma::TopMargin);
     int right  = m_background->marginSize(Plasma::RightMargin);
@@ -86,36 +88,56 @@ void Dialog::show(Plasma::Applet *applet)
     {
     case Plasma::BottomEdge:
         borders &= ~Plasma::FrameSvg::BottomBorder;
-        bottom = 2;
+        bottom = qMin(bottom, 2);
         break;
 
     case Plasma::TopEdge:
         borders &= ~Plasma::FrameSvg::TopBorder;
-        top = 2;
+        top = qMin(top, 2);
         break;
 
     case Plasma::LeftEdge:
         borders &= ~Plasma::FrameSvg::LeftBorder;
-        left = 2;
+        left = qMin(left, 2);
         break;
 
     case Plasma::RightEdge:
         borders &= ~Plasma::FrameSvg::RightBorder;
-        right = 2;
+        right = qMin(right, 2);
         break;
 
     default:
         break;
     }
 
-    const QRect rect = QApplication::desktop()->availableGeometry().adjusted(left, top, -right, -bottom);
-    m_widget->resize(m_widget->preferredSize().boundedTo(rect.size()));
+    const QRect availableGeometry = QApplication::desktop()->availableGeometry();
+    const QSize maxSize = availableGeometry.size();
+
+    const QSize margin(left + right, top + bottom);
+    QSize size = m_widget->preferredSize().toSize() + margin;
+    QPoint pos = applet->popupPosition(size);
+
+    if (pos.y() < 0) {
+        size.rheight() += pos.y();
+        pos.ry() = 0;
+    } else if (pos.y() + size.height() > availableGeometry.bottom()) {
+        size.rheight() -= pos.y() + size.height() - availableGeometry.bottom();
+    }
+
+    if (pos.x() < 0) {
+        size.rwidth() += pos.x();
+        pos.rx() = 0;
+    } else if (pos.x() + size.width() > availableGeometry.right()) {
+        size.rwidth() -= pos.x() + size.width() - availableGeometry.right();
+    }
+
+    m_widget->resize(size - margin);
 
     m_background->setEnabledBorders(borders);
     setContentsMargins(left, top, right, bottom);
- 
-    resize(m_widget->size().toSize() + QSize(left + right, top + bottom));
-    move(applet->popupPosition(size()));
+
+    resize(size);
+    move(pos);
 
     QWidget::show();
 }
