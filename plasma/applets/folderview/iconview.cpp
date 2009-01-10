@@ -19,7 +19,7 @@
  */
 
 #include "iconview.h"
-#ifndef Q_WS_WIN
+#ifdef Q_WS_X11
 #include <fixx11h.h>
 #endif
 #include <QApplication>
