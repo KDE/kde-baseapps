@@ -315,6 +315,11 @@ void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
         if (m_model->rowCount() > 0) {
             m_delayedLayoutTimer.start(10, this);
             emit busy(true);
+        } else {
+            // All the items were removed
+            m_items.clear();
+            updateScrollBar();
+            markAreaDirty(visibleArea());
         }
     } else {
         for (int i = first; i <= last; i++) {
