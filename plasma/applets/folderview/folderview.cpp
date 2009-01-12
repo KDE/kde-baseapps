@@ -1212,8 +1212,10 @@ QList<QAction*> FolderView::contextualActions()
         separator->setSeparator(true);
         actions.append(separator);
 
-        if (QAction *iconsMenu = m_actionCollection.action("icons_menu")) {
-            actions.append(iconsMenu);
+        if (m_iconView) {
+            if (QAction *iconsMenu = m_actionCollection.action("icons_menu")) {
+                actions.append(iconsMenu);
+            }
         }
 
         actions.append(m_actionCollection.action("refresh"));
