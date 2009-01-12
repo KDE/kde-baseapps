@@ -1530,15 +1530,17 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     boundingRect.adjust(-10, -10, 10, 10);
     boundingRect.translate(delta);
 
-    // Don't allow the user to move icons outside the scrollable area of the view
-    if (m_flow == QListView::LeftToRight) {
+    // Don't allow the user to move icons outside the scrollable area of the view.
+    // Note: This code will need to be changed if support for a horizontal scrollbar is added.
+    if (m_flow == QListView::LeftToRight || m_flow == QListView::TopToBottom) {
         if (boundingRect.left() < cr.left()) {
             delta.rx() += cr.left() - boundingRect.left();
         }
         else if (boundingRect.right() > cr.right()) {
             delta.rx() -= boundingRect.right() - cr.right();
         }
-    } else {
+    }
+    if (m_flow == QListView::TopToBottom) {
         if (boundingRect.top() < cr.top()) {
             delta.ry() += cr.top() - boundingRect.top();
         }
