@@ -1567,12 +1567,6 @@ void IconView::changeEvent(QEvent *event)
 
     switch (event->type())
     {
-    case QEvent::FontChange:
-        m_validRows = 0;
-        m_delayedLayoutTimer.start(10, this);
-        emit busy(true);
-        break;
-
     case QEvent::ContentsRectChange:
     {
         qreal left, top, right, bottom;
@@ -1637,6 +1631,7 @@ void IconView::changeEvent(QEvent *event)
         break;
     }
 
+    case QEvent::FontChange:
     case QEvent::PaletteChange:
     case QEvent::StyleChange:
         markAreaDirty(visibleArea());
