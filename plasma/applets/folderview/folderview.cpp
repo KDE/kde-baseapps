@@ -769,6 +769,7 @@ void FolderView::fontSettingsChanged()
 
     if (m_iconView && m_iconView->font() != font) {
         m_iconView->setFont(font);
+        m_iconView->setGridSize(gridSize());
     }
 
     if (m_label && m_label->font() != font) {
