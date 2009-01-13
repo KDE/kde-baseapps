@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Folder View
 Name[ar]=عرض المجلد
+Name[as]=ফোল্ডাৰৰ প্ৰদৰ্শন
 Name[be@latin]=Prahlad kataloha
 Name[bg]=Директория
 Name[bn]=ফোল্ডার ভিউ
@@ -69,6 +70,7 @@ Name[zh_CN]=文件夹视图
 Name[zh_TW]=資料夾檢視
 Comment=Display the content of folders (Desktop as default)
 Comment[ar]=تعرض محتوى المجلدات (سطح المكتب مبدئيا)
+Comment[as]=ফোল্ডাৰৰ বিষয়বস্তু দেখুৱাওক (ডেষ্কট'প অবিকল্পিত হিচাপে)
 Comment[be@latin]=Pakazvaj źmieściva kataloha (zmoŭčana: stała)
 Comment[bn]=ফোল্ডার-এর বিষয়বস্তু দেখায় (ডিফল্ট ডেস্কটপ)
 Comment[bn_IN]=ফোল্ডার-এর বিষয়বস্তু দেখায় (ডিফল্ট ডেস্কটপ)
