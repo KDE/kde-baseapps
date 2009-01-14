@@ -1434,7 +1434,7 @@ void FolderView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
 
 void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes)
 {
-    if (!KAuthorized::authorize("action/kdesktop_rmb")) {
+    if (!KAuthorized::authorize("action/kdesktop_rmb") || indexes.isEmpty()) {
         return;
     }
 
