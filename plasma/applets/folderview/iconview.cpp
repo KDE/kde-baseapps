@@ -1190,9 +1190,7 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
 void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (!contentsRect().contains(event->pos()) ||
-        !m_errorMessage.isEmpty())
-    {
+    if (!contentsRect().contains(event->pos()) || !m_errorMessage.isEmpty()) {
         event->ignore();
         return;
     }
@@ -1244,8 +1242,7 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             // Make the current selection persistent
             m_selectionModel->select(m_selectionModel->selection(), QItemSelectionModel::Select);
         } else if (static_cast<Plasma::Containment*>(parentWidget())->isContainment() &&
-                   event->widget()->window()->inherits("DashboardView"))
-        {
+                   event->widget()->window()->inherits("DashboardView")) {
             // Let the event propagate to the parent widget, which will emit releaseVisualFocus().
             // We prefer hiding the Dashboard to allowing rubber band selections in the containment
             // when the icon view is being shown on the Dashboard.
@@ -1341,7 +1338,8 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
 
-    const QRect viewportRect = visibleArea().adjusted(0, 0, int(-m_scrollBar->geometry().width()), 0);
+    const int scrollBarOffset = m_scrollBar->isVisible() ? m_scrollBar->geometry().width() : 0;
+    const QRect viewportRect = visibleArea().adjusted(0, 0, int(-scrollBarOffset), 0);
     const QPointF pos = mapToViewport(event->pos());
     const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
     const QRect r = QRectF(rubberBand & viewportRect).toAlignedRect();
@@ -1354,8 +1352,9 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         dirtyRect |= visualRect(m_hoveredIndex);
         m_hoveredIndex = QModelIndex();
 
-        foreach (const QModelIndex &index, m_selectionModel->selectedIndexes())
+        foreach (const QModelIndex &index, m_selectionModel->selectedIndexes()) {
             dirtyRect |= visualRect(index);
+        }
 
         // Select the indexes inside the rubber band
         QItemSelection selection;
