@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Library General Public
@@ -120,22 +120,23 @@ void Dialog::show(Plasma::Applet *applet)
     if (pos.y() < 0) {
         size.rheight() += pos.y();
         pos.ry() = 0;
-    } else if (pos.y() + size.height() > availableGeometry.bottom()) {
+    } else if (applet->location() == Plasma::TopEdge &&
+               pos.y() + size.height() > availableGeometry.bottom()) {
         size.rheight() -= pos.y() + size.height() - availableGeometry.bottom();
     }
 
     if (pos.x() < 0) {
         size.rwidth() += pos.x();
         pos.rx() = 0;
-    } else if (pos.x() + size.width() > availableGeometry.right()) {
+    } else if (applet->location() == Plasma::LeftEdge &&
+               pos.x() + size.width() > availableGeometry.right()) {
         size.rwidth() -= pos.x() + size.width() - availableGeometry.right();
     }
-
-    m_widget->resize(size - margin);
 
     m_background->setEnabledBorders(borders);
     setContentsMargins(left, top, right, bottom);
 
+    m_widget->resize(size - margin);
     resize(size);
     move(pos);
 
