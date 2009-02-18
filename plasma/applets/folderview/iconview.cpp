@@ -76,6 +76,9 @@ IconView::IconView(QGraphicsWidget *parent)
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
     m_gridSize = QSize(size * 2, size * 2);
+
+    getContentsMargins(&m_margins[Plasma::LeftMargin], &m_margins[Plasma::TopMargin],
+                       &m_margins[Plasma::RightMargin], &m_margins[Plasma::BottomMargin]);
 }
 
 IconView::~IconView()
@@ -310,6 +313,11 @@ void IconView::rowsRemoved(const QModelIndex &parent, int first, int last)
         if (m_model->rowCount() > 0) {
             m_delayedLayoutTimer.start(10, this);
             emit busy(true);
+        } else {
+            // All the items were removed
+            m_items.clear();
+            updateScrollBar();
+            markAreaDirty(visibleArea());
         }
     } else {
         for (int i = first; i <= last; i++) {
@@ -1519,15 +1527,17 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     boundingRect.adjust(-10, -10, 10, 10);
     boundingRect.translate(delta);
 
-    // Don't allow the user to move icons outside the scrollable area of the view
-    if (m_flow == QListView::LeftToRight) {
+    // Don't allow the user to move icons outside the scrollable area of the view.
+    // Note: This code will need to be changed if support for a horizontal scrollbar is added.
+    if (m_flow == QListView::LeftToRight || m_flow == QListView::TopToBottom) {
         if (boundingRect.left() < cr.left()) {
             delta.rx() += cr.left() - boundingRect.left();
         }
         else if (boundingRect.right() > cr.right()) {
             delta.rx() -= boundingRect.right() - cr.right();
         }
-    } else {
+    }
+    if (m_flow == QListView::TopToBottom) {
         if (boundingRect.top() < cr.top()) {
             delta.ry() += cr.top() - boundingRect.top();
         }
@@ -1556,13 +1566,71 @@ void IconView::changeEvent(QEvent *event)
 
     switch (event->type())
     {
-    case QEvent::FontChange:
     case QEvent::ContentsRectChange:
-        m_validRows = 0;
-        m_delayedLayoutTimer.start(10, this);
-        emit busy(true);
-        break;
+    {
+        qreal left, top, right, bottom;
+        getContentsMargins(&left, &top, &right, &bottom);
 
+        if (m_validRows == 0) {
+            m_margins[Plasma::LeftMargin]   = left;
+            m_margins[Plasma::TopMargin]    = top;
+            m_margins[Plasma::RightMargin]  = right;
+            m_margins[Plasma::BottomMargin] = bottom;
+            break;
+        }
+
+        // Check if the margins have changed, but the contents rect still has the same size.
+        // This mainly happens when the applet is used as a containment, and the user moves
+        // a panel to the opposite edge, or when the user enables/disables panel autohide.
+        bool widthChanged = int(m_margins[Plasma::LeftMargin] + m_margins[Plasma::RightMargin]) != int(left + right);
+        bool heightChanged = int(m_margins[Plasma::TopMargin] + m_margins[Plasma::BottomMargin]) != int(top + bottom);
+        bool needRelayout = false;
+
+        if ((m_flow == QListView::LeftToRight && widthChanged) ||
+            (m_flow == QListView::TopToBottom && heightChanged))
+        {
+            needRelayout = true;
+        }
+
+        // Don't throw the layout away if all items will fit in the new contents rect
+        if (needRelayout) {
+            const QRect cr = contentsRect().toRect();
+            QRect boundingRect = itemsBoundingRect();
+            boundingRect.adjust(-10, -10, 10, 10);
+            if (boundingRect.width() < cr.width() && boundingRect.height() < cr.height()) {
+                needRelayout = false;
+            }
+        }
+
+        if (needRelayout)
+        {
+            m_validRows = 0;
+            m_delayedLayoutTimer.start(10, this);
+            emit busy(true);
+        } else {
+            QPoint delta;
+            delta.rx() = int(left - m_margins[Plasma::LeftMargin]);
+            delta.ry() = int(top - m_margins[Plasma::TopMargin]);
+
+            if (!delta.isNull()) {
+                for (int i = 0; i < m_validRows; i++) {
+                    if (m_items[i].layouted) {
+                        m_items[i].rect.translate(delta);
+                    }
+                }
+                markAreaDirty(visibleArea());
+                updateScrollBar();
+            }    
+        }
+
+        m_margins[Plasma::LeftMargin]   = left;
+        m_margins[Plasma::TopMargin]    = top;
+        m_margins[Plasma::RightMargin]  = right;
+        m_margins[Plasma::BottomMargin] = bottom;
+        break;
+    }
+
+    case QEvent::FontChange:
     case QEvent::PaletteChange:
     case QEvent::StyleChange:
         markAreaDirty(visibleArea());

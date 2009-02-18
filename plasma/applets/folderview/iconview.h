@@ -168,6 +168,7 @@ private:
     QVector<ViewItem> m_items;
     QHash<QString, QPoint> m_savedPositions;
     mutable QCache<quint64, QRegion> m_regionCache;
+    qreal m_margins[4];
     int m_columns;
     int m_rows;
     int m_validRows;

@@ -769,6 +769,7 @@ void FolderView::fontSettingsChanged()
 
     if (m_iconView && m_iconView->font() != font) {
         m_iconView->setFont(font);
+        m_iconView->setGridSize(gridSize());
     }
 
     if (m_label && m_label->font() != font) {
@@ -1212,8 +1213,10 @@ QList<QAction*> FolderView::contextualActions()
         separator->setSeparator(true);
         actions.append(separator);
 
-        if (QAction *iconsMenu = m_actionCollection.action("icons_menu")) {
-            actions.append(iconsMenu);
+        if (m_iconView) {
+            if (QAction *iconsMenu = m_actionCollection.action("icons_menu")) {
+                actions.append(iconsMenu);
+            }
         }
 
         actions.append(m_actionCollection.action("refresh"));
