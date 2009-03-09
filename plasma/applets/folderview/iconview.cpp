@@ -349,10 +349,15 @@ void IconView::modelReset()
 
 void IconView::layoutChanged()
 {
-    m_savedPositions.clear();
-    m_layoutBroken = false;
-    m_validRows = 0;
-
+    if (m_validRows > 0) {
+        m_savedPositions.clear();
+        m_layoutBroken = false;
+        m_validRows = 0;
+    } else if (m_layoutBroken && m_savedPositions.isEmpty()) {
+        // Make sure that the new sorting order is applied to
+        // new files if the folder is empty.
+        m_layoutBroken = false;
+    }
     m_delayedLayoutTimer.start(10, this);
     emit busy(true);
 }
