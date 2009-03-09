@@ -40,7 +40,8 @@ Dialog::Dialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(parent, f), m_widget(0)
 {
     setWindowFlags(Qt::Popup | Qt::WindowStaysOnTopHint);
-    
+    setAttribute(Qt::WA_TranslucentBackground);
+
 #ifdef Q_WS_X11
     if (!QX11Info::isCompositingManagerRunning()) {
         setAttribute(Qt::WA_NoSystemBackground);
