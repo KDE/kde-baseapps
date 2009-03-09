@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -51,8 +51,10 @@
 
 #include <knewmenu.h>
 #include <konqmimedata.h>
+#include <konq_menuactions.h>
 #include <konq_operations.h>
 #include <konq_popupmenu.h>
+#include <konq_popupmenuinformation.h>
 
 #include <limits.h>
 
@@ -234,6 +236,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
       m_previewGenerator(0),
       m_placesModel(0),
+      m_konqMenuActions(0),
       m_iconView(0),
       m_listView(0),
       m_label(0),
@@ -655,6 +658,10 @@ void FolderView::configAccepted()
 
     if (needReload) {
         m_dirModel->dirLister()->openUrl(m_url);
+
+        // So the KonqMenuActions will be recreated for the new URL.
+        delete m_konqMenuActions;
+        m_konqMenuActions = 0;
     }
 
     m_delayedSaveTimer.start(5000, this);
@@ -1220,6 +1227,21 @@ QList<QAction*> FolderView::contextualActions()
         }
 
         actions.append(m_actionCollection.action("refresh"));
+
+        // Add an action for opening the folder in the preferred application.
+        if (!m_konqMenuActions) {
+            // Create a new KFileItem to prevent the target URL in the root item
+            // from being used. In this case we want the configured URL instead.
+            KFileItem rootItem = m_model->itemForIndex(QModelIndex());
+            KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
+
+            KonqPopupMenuInformation info;
+            info.setItems(KFileItemList() << item);
+
+            m_konqMenuActions = new KonqMenuActions;
+            m_konqMenuActions->setPopupMenuInfo(info);
+        }
+        actions.append(m_konqMenuActions->preferredOpenWithAction(QString()));
 
         separator = new QAction(this);
         separator->setSeparator(true);

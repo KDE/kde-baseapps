@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -46,6 +46,7 @@ class KFileItemDelegate;
 class KFilePlacesModel;
 class KFilePreviewGenerator;
 class KNewMenu;
+class KonqMenuActions;
 class QItemSelectionModel;
 class ProxyModel;
 class IconView;
@@ -111,7 +112,7 @@ protected slots:
     void clipboardDataChanged();
     void updateScreenRegion();
     void showPreviewConfigDialog();
-    
+ 
 private:
     void setupIconView();
     void setUrl(const KUrl &url);
@@ -133,6 +134,7 @@ private:
     ProxyModel *m_model;
     KDirModel *m_dirModel;
     KFilePlacesModel *m_placesModel;
+    KonqMenuActions *m_konqMenuActions;
     IconView *m_iconView;
     ListView *m_listView;
     Label *m_label;
