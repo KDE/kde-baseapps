@@ -1538,7 +1538,9 @@ void FolderView::updateIconWidget()
 
     int nFolders = 0;
     int nFiles = 0;
-    foreach (const KFileItem &item, m_dirModel->dirLister()->items()) {
+    for (int row = 0; row < m_model->rowCount(); row++) {
+        const QModelIndex index = m_model->index(row, 0);
+        KFileItem item = m_model->itemForIndex(index);
         if (item.isDir()) {
             nFolders++;
         } else {
