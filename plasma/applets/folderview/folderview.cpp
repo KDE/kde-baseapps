@@ -303,6 +303,7 @@ void FolderView::init()
     m_filterType          = cg.readEntry("filter", 0);
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
 
+    m_userSelectedShowAllFiles = m_filterType;
     m_flow = isContainment() ? QListView::TopToBottom : QListView::LeftToRight;
     m_flow = static_cast<QListView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
 
@@ -641,6 +642,7 @@ void FolderView::configAccepted()
         cg.writeEntry("url", m_url);
         cg.writeEntry("filterFiles", m_filterFiles);
         cg.writeEntry("filter", m_filterType);
+	m_userSelectedShowAllFiles = m_filterType;
         cg.writeEntry("mimeFilter", m_filterFilesMimeList);
 
         m_model->setMimeTypeFilterList(m_filterFilesMimeList);
@@ -1375,6 +1377,12 @@ void FolderView::filterChanged(int index)
     uiFilter.filterFilesList->setEnabled(index != 0);
     uiFilter.selectAll->setEnabled(index != 0);
     uiFilter.deselectAll->setEnabled(index != 0);
+    if ((index != 0) && (m_userSelectedShowAllFiles == 0)) {
+      for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
+        const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
+        uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
+      }
+    }
 }
 
 void FolderView::selectUnselectAll()

@@ -160,6 +160,7 @@ private:
     bool m_drawShadows;
     bool m_iconsLocked;
     bool m_alignToGrid;
+    bool m_userSelectedShowAllFiles;
     QString m_customLabel;
     QStringList m_previewPlugins;
     int m_customIconSize;
