@@ -154,7 +154,7 @@ only the files matching BOTH the conditions will be shown or hidden respectively
 For example, if you have &quot;*&quot; as your pattern, but have nothing selected in the MIME types, no files will be shown.</string>
               </property>
               <property name="text">
-               <string>&lt;a href=&quot;null&quot;&gt;Can't See Files?&lt;/a&gt;</string>
+               <string>&lt;a href=&quot;null&quot;&gt;Cannot See Any Files?&lt;/a&gt;</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
