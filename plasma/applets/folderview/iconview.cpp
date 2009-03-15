@@ -437,7 +437,7 @@ void IconView::itemsDeleted(const KFileItemList &items)
 {
     // Check if the root item was deleted
     if (items.contains(m_dirModel->dirLister()->rootItem())) {
-        const QString path = m_dirModel->dirLister()->url().path();
+        const QString path = m_dirModel->dirLister()->url().toLocalFile();
         listingError(KIO::buildErrorString(KIO::ERR_DOES_NOT_EXIST, path));
     }
 }
