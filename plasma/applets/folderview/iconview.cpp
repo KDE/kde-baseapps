@@ -99,8 +99,6 @@ void IconView::setModel(QAbstractItemModel *model)
     connect(lister, SIGNAL(showErrorMessage(QString)), SLOT(listingError(QString)));
     connect(lister, SIGNAL(itemsDeleted(KFileItemList)), SLOT(itemsDeleted(KFileItemList)));
 
-    setFocusPolicy(Qt::StrongFocus);	//So that IconView responds to key press events
-
     m_validRows = 0;
     m_layoutBroken = false;
 
@@ -1203,69 +1201,6 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
     }
-}
-
-void IconView::keyPressEvent(QKeyEvent *event)
-{
-  int hdirection = 0;
-  int vdirection = 0;
-
-  switch(event->key()) {
-    case Qt::Key_Up:
-      if( m_selectionModel->currentIndex().row() / m_columns != 0) {	//m_selectionModel is linear, i.e. no columns
-        vdirection = -1;
-      }
-      break;
-    case Qt::Key_Down:
-      if( m_selectionModel->currentIndex().row() < m_dirModel->rowCount() - m_columns ) {
-        vdirection = 1;
-      }
-      break;
-    case Qt::Key_Left:
-      if( m_selectionModel->currentIndex().row() > 0 ) {
-        hdirection = -1;
-      }
-      break;
-    case Qt::Key_Right:
-      if( m_selectionModel->currentIndex().row() < m_selectionModel->model()->rowCount() - 1 ) {
-        hdirection = 1;
-      }
-      break;
-    case Qt::Key_Return:
-    case Qt::Key_Enter:	//Enter key located on the keypad
-        emit activated(m_selectionModel->currentIndex());
-        return;
-    default:
-        break;
-   }
-
-  int newRow = m_selectionModel->currentIndex().row() + hdirection + m_columns*vdirection;
-  if( newRow >= m_dirModel->rowCount() ) {
-    newRow = m_dirModel->rowCount() - 1;
-  }
-  const QModelIndex index( m_selectionModel->currentIndex().sibling( newRow, m_selectionModel->currentIndex().column()) );
-  markAreaDirty(visualRect(m_selectionModel->currentIndex()));
-  m_selectionModel->select( index, QItemSelectionModel::ClearAndSelect );
-  m_selectionModel->setCurrentIndex( index, QItemSelectionModel::NoUpdate);
-  moveScrollBarToIndex( index );
-  markAreaDirty(visualRect(index));
-  m_pressedIndex = index;
-}
-
-void IconView::moveScrollBarToIndex(const QModelIndex &index)
-{
-  int numberOfRows = ( m_dirModel->rowCount() / m_columns ) + 1;
-  int division = ( m_scrollBar->maximum() - m_scrollBar->minimum() ) / numberOfRows;
-  int currentRow = ( m_selectionModel->currentIndex().row() / m_columns ) + 1;
-
-   if (currentRow == numberOfRows) {
-      m_scrollBar->setValue(m_scrollBar->maximum());
-  }
-  else if( currentRow == 1 ) {
-    m_scrollBar->setValue(m_scrollBar->minimum());
-  } else { 
-        m_scrollBar->setValue(division * currentRow);
-  }
 }
 
 void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
