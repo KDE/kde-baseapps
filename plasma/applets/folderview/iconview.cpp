@@ -1148,25 +1148,11 @@ void IconView::resizeEvent(QGraphicsSceneResizeEvent *)
 {
     updateScrollBarGeometry();
 
-    int maxWidth  = contentsRect().width() - m_scrollBar->geometry().width();
-    int maxHeight = contentsRect().height();
-
-    if (m_validRows > 0)
-    {
-        if ((m_flow == QListView::LeftToRight && columnsForWidth(maxWidth) != m_columns) ||
-            (m_flow == QListView::TopToBottom && rowsForHeight(maxHeight) != m_rows))
-        {
-            // The scrollbar range will be updated after the re-layout
-            if (m_validRows > 0) {
-                m_delayedRelayoutTimer.start(500, this);
-            } else {
-                m_delayedLayoutTimer.start(10, this);
-                emit busy(true);
-            }
-        } else {
-            updateScrollBar();
-            markAreaDirty(visibleArea());
-        }
+    if (m_validRows > 0) {
+        // A check is done when the timer fires to make sure that a relayout
+        // is really necessary.
+        m_delayedRelayoutTimer.start(500, this);
+        updateScrollBar();
     }
 }
 
@@ -1749,12 +1735,33 @@ void IconView::timerEvent(QTimerEvent *event)
         layoutItems();
     }
     else if (event->timerId() == m_delayedRelayoutTimer.timerId()) {
-        emit busy(true);
         m_delayedRelayoutTimer.stop();
 
-        // This is to give the busy animation a chance to appear.
-        m_delayedLayoutTimer.start(10, this);
-        m_validRows = 0;
+        bool needRelayout = false;
+        if (m_layoutBroken) {
+            // Only do the relayout if we have icons that are outside the view
+            const QRect cr = contentsRect().toRect();
+            QRect boundingRect = itemsBoundingRect();
+            boundingRect.adjust(-10, -10, 10, 10);
+            if (boundingRect.width() > cr.width()) {
+                needRelayout = true;
+            }
+        } else {
+            int maxWidth  = contentsRect().width() - m_scrollBar->geometry().width();
+            int maxHeight = contentsRect().height();
+            
+            if ((m_flow == QListView::LeftToRight && columnsForWidth(maxWidth) != m_columns) ||
+                (m_flow == QListView::TopToBottom && rowsForHeight(maxHeight) != m_rows)) {
+                needRelayout = true;
+            }
+        }
+
+        if (needRelayout) {
+            emit busy(true);
+            // This is to give the busy animation a chance to appear.
+            m_delayedLayoutTimer.start(10, this);
+            m_validRows = 0;
+        }
     }
 }
 
