@@ -217,6 +217,16 @@ bool IconView::drawShadows() const
     return m_drawShadows;
 }
 
+void IconView::setCustomLayout(bool value)
+{
+    m_layoutBroken = value;
+}
+
+bool IconView::customLayout() const
+{
+    return m_layoutBroken;
+}
+
 void IconView::setIconPositionsData(const QStringList &data)
 {
     // Sanity checks
