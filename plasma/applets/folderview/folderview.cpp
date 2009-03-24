@@ -433,7 +433,11 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
     uiDisplay.sizeSlider->setValue(iconSizes.indexOf(iconSize().width()));
 
-    uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), -1);
+    // Only add "Unsorted" as an option when we're showing an icon view, since the list view
+    // doesn't allow the user to rearrange the icons.
+    if (m_iconView) {
+        uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), -1);
+    }
     uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_name")->text(), KDirModel::Name);
     uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_size")->text(), KDirModel::Size);
     uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_type")->text(), KDirModel::Type);
@@ -594,6 +598,8 @@ void FolderView::configAccepted()
         if (m_sortColumn != -1) {
             m_model->invalidate();
             m_model->sort(m_sortColumn, Qt::AscendingOrder);
+        } else if (m_iconView) {
+            m_iconView->setCustomLayout(true);
         }
         updateSortActionsState();
         cg.writeEntry("sortColumn", m_sortColumn);

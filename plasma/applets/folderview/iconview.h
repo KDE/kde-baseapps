@@ -64,6 +64,7 @@ class IconView : public AbstractItemView
     Q_PROPERTY(bool alignToGrid READ alignToGrid WRITE setAlignToGrid)
     Q_PROPERTY(bool iconsMoveable READ iconsMoveable WRITE setIconsMoveable)
     Q_PROPERTY(bool drawShadows READ drawShadows WRITE setDrawShadows)
+    Q_PROPERTY(bool customLayout READ customLayout WRITE setCustomLayout)
     Q_PROPERTY(QListView::Flow flow READ flow WRITE setFlow)
 
 public:
@@ -91,6 +92,9 @@ public:
 
     void setDrawShadows(bool on);
     bool drawShadows() const;
+
+    void setCustomLayout(bool value);
+    bool customLayout() const;
 
     void setIconPositionsData(const QStringList &data);
     QStringList iconPositionsData() const;
