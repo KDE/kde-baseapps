@@ -1739,30 +1739,34 @@ void IconView::timerEvent(QTimerEvent *event)
     else if (event->timerId() == m_delayedRelayoutTimer.timerId()) {
         m_delayedRelayoutTimer.stop();
 
-        bool needRelayout = false;
         if (m_layoutBroken) {
-            // Only do the relayout if we have icons that are outside the view
+            // Relayout all icons that have ended up outside the view
             const QRect cr = contentsRect().toRect();
-            QRect boundingRect = itemsBoundingRect();
-            boundingRect.adjust(-10, -10, 10, 10);
-            if (boundingRect.width() > cr.width()) {
-                needRelayout = true;
+            const QSize grid = gridSize();
+            QPoint pos;
+ 
+            for (int i = 0; i < m_items.size(); i++) {
+                if ((m_flow == QListView::LeftToRight && m_items[i].rect.right() > cr.right()) ||
+                    (m_flow == QListView::TopToBottom && m_items[i].rect.bottom() > cr.height()))
+                {
+                    pos = findNextEmptyPosition(pos, grid, cr);
+                    m_items[i].rect.moveTo(pos);
+                }
             }
+            m_regionCache.clear();
+            markAreaDirty(visibleArea());
         } else {
             int maxWidth  = contentsRect().width() - m_scrollBar->geometry().width();
             int maxHeight = contentsRect().height();
-            
+ 
             if ((m_flow == QListView::LeftToRight && columnsForWidth(maxWidth) != m_columns) ||
-                (m_flow == QListView::TopToBottom && rowsForHeight(maxHeight) != m_rows)) {
-                needRelayout = true;
+                (m_flow == QListView::TopToBottom && rowsForHeight(maxHeight) != m_rows))
+            {
+                emit busy(true);
+                // This is to give the busy animation a chance to appear.
+                m_delayedLayoutTimer.start(10, this);
+                m_validRows = 0;
             }
-        }
-
-        if (needRelayout) {
-            emit busy(true);
-            // This is to give the busy animation a chance to appear.
-            m_delayedLayoutTimer.start(10, this);
-            m_validRows = 0;
         }
     }
 }
