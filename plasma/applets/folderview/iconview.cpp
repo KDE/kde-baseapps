@@ -47,10 +47,11 @@
 #include "previewpluginsmodel.h"
 #include "tooltipwidget.h"
 
-#include "plasma/containment.h"
-#include "plasma/corona.h"
-#include "plasma/paintutils.h"
-#include "plasma/theme.h"
+#include <Plasma/Containment>
+#include <Plasma/Corona>
+#include <Plasma/PaintUtils>
+#include <Plasma/Theme>
+#include <Plasma/ToolTipManager>
 
 
 IconView::IconView(QGraphicsWidget *parent)
@@ -1207,6 +1208,9 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
 void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    // Make sure that any visible tooltip is hidden
+    Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
+
     if (!contentsRect().contains(event->pos()) || !m_errorMessage.isEmpty()) {
         event->ignore();
         return;
