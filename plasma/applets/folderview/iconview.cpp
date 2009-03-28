@@ -1181,6 +1181,7 @@ void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
     if (index.isValid()) {
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
+        m_toolTipWidget->updateToolTip(index, mapFromViewport(visualRect(index)));
     }
 }
 
@@ -1191,6 +1192,7 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     if (m_hoveredIndex.isValid()) {
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = QModelIndex();
+        m_toolTipWidget->updateToolTip(QModelIndex(), QRectF());
     }
 }
 
@@ -1201,7 +1203,6 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(index));
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
-
         m_toolTipWidget->updateToolTip(index, mapFromViewport(visualRect(index)));
     }
 }
