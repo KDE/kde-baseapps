@@ -12,6 +12,7 @@ set(folderview_SRCS
     proxymodel.cpp
     folderviewadapter.cpp
     previewpluginsmodel.cpp
+    tooltipwidget.cpp
     style.cpp)
 
 kde4_add_ui_files(folderview_SRCS

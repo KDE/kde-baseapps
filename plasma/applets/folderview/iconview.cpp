@@ -45,6 +45,7 @@
 #include "dirlister.h"
 #include "proxymodel.h"
 #include "previewpluginsmodel.h"
+#include "tooltipwidget.h"
 
 #include "plasma/containment.h"
 #include "plasma/corona.h"
@@ -78,6 +79,9 @@ IconView::IconView(QGraphicsWidget *parent)
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
     m_gridSize = QSize(size * 2, size * 2);
+
+    m_toolTipWidget = new ToolTipWidget(this);
+    m_toolTipWidget->hide();
 
     getContentsMargins(&m_margins[Plasma::LeftMargin], &m_margins[Plasma::TopMargin],
                        &m_margins[Plasma::RightMargin], &m_margins[Plasma::BottomMargin]);
@@ -1196,6 +1200,8 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(index));
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
+
+        m_toolTipWidget->updateToolTip(index, mapFromViewport(visualRect(index)));
     }
 }
 

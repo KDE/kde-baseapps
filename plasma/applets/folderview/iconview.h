@@ -41,6 +41,7 @@ class QItemSelectionModel;
 class ProxyModel;
 class QStyleOptionViewItemV4;
 class QScrollBar;
+class ToolTipWidget;
 
 namespace Plasma
 {
@@ -200,6 +201,7 @@ private:
     QBasicTimer m_delayedLayoutTimer;
     QBasicTimer m_delayedRelayoutTimer;
     QBasicTimer m_delayedCacheClearTimer;
+    ToolTipWidget *m_toolTipWidget;
 };
 
 #endif
