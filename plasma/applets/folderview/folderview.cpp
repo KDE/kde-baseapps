@@ -66,7 +66,6 @@
 #include "dirlister.h"
 #include "dialog.h"
 #include "folderviewadapter.h"
-#include "iconview.h"
 #include "iconwidget.h"
 #include "label.h"
 #include "previewpluginsmodel.h"
@@ -304,8 +303,12 @@ void FolderView::init()
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
 
     m_userSelectedShowAllFiles = m_filterType;
-    m_flow = isContainment() ? QListView::TopToBottom : QListView::LeftToRight;
-    m_flow = static_cast<QListView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
+    if (isContainment()) {
+        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::TopToBottom : IconView::TopToBottomRightToLeft;
+    } else {
+        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::LeftToRight : IconView::RightToLeft;
+    }
+    m_flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
 
     m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
@@ -447,8 +450,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_type")->text(), KDirModel::Type);
     uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_date")->text(), KDirModel::ModifiedTime);
 
-    uiDisplay.flowCombo->addItem(i18n("Top to Bottom"), QListView::TopToBottom);
-    uiDisplay.flowCombo->addItem(i18n("Left to Right"), QListView::LeftToRight);
+    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), IconView::TopToBottom);
+    uiDisplay.flowCombo->addItem(i18n("Top to bottom, Right to Left"), IconView::TopToBottomRightToLeft);
+    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to bottom"), IconView::LeftToRight);
+    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to bottom"), IconView::RightToLeft);
 
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
     uiDisplay.lockInPlace->setChecked(m_iconsLocked);
@@ -611,7 +616,7 @@ void FolderView::configAccepted()
 
     int flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).toInt();
     if (m_flow != flow) {
-        m_flow = static_cast<QListView::Flow>(flow);
+        m_flow = static_cast<IconView::Flow>(flow);
         cg.writeEntry("flow", flow);
     }
 

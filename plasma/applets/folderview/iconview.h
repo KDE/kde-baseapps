@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -24,7 +24,6 @@
 #include "abstractitemview.h"
 
 #include <QAbstractItemDelegate>
-#include <QListView>
 #include <QPointer>
 #include <QCache>
 #include <QTime>
@@ -60,13 +59,16 @@ class IconView : public AbstractItemView
 {
     Q_OBJECT
 
+public:
+    enum Flow { LeftToRight, TopToBottom, RightToLeft, TopToBottomRightToLeft };
+
     Q_PROPERTY(QSize gridSize READ gridSize WRITE setGridSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
     Q_PROPERTY(bool alignToGrid READ alignToGrid WRITE setAlignToGrid)
     Q_PROPERTY(bool iconsMoveable READ iconsMoveable WRITE setIconsMoveable)
     Q_PROPERTY(bool drawShadows READ drawShadows WRITE setDrawShadows)
     Q_PROPERTY(bool customLayout READ customLayout WRITE setCustomLayout)
-    Q_PROPERTY(QListView::Flow flow READ flow WRITE setFlow)
+    Q_PROPERTY(Flow flow READ flow WRITE setFlow)
 
 public:
     IconView(QGraphicsWidget *parent);
@@ -82,8 +84,8 @@ public:
     void setWordWrap(bool on);
     bool wordWrap() const;
 
-    void setFlow(QListView::Flow flow);
-    QListView::Flow flow() const;
+    void setFlow(Flow flow);
+    Flow flow() const;
 
     void setAlignToGrid(bool on);
     bool alignToGrid() const;
@@ -193,7 +195,7 @@ private:
     QRect m_rubberBand;
     QPointF m_buttonDownPos;
     QTime m_pressTime;
-    QListView::Flow m_flow;
+    Flow m_flow;
     QString m_errorMessage;
     QPoint m_lastDeletedPos;
     QPoint m_currentLayoutPos;

@@ -24,7 +24,6 @@
 #include <QCache>
 #include <QPersistentModelIndex>
 #include <QSortFilterProxyModel>
-#include <QListView>
 #include <QStyleOption>
 #include <QPointer>
 #include <QBasicTimer>
@@ -35,6 +34,8 @@
 #include <Solid/Networking>
 
 #include <plasma/containment.h>
+
+#include "iconview.h"
 
 #include "ui_folderviewFilterConfig.h"
 #include "ui_folderviewDisplayConfig.h"
@@ -165,7 +166,7 @@ private:
     QStringList m_previewPlugins;
     int m_customIconSize;
     int m_numTextLines;
-    QListView::Flow m_flow;
+    IconView::Flow m_flow;
     QBasicTimer m_delayedSaveTimer;
 };
 

@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -69,7 +69,7 @@ IconView::IconView(QGraphicsWidget *parent)
       m_alignToGrid(false),
       m_wordWrap(false),
       m_drawShadows(true),
-      m_flow(QListView::LeftToRight)
+      m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
@@ -165,7 +165,7 @@ bool IconView::wordWrap() const
     return m_wordWrap;
 }
 
-void IconView::setFlow(QListView::Flow flow)
+void IconView::setFlow(Flow flow)
 {
     if (m_flow != flow) {
         m_flow = flow;
@@ -179,7 +179,7 @@ void IconView::setFlow(QListView::Flow flow)
     }
 }
 
-QListView::Flow IconView::flow() const
+IconView::Flow IconView::flow() const
 {
     return m_flow;
 }
@@ -462,7 +462,7 @@ int IconView::columnsForWidth(qreal width) const
     int spacing = 10;
     int margin = 10;
 
-    qreal available = width - 2 * margin;
+    qreal available = width - 2 * margin + spacing;
     return qFloor(available / (gridSize().width() + spacing));
 }
 
@@ -471,7 +471,7 @@ int IconView::rowsForHeight(qreal height) const
     int spacing = 10;
     int margin = 10;
 
-    qreal available = height - 2 * margin;
+    qreal available = height - 2 * margin + spacing;
     return qFloor(available / (gridSize().height() + spacing));
 }
 
@@ -480,23 +480,51 @@ QPoint inline IconView::nextGridPosition(const QPoint &lastPos, const QSize &gri
     int spacing = 10;
     int margin = 10;
 
+    QRect r = contentRect.adjusted(margin, margin, -margin, -margin);
+    if (m_flow == LeftToRight || m_flow == RightToLeft) {
+        if (layoutDirection() == Qt::LeftToRight) {
+            r.adjust(0, 0, -m_scrollBar->geometry().width(), 0); 
+        } else {
+            r.adjust(m_scrollBar->geometry().width(), 0, 0, 0); 
+        }
+    }
+
+    const int xOrigin = (m_flow == LeftToRight || m_flow == TopToBottom) ?
+                    r.left() :  r.right() - grid.width();
+
     if (lastPos.isNull()) {
-        return QPoint(contentRect.left() + margin, contentRect.top() + margin);
+        return QPoint(xOrigin, r.top());
     }
 
     QPoint pos = lastPos;
 
-    if (m_flow == QListView::LeftToRight) {
+    switch (m_flow) {
+    case LeftToRight:
         pos.rx() += grid.width() + spacing;
-        if ((pos.x() + grid.width() + 10) >= (contentRect.right() - m_scrollBar->geometry().width() - margin)) {
+        if (pos.x() + grid.width() >= r.right()) {
             pos.ry() += grid.height() + spacing;
-            pos.rx() = contentRect.left() + margin;
+            pos.rx() = xOrigin;
         }
-    } else {
+        break;
+
+    case RightToLeft:
+        pos.rx() -= grid.width() + spacing;
+        if (pos.x() < r.left()) {
+            pos.ry() += grid.height() + spacing;
+            pos.rx() = xOrigin;
+        }
+        break;
+
+    case TopToBottom: 
+    case TopToBottomRightToLeft: 
         pos.ry() += grid.height() + spacing;
-        if ((pos.y() + grid.height() + 10) >= (contentRect.bottom() - margin)) {
-            pos.rx() += grid.width() + spacing;
-            pos.ry() = contentRect.top() + margin;
+        if (pos.y() + grid.height() >= r.bottom()) {
+            if (m_flow == TopToBottom) {
+                pos.rx() += grid.width() + spacing;
+            } else { // RightToLeft
+                pos.rx() -= grid.width() + spacing;
+            }
+            pos.ry() = r.top();
         }
     }
 
@@ -533,8 +561,11 @@ void IconView::layoutItems()
     const QRect visibleRect = mapToViewport(contentsRect()).toAlignedRect();
     const QRect rect = contentsRect().toRect();
     const QSize grid = gridSize();
-    int maxWidth = rect.width() - m_scrollBar->geometry().width();
+    int maxWidth = rect.width();
     int maxHeight = rect.height();
+    if (m_flow == LeftToRight || m_flow == RightToLeft) {
+        maxWidth -= m_scrollBar->geometry().width();
+    }
     m_columns = columnsForWidth(maxWidth);
     m_rows = rowsForHeight(maxHeight);
     bool needUpdate = false;
@@ -1085,10 +1116,12 @@ QRegion IconView::visualRegion(const QModelIndex &index) const
 
 void IconView::updateScrollBarGeometry()
 {
-    QRectF cr = contentsRect();
+    const QRectF cr = contentsRect();
+    QRectF r = layoutDirection() == Qt::LeftToRight ?
+                QRectF(cr.right() - m_scrollBar->geometry().width(), cr.top(),
+                       m_scrollBar->geometry().width(), cr.height()) :
+                QRectF(cr.left(), cr.top(), m_scrollBar->geometry().width(), cr.height());
 
-    QRectF r = QRectF(cr.right() - m_scrollBar->geometry().width(), cr.top(),
-                      m_scrollBar->geometry().width(), cr.height());
     if (m_scrollBar->geometry() != r) {
         m_scrollBar->setGeometry(r);
     }
@@ -1151,11 +1184,24 @@ void IconView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint h
     markAreaDirty(visibleArea());
 }
 
-void IconView::resizeEvent(QGraphicsSceneResizeEvent *)
+void IconView::resizeEvent(QGraphicsSceneResizeEvent *e)
 {
     updateScrollBarGeometry();
 
     if (m_validRows > 0) {
+        if (m_flow == RightToLeft || m_flow == TopToBottomRightToLeft) {
+            // When the origin is the top-right corner, we need to shift all
+            // the icons horizontally so they gravitate toward the right side.
+            int dx = e->newSize().width() - e->oldSize().width();
+            if (dx != 0) {
+                for (int i = 0; i < m_validRows; i++) {
+                    m_items[i].rect.translate(dx, 0);
+                }
+                m_regionCache.clear();
+                markAreaDirty(visibleArea());
+            }
+        }
+
         // A check is done when the timer fires to make sure that a relayout
         // is really necessary.
         m_delayedRelayoutTimer.start(500, this);
@@ -1361,7 +1407,9 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     const int scrollBarOffset = m_scrollBar->isVisible() ? m_scrollBar->geometry().width() : 0;
-    const QRect viewportRect = visibleArea().adjusted(0, 0, int(-scrollBarOffset), 0);
+    const QRect viewportRect = layoutDirection() == Qt::LeftToRight ?
+                   visibleArea().adjusted(0, 0, int(-scrollBarOffset), 0) :
+                   visibleArea().adjusted(int(scrollBarOffset), 0, 0, 0);
     const QPointF pos = mapToViewport(event->pos());
     const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
     const QRect r = QRectF(rubberBand & viewportRect).toAlignedRect();
@@ -1543,15 +1591,17 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
 
     // Don't allow the user to move icons outside the scrollable area of the view.
     // Note: This code will need to be changed if support for a horizontal scrollbar is added.
-    if (m_flow == QListView::LeftToRight || m_flow == QListView::TopToBottom) {
-        if (boundingRect.left() < cr.left()) {
-            delta.rx() += cr.left() - boundingRect.left();
-        }
-        else if (boundingRect.right() > cr.right()) {
-            delta.rx() -= boundingRect.right() - cr.right();
-        }
+
+    // Check the left and right sides
+    if (boundingRect.left() < cr.left()) {
+        delta.rx() += cr.left() - boundingRect.left();
     }
-    if (m_flow == QListView::TopToBottom) {
+    else if (boundingRect.right() > cr.right()) {
+        delta.rx() -= boundingRect.right() - cr.right();
+    }
+
+    // If the flow is vertical, check the top and bottom sides
+    if (m_flow == TopToBottom || m_flow == TopToBottomRightToLeft) {
         if (boundingRect.top() < cr.top()) {
             delta.ry() += cr.top() - boundingRect.top();
         }
@@ -1598,11 +1648,10 @@ void IconView::changeEvent(QEvent *event)
         // a panel to the opposite edge, or when the user enables/disables panel autohide.
         bool widthChanged = int(m_margins[Plasma::LeftMargin] + m_margins[Plasma::RightMargin]) != int(left + right);
         bool heightChanged = int(m_margins[Plasma::TopMargin] + m_margins[Plasma::BottomMargin]) != int(top + bottom);
+        bool horizontalFlow = (m_flow == LeftToRight || m_flow == RightToLeft);
         bool needRelayout = false;
 
-        if ((m_flow == QListView::LeftToRight && widthChanged) ||
-            (m_flow == QListView::TopToBottom && heightChanged))
-        {
+        if ((horizontalFlow && widthChanged) || (!horizontalFlow && heightChanged)) {
             needRelayout = true;
         }
 
@@ -1623,7 +1672,14 @@ void IconView::changeEvent(QEvent *event)
             emit busy(true);
         } else {
             QPoint delta;
-            delta.rx() = int(left - m_margins[Plasma::LeftMargin]);
+
+            if (m_flow == LeftToRight || m_flow == TopToBottom) {
+                // Gravitate toward the upper left corner
+                delta.rx() = int(left - m_margins[Plasma::LeftMargin]);
+            } else {
+                // Gravitate toward the upper right corner
+                delta.rx() = int(m_margins[Plasma::RightMargin] - right);
+            }
             delta.ry() = int(top - m_margins[Plasma::TopMargin]);
 
             if (!delta.isNull()) {
@@ -1750,15 +1806,25 @@ void IconView::timerEvent(QTimerEvent *event)
     else if (event->timerId() == m_delayedRelayoutTimer.timerId()) {
         m_delayedRelayoutTimer.stop();
 
+        bool horizontalFlow = (m_flow == LeftToRight || m_flow == RightToLeft);
         if (m_layoutBroken) {
             // Relayout all icons that have ended up outside the view
             const QRect cr = contentsRect().toRect();
             const QSize grid = gridSize();
             QPoint pos;
+
+            QRect r = cr.adjusted(10, 10, -10, -10);
+            if (horizontalFlow) {
+                if (layoutDirection() == Qt::LeftToRight) {
+                    r.adjust(0, 0, int(-m_scrollBar->geometry().width()), 0);
+                } else {
+                    r.adjust(int(m_scrollBar->geometry().width()), 0, 0, 0);
+                }
+            }
  
-            for (int i = 0; i < m_items.size(); i++) {
-                if ((m_flow == QListView::LeftToRight && m_items[i].rect.right() > cr.right()) ||
-                    (m_flow == QListView::TopToBottom && m_items[i].rect.bottom() > cr.height()))
+            for (int i = 0; i < m_validRows; i++) {
+                if ((horizontalFlow && m_items[i].rect.right() > r.right()) ||
+                    (!horizontalFlow && m_items[i].rect.bottom() > r.height()))
                 {
                     pos = findNextEmptyPosition(pos, grid, cr);
                     m_items[i].rect.moveTo(pos);
@@ -1767,11 +1833,14 @@ void IconView::timerEvent(QTimerEvent *event)
             m_regionCache.clear();
             markAreaDirty(visibleArea());
         } else {
-            int maxWidth  = contentsRect().width() - m_scrollBar->geometry().width();
+            int maxWidth  = contentsRect().width();
             int maxHeight = contentsRect().height();
- 
-            if ((m_flow == QListView::LeftToRight && columnsForWidth(maxWidth) != m_columns) ||
-                (m_flow == QListView::TopToBottom && rowsForHeight(maxHeight) != m_rows))
+            if (horizontalFlow) {
+                maxWidth -= m_scrollBar->geometry().width();
+            }
+
+            if ((horizontalFlow && columnsForWidth(maxWidth) != m_columns) ||
+                (!horizontalFlow && rowsForHeight(maxHeight) != m_rows))
             {
                 emit busy(true);
                 // This is to give the busy animation a chance to appear.
