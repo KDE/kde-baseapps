@@ -439,6 +439,7 @@ void AbstractItemView::smoothScroll(int dx, int dy)
         startScrolling();
         scrollTick();
     }
+    m_smoothScrollStopwatch.start();
 }
 
 void AbstractItemView::scrollTick() {
@@ -478,15 +479,19 @@ void AbstractItemView::scrollTick() {
 
     m_scrollBar->setValue(m_scrollBar->value() + ddy);
 
-    // update scrolling speed
-    int dddx = m_dddx;
-    int dddy = m_dddy;
-    // don't change direction
-    if (abs(dddx) > abs(m_ddx)) dddx = m_ddx;
-    if (abs(dddy) > abs(m_ddy)) dddy = m_ddy;
+    // only consider decelerating if we aren't too far behind schedule
+    if (m_smoothScrollStopwatch.elapsed() < 2 * sSmoothScrollTick) {
+        // update scrolling speed
+        int dddx = m_dddx;
+        int dddy = m_dddy;
+        // don't change direction
+        if (abs(dddx) > abs(m_ddx)) dddx = m_ddx;
+        if (abs(dddy) > abs(m_ddy)) dddy = m_ddy;
 
-    m_ddx -= dddx;
-    m_ddy -= dddy;
+        m_ddx -= dddx;
+        m_ddy -= dddy;
+    }
+    m_smoothScrollStopwatch.start();
 }
 
 #include "abstractitemview.moc"

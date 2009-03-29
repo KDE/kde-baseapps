@@ -136,7 +136,7 @@ protected:
     int m_rdy;
     bool m_smoothScrolling;
     QBasicTimer m_smoothScrollTimer;
-
+    QTime m_smoothScrollStopwatch;
 };
 
 inline QPointF AbstractItemView::mapToViewport(const QPointF &point) const
