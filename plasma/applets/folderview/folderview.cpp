@@ -451,9 +451,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_date")->text(), KDirModel::ModifiedTime);
 
     uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), IconView::TopToBottom);
-    uiDisplay.flowCombo->addItem(i18n("Top to bottom, Right to Left"), IconView::TopToBottomRightToLeft);
-    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to bottom"), IconView::LeftToRight);
-    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to bottom"), IconView::RightToLeft);
+    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), IconView::TopToBottomRightToLeft);
+    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), IconView::LeftToRight);
+    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), IconView::RightToLeft);
 
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
     uiDisplay.lockInPlace->setChecked(m_iconsLocked);
