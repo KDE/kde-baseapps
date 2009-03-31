@@ -49,9 +49,11 @@
 #include <kio/paste.h>
 #include <KParts/BrowserExtension>
 
+#include <kfileitemactions.h>
+#include <kfileitemlistproperties.h>
+
 #include <knewmenu.h>
 #include <konqmimedata.h>
-#include <konq_menuactions.h>
 #include <konq_operations.h>
 #include <konq_popupmenu.h>
 #include <konq_popupmenuinformation.h>
@@ -235,7 +237,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
       m_previewGenerator(0),
       m_placesModel(0),
-      m_konqMenuActions(0),
+      m_itemActions(0),
       m_iconView(0),
       m_listView(0),
       m_label(0),
@@ -672,9 +674,9 @@ void FolderView::configAccepted()
     if (needReload) {
         m_dirModel->dirLister()->openUrl(m_url);
 
-        // So the KonqMenuActions will be recreated for the new URL.
-        delete m_konqMenuActions;
-        m_konqMenuActions = 0;
+        // So the KFileItemActions will be recreated for the new URL.
+        delete m_itemActions;
+        m_itemActions = 0;
     }
 
     m_delayedSaveTimer.start(5000, this);
@@ -1242,19 +1244,18 @@ QList<QAction*> FolderView::contextualActions()
         actions.append(m_actionCollection.action("refresh"));
 
         // Add an action for opening the folder in the preferred application.
-        if (!m_konqMenuActions) {
+        if (!m_itemActions) {
             // Create a new KFileItem to prevent the target URL in the root item
             // from being used. In this case we want the configured URL instead.
             KFileItem rootItem = m_model->itemForIndex(QModelIndex());
             KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
 
-            KonqPopupMenuInformation info;
-            info.setItems(KFileItemList() << item);
+            KFileItemListProperties itemList(KFileItemList() << item);
 
-            m_konqMenuActions = new KonqMenuActions;
-            m_konqMenuActions->setPopupMenuInfo(info);
+            m_itemActions = new KFileItemActions(this);
+            m_itemActions->setItemListProperties(itemList);
         }
-        actions.append(m_konqMenuActions->preferredOpenWithAction(QString()));
+        actions.append(m_itemActions->preferredOpenWithAction(QString()));
 
         separator = new QAction(this);
         separator->setSeparator(true);

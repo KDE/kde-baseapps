@@ -47,7 +47,7 @@ class KFileItemDelegate;
 class KFilePlacesModel;
 class KFilePreviewGenerator;
 class KNewMenu;
-class KonqMenuActions;
+class KFileItemActions;
 class QItemSelectionModel;
 class ProxyModel;
 class IconView;
@@ -135,7 +135,7 @@ private:
     ProxyModel *m_model;
     KDirModel *m_dirModel;
     KFilePlacesModel *m_placesModel;
-    KonqMenuActions *m_konqMenuActions;
+    KFileItemActions *m_itemActions;
     IconView *m_iconView;
     ListView *m_listView;
     Label *m_label;
