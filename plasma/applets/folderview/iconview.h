@@ -22,6 +22,7 @@
 #define ICONVIEW_H
 
 #include "abstractitemview.h"
+#include "popupview.h"
 
 #include <QAbstractItemDelegate>
 #include <QPointer>
@@ -102,8 +103,11 @@ public:
     void setIconPositionsData(const QStringList &data);
     QStringList iconPositionsData() const;
 
-    void renameSelectedIcon();
     bool renameInProgress() const;
+    bool popupVisible() const;
+
+    int scrollBarExtent() const;
+    QSize sizeForRowsColumns(int rows, int columns) const;
 
     QRect visualRect(const QModelIndex &index) const;
     QRegion visualRegion(const QModelIndex &index) const;
@@ -113,6 +117,7 @@ public:
 
 signals:
     void indexesMoved(const QModelIndexList &indexes);
+    void popupViewClosed();
     void busy(bool);
 
 protected:
@@ -146,6 +151,9 @@ protected:
 
     void finishedScrolling();
 
+public slots:
+    void renameSelectedIcon();
+
 private slots:
     void listingStarted(const KUrl &url);
     void listingClear();
@@ -160,6 +168,7 @@ private:
     int rowsForHeight(qreal height) const;
     QPoint nextGridPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
     QPoint findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
+    KUrl targetFolder(const QModelIndex &index) const;
     void layoutItems();
     void alignIconsToGrid();
     QRect itemsBoundingRect() const;
@@ -169,6 +178,7 @@ private:
     void updateScrollBar();
     void updateScrollBarGeometry();
     void updateTextShadows(const QColor &textColor);
+    void updateToolTip(const QModelIndex &index);
     QStyleOptionViewItemV4 viewOptions() const;
 
 private:
@@ -203,7 +213,9 @@ private:
     QBasicTimer m_delayedLayoutTimer;
     QBasicTimer m_delayedRelayoutTimer;
     QBasicTimer m_delayedCacheClearTimer;
+    QBasicTimer m_toolTipShowTimer;
     ToolTipWidget *m_toolTipWidget;
+    QPointer<PopupView> m_popupView;
 };
 
 #endif

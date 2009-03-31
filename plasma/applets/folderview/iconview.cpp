@@ -36,6 +36,7 @@
 #include <QStyleOptionGraphicsItem>
 
 #include <KDirModel>
+#include <KDesktopFile>
 #include <KFileItemDelegate>
 #include <KGlobalSettings>
 
@@ -90,6 +91,8 @@ IconView::IconView(QGraphicsWidget *parent)
 
 IconView::~IconView()
 {
+    // Make sure that we don't leave any open popup views on the screen when we're deleted
+    delete m_popupView;
 }
 
 void IconView::setModel(QAbstractItemModel *model)
@@ -1163,6 +1166,28 @@ bool IconView::renameInProgress() const
     return m_editorIndex.isValid();
 }
 
+bool IconView::popupVisible() const
+{
+    return !m_popupView.isNull();
+}
+
+int IconView::scrollBarExtent() const
+{
+    return m_scrollBar->geometry().width();
+}
+
+QSize IconView::sizeForRowsColumns(int rows, int columns) const
+{
+    int spacing = 10;
+    int margin = 10;
+
+    QSize size;
+    size.rwidth() = 2 * margin + columns * (gridSize().width() + spacing) + scrollBarExtent();
+    size.rheight() = 2 * margin + rows * (gridSize().height() + spacing) - spacing;
+
+    return size;
+}
+
 void IconView::commitData(QWidget *editor)
 {
     m_delegate->setModelData(editor, m_model, m_editorIndex);
@@ -1221,14 +1246,66 @@ void IconView::focusOutEvent(QFocusEvent *event)
     markAreaDirty(visibleArea());
 }
 
+KUrl IconView::targetFolder(const QModelIndex &index) const
+{
+    if (!index.isValid()) {
+        return KUrl();
+    }
+
+    KFileItem item = m_model->itemForIndex(index);
+    if (item.isDir()) {
+        return item.targetUrl();
+    }
+
+    if (item.isLink()) {
+        KFileItem destItem(KFileItem::Unknown, KFileItem::Unknown, KUrl::fromPath(item.linkDest()));
+        if (destItem.isDir()) {
+            return destItem.targetUrl();
+        }
+        item = destItem;
+    }
+
+    if (item.isDesktopFile()) {
+        KDesktopFile file(item.targetUrl().path());
+        if (file.readType() == "Link") {
+            KUrl url(file.readUrl());
+            if (url.isLocalFile()) {
+                KFileItem destItem(KFileItem::Unknown, KFileItem::Unknown, url);
+                if (destItem.isDir()) {
+                    return destItem.targetUrl();
+                }
+            }
+        }
+    }
+
+    return KUrl(); 
+}
+
+void IconView::updateToolTip(const QModelIndex &index)
+{
+    if (!targetFolder(index).isEmpty()) {
+        m_toolTipShowTimer.start(500, this);
+    } else {
+        m_toolTipShowTimer.stop();
+        if (m_popupView) {
+            if (index.isValid()) {
+                delete m_popupView;
+            } else {
+                m_popupView->delayedHide();
+            }
+        }
+        m_toolTipWidget->updateToolTip(index, mapFromViewport(visualRect(index)));
+    }
+}
+
 void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     const QModelIndex index = indexAt(mapToViewport(event->pos()));
     if (index.isValid()) {
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
-        m_toolTipWidget->updateToolTip(index, mapFromViewport(visualRect(index)));
     }
+    updateToolTip(m_hoveredIndex);
 }
 
 void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
@@ -1238,7 +1315,7 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     if (m_hoveredIndex.isValid()) {
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = QModelIndex();
-        m_toolTipWidget->updateToolTip(QModelIndex(), QRectF());
+        updateToolTip(QModelIndex());
     }
 }
 
@@ -1249,7 +1326,8 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(index));
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
-        m_toolTipWidget->updateToolTip(index, mapFromViewport(visualRect(index)));
+
+        updateToolTip(index);
     }
 }
 
@@ -1257,6 +1335,7 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     // Make sure that any visible tooltip is hidden
     Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
+    delete m_popupView;
 
     if (!contentsRect().contains(event->pos()) || !m_errorMessage.isEmpty()) {
         event->ignore();
@@ -1306,10 +1385,12 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_pressedIndex = QModelIndex();
         m_buttonDownPos = pos;
 
+        const Plasma::Containment *parent = qobject_cast<Plasma::Containment*>(parentWidget());
+
         if (event->modifiers() & Qt::ControlModifier) {
             // Make the current selection persistent
             m_selectionModel->select(m_selectionModel->selection(), QItemSelectionModel::Select);
-        } else if (static_cast<Plasma::Containment*>(parentWidget())->isContainment() &&
+        } else if (parent && parent->isContainment() &&
                    event->widget()->window()->inherits("DashboardView")) {
             // Let the event propagate to the parent widget, which will emit releaseVisualFocus().
             // We prefer hiding the Dashboard to allowing rubber band selections in the containment
@@ -1495,7 +1576,8 @@ void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         return;
     }
 
-    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
+    Plasma::Corona *corona = qobject_cast<Plasma::Corona*>(scene());
+    const QString appletMimeType = (corona ? corona->appletMimeType() : QString());
     QRectF dirtyRect = visualRect(m_hoveredIndex);
     m_hoveredIndex = QModelIndex();
 
@@ -1525,7 +1607,8 @@ void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     // If the dropped item is an applet, let the parent widget handle it
-    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
+    Plasma::Corona *corona = qobject_cast<Plasma::Corona*>(scene());
+    const QString appletMimeType = (corona ? corona->appletMimeType() : QString());
     if (event->mimeData()->hasFormat(appletMimeType)) {
         event->ignore();
         return;
@@ -1847,6 +1930,28 @@ void IconView::timerEvent(QTimerEvent *event)
                 m_delayedLayoutTimer.start(10, this);
                 m_validRows = 0;
             }
+        }
+    } else if (event->timerId() == m_toolTipShowTimer.timerId()) {
+        m_toolTipShowTimer.stop();
+        Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
+        delete m_popupView;
+
+        const KUrl dir = targetFolder(m_hoveredIndex);
+        if (!dir.isEmpty()) {
+            const QPointF viewPos = mapFromViewport(visualRect(m_hoveredIndex)).center();
+            const QPoint scenePos = mapToScene(viewPos).toPoint();
+            QPoint pos;
+
+            // We position the popup relative to the view under the mouse cursor
+            foreach (QGraphicsView *view, scene()->views()) {
+                if (view->underMouse()) {
+                    pos = view->mapToGlobal(scenePos);
+                    break;
+                }
+            }
+
+            m_popupView = new PopupView(dir, pos, this);
+            connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
         }
     }
 }

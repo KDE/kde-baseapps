@@ -7,6 +7,7 @@ set(folderview_SRCS
     dialog.cpp
     label.cpp
     iconview.cpp
+    popupview.cpp
     iconwidget.cpp
     dirlister.cpp
     proxymodel.cpp
