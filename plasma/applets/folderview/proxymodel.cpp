@@ -25,7 +25,7 @@
 
 
 ProxyModel::ProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent), m_sortDirsFirst(true)  
+    : QSortFilterProxyModel(parent), m_filterMode(NoFilter), m_sortDirsFirst(true)
 {
     setSupportedDragActions(Qt::CopyAction | Qt::MoveAction | Qt::LinkAction);
 }
