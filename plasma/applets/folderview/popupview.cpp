@@ -475,11 +475,6 @@ void PopupView::contextMenuEvent(QContextMenuEvent *event)
     m_showingMenu = false;
 }
 
-void PopupView::focusOutEvent(QFocusEvent *event)
-{
-    Q_UNUSED(event)
-}
-
 // This function calls a given method in the parent PopupView, and returns true
 // if successful or false otherwise.
 bool PopupView::callOnParent(const char *method)
@@ -543,8 +538,7 @@ void PopupView::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == m_hideTimer.timerId()) {
         m_hideTimer.stop();
-        hide();
-        deleteLater();
+        emit requestClose();
     }
 }
 

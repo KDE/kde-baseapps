@@ -1875,6 +1875,14 @@ QStyleOptionViewItemV4 IconView::viewOptions() const
     return option;
 }
 
+void IconView::popupCloseRequested()
+{
+    if (m_popupView && (!m_hoveredIndex.isValid() || m_hoveredIndex != m_popupIndex)) {
+        m_popupView->hide();
+        m_popupView->deleteLater();
+    }
+}
+
 void IconView::timerEvent(QTimerEvent *event)
 {
     AbstractItemView::timerEvent(event);
@@ -1933,6 +1941,12 @@ void IconView::timerEvent(QTimerEvent *event)
         }
     } else if (event->timerId() == m_toolTipShowTimer.timerId()) {
         m_toolTipShowTimer.stop();
+
+        if (m_popupView && m_popupIndex == m_hoveredIndex) {
+            // The popup is already showing the hovered index
+            return;
+        }
+
         Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
         delete m_popupView;
 
@@ -1952,6 +1966,8 @@ void IconView::timerEvent(QTimerEvent *event)
 
             m_popupView = new PopupView(dir, pos, this);
             connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
+            connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
+            m_popupIndex = m_hoveredIndex;
         }
     }
 }

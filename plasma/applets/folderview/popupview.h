@@ -59,11 +59,13 @@ public:
 protected:
     void paintEvent(QPaintEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
-    void focusOutEvent(QFocusEvent *event);
     void resizeEvent(QResizeEvent *event);
     void enterEvent(QEvent *event);
     void leaveEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
+
+signals:
+    void requestClose();
 
 private:
     void createActions();

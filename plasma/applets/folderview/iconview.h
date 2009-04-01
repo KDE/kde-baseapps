@@ -161,6 +161,7 @@ private slots:
     void listingCanceled();
     void listingError(const QString &message);
     void itemsDeleted(const KFileItemList &items);
+    void popupCloseRequested();
 
 private:
     void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
@@ -216,6 +217,7 @@ private:
     QBasicTimer m_toolTipShowTimer;
     ToolTipWidget *m_toolTipWidget;
     QPointer<PopupView> m_popupView;
+    QPersistentModelIndex m_popupIndex;
 };
 
 #endif
