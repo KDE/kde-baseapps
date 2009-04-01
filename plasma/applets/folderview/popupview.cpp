@@ -149,6 +149,7 @@ void PopupView::init()
     m_model->setSourceModel(m_dirModel);
     m_model->setSortLocaleAware(true);
     m_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    m_model->setParseDesktopFiles(m_url.protocol() == "desktop");
     m_model->sort(KDirModel::Name, Qt::AscendingOrder);
 
     m_delegate = new KFileItemDelegate(this);

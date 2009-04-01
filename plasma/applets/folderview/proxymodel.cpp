@@ -20,12 +20,22 @@
 
 #include "proxymodel.h"
 
+#include <KDesktopFile>
 #include <KDirModel>
 #include <KStringHandler>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <kde_file.h>
+
 
 ProxyModel::ProxyModel(QObject *parent)
-    : QSortFilterProxyModel(parent), m_filterMode(NoFilter), m_sortDirsFirst(true)
+    : QSortFilterProxyModel(parent),
+      m_filterMode(NoFilter),
+      m_sortDirsFirst(true),
+      m_parseDesktopFiles(false)
 {
     setSupportedDragActions(Qt::CopyAction | Qt::MoveAction | Qt::LinkAction);
 }
@@ -66,6 +76,16 @@ bool ProxyModel::sortDirectoriesFirst() const
     return m_sortDirsFirst;
 }
 
+void ProxyModel::setParseDesktopFiles(bool enable)
+{
+    m_parseDesktopFiles = enable;
+}
+
+bool ProxyModel::parseDesktopFiles() const
+{
+    return m_parseDesktopFiles;
+}
+
 QModelIndex ProxyModel::indexForUrl(const KUrl &url) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
@@ -78,18 +98,43 @@ KFileItem ProxyModel::itemForIndex(const QModelIndex &index) const
     return dirModel->itemForIndex(mapToSource(index));
 }
 
+bool ProxyModel::isDir(const QModelIndex &index, const KDirModel *dirModel) const
+{
+    KFileItem item = dirModel->itemForIndex(index);
+    if (item.isDir()) {
+        return true;
+    }
+
+    if (m_parseDesktopFiles && item.isDesktopFile()) {
+        // Check if the desktop file is a link to a directory
+        KDesktopFile file(item.targetUrl().path());
+        if (file.readType() == "Link") {
+            KUrl url(file.readUrl());
+            if (url.isLocalFile()) {
+                KDE_struct_stat buf;
+                const QString path = url.toLocalFile(KUrl::RemoveTrailingSlash);
+                if (KDE::stat(path, &buf) == 0) {
+                    return S_ISDIR(buf.st_mode);
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
-    const KFileItem item1 = dirModel->itemForIndex(left);
-    const KFileItem item2 = dirModel->itemForIndex(right);
 
     // Sort directories first
     if (m_sortDirsFirst) {
-        if (item1.isDir() && !item2.isDir()) {
+        bool leftIsDir = isDir(left, dirModel);
+        bool rightIsDir = isDir(right, dirModel);
+        if (leftIsDir && !rightIsDir) {
             return true;
         }
-        if (!item1.isDir() && item2.isDir()) {
+        if (!leftIsDir && rightIsDir) {
             return false;
         }
     }

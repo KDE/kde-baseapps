@@ -23,6 +23,7 @@
 #include <QSortFilterProxyModel>
 #include <QStringList>
 
+class KDirModel;
 class KFileItem;
 class KUrl;
 
@@ -47,8 +48,12 @@ public:
     void setSortDirectoriesFirst(bool enable);
     bool sortDirectoriesFirst() const;
 
+    void setParseDesktopFiles(bool enable);
+    bool parseDesktopFiles() const;
+
     QModelIndex indexForUrl(const KUrl &url) const;
     KFileItem itemForIndex(const QModelIndex &index) const;
+    bool isDir(const QModelIndex &index, const KDirModel *dirModel) const;
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
 
     static FilterMode filterModeFromInt(int filterMode);
@@ -60,6 +65,7 @@ private:
     FilterMode m_filterMode;
     QStringList m_mimeList;
     bool m_sortDirsFirst;
+    bool m_parseDesktopFiles;
 };
 
 #endif

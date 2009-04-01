@@ -1032,6 +1032,9 @@ void FolderView::setUrl(const KUrl &url)
 {
     m_url = url;
 
+    // Only parse desktop files when sorting if we're showing the desktop folder
+    m_model->setParseDesktopFiles(m_url.protocol() == "desktop");
+
     if (!m_customLabel.isEmpty()) {
         m_titleText = m_customLabel;
     } else if (m_url == KUrl("desktop:/")) {
