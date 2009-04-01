@@ -1257,14 +1257,6 @@ KUrl IconView::targetFolder(const QModelIndex &index) const
         return item.targetUrl();
     }
 
-    if (item.isLink()) {
-        KFileItem destItem(KFileItem::Unknown, KFileItem::Unknown, KUrl::fromPath(item.linkDest()));
-        if (destItem.isDir()) {
-            return destItem.targetUrl();
-        }
-        item = destItem;
-    }
-
     if (item.isDesktopFile()) {
         KDesktopFile file(item.targetUrl().path());
         if (file.readType() == "Link") {
