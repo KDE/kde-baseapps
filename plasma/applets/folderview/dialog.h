@@ -35,14 +35,14 @@ class QGraphicsScene;
 class Dialog : public QWidget
 {
 public:
-    Dialog(QWidget *parent = 0, Qt::WindowFlags f = Qt::Window);
+    Dialog(QWidget *parent = 0);
     ~Dialog();
 
     void setGraphicsWidget(QGraphicsWidget *widget);
     void show(Plasma::Applet *applet);
 
 protected:
-    void focusOutEvent(QFocusEvent *event);
+    void mousePressEvent(QMouseEvent *event);
     void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
 
