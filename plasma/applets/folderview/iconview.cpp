@@ -1266,6 +1266,8 @@ KUrl IconView::targetFolder(const QModelIndex &index) const
                 if (destItem.isDir()) {
                     return destItem.targetUrl();
                 }
+            } else if (url.equals(KUrl("trash:/"), KUrl::CompareWithoutTrailingSlash)) {
+                return url;
             }
         }
     }
