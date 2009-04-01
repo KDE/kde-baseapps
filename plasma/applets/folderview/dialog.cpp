@@ -36,12 +36,12 @@
 #endif
 
 
-Dialog::Dialog(QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f), m_widget(0)
+Dialog::Dialog(QWidget *parent)
+    : QWidget(parent, Qt::Popup), m_widget(0)
 {
-    setWindowFlags(Qt::Popup | Qt::WindowStaysOnTopHint);
-    
 #ifdef Q_WS_X11
+    setAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu);
+
     if (!QX11Info::isCompositingManagerRunning()) {
         setAttribute(Qt::WA_NoSystemBackground);
     }
@@ -168,9 +168,10 @@ void Dialog::paintEvent(QPaintEvent *event)
     m_background->paintFrame(&p);
 }
 
-void Dialog::focusOutEvent(QFocusEvent *event)
+void Dialog::mousePressEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event)
-    hide();
+    if (!rect().contains(event->pos())) {
+        hide();
+    }
 }
 
