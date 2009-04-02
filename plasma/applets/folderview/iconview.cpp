@@ -75,6 +75,7 @@ IconView::IconView(QGraphicsWidget *parent)
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
     setCacheMode(NoCache);
+    setFocusPolicy(Qt::StrongFocus);
 
     m_scrollBar->hide();
 

@@ -115,6 +115,7 @@ protected slots:
     void showPreviewConfigDialog();
  
 private:
+    void addActions(AbstractItemView *view);
     void setupIconView();
     void setUrl(const KUrl &url);
     QSize iconSize() const;

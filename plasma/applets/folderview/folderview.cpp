@@ -348,13 +348,10 @@ void FolderView::init()
     //       the URL and waiting for the job to time out.
     lister->openUrl(m_url);
 
+    createActions();
+    
     if (isContainment()) {
         setupIconView();
-    }
-
-    createActions();
-
-    if (isContainment()) {
 
         // Set a low Z value so applets don't end up below the icon view
         m_iconView->setZValue(INT_MIN);
@@ -742,6 +739,20 @@ void FolderView::updateIconViewState()
     }
 }
 
+void FolderView::addActions(AbstractItemView *view)
+{
+    view->addAction(m_actionCollection.action("rename"));
+    view->addAction(m_actionCollection.action("cut"));
+    view->addAction(m_actionCollection.action("undo"));
+    view->addAction(m_actionCollection.action("copy"));
+    view->addAction(m_actionCollection.action("paste"));
+    view->addAction(m_actionCollection.action("pasteto"));
+    view->addAction(m_actionCollection.action("refresh"));
+    view->addAction(m_actionCollection.action("rename"));
+    view->addAction(m_actionCollection.action("trash"));
+    view->addAction(m_actionCollection.action("del"));
+}
+
 void FolderView::setupIconView()
 {
     if (m_iconView) {
@@ -753,6 +764,9 @@ void FolderView::setupIconView()
     m_iconView->setItemDelegate(m_delegate);
     m_iconView->setSelectionModel(m_selectionModel);
     m_iconView->setFont(Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont));
+
+    // Add widget specific actions with shortcuts to the view
+    addActions(m_iconView);
 
     if (!isContainment()) {
         m_label = new Label(this);
@@ -944,6 +958,9 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             m_listView->setModel(m_model);
             m_listView->setSelectionModel(m_selectionModel);
 
+            // Add widget specific actions with shortcuts to the view
+            addActions(m_listView);
+
             connect(m_listView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
             connect(m_listView, SIGNAL(contextMenuRequest(QWidget*,QPoint)), SLOT(contextMenuRequest(QWidget*,QPoint)));
 
@@ -1081,17 +1098,19 @@ void FolderView::createActions()
     KShortcut cutShortCut = cut->shortcut();
     cutShortCut.remove(Qt::SHIFT + Qt::Key_Delete);
     cut->setShortcut(cutShortCut);
+    cut->setShortcutContext(Qt::WidgetShortcut);
 
     KAction *copy = KStandardAction::copy(this, SLOT(copy()), this);
+    copy->setShortcutContext(Qt::WidgetShortcut);
 
     KAction *undo = KStandardAction::undo(manager, SLOT(undo()), this);
+    undo->setEnabled(manager->undoAvailable());
+    undo->setShortcutContext(Qt::WidgetShortcut);
     connect(manager, SIGNAL(undoAvailable(bool)), undo, SLOT(setEnabled(bool)));
     connect(manager, SIGNAL(undoTextChanged(QString)), SLOT(undoTextChanged(QString)));
-    undo->setEnabled(manager->undoAvailable());
 
     KAction *paste = KStandardAction::paste(this, SLOT(paste()), this);
-    KAction *pasteTo = KStandardAction::paste(this, SLOT(pasteTo()), this);
-    pasteTo->setEnabled(false); // Only enabled during popupMenu()
+    paste->setShortcutContext(Qt::WidgetShortcut);
 
     QString actionText = KIO::pasteActionText();
     if (!actionText.isEmpty()) {
@@ -1100,11 +1119,16 @@ void FolderView::createActions()
        paste->setEnabled(false);
     }
 
+    KAction *pasteTo = KStandardAction::paste(this, SLOT(pasteTo()), this);
+    pasteTo->setEnabled(false); // Only enabled during popupMenu()
+    pasteTo->setShortcutContext(Qt::WidgetShortcut);
+
     KAction *reload = new KAction(i18n("&Reload"), this);
     connect(reload, SIGNAL(triggered()), SLOT(refreshIcons()));
 
     KAction *refresh = new KAction(isContainment() ? i18n("&Refresh Desktop") : i18n("&Refresh View"), this);
     refresh->setShortcut(KStandardShortcut::reload());
+    refresh->setShortcutContext(Qt::WidgetShortcut);
     if (isContainment()) {
         refresh->setIcon(KIcon("user-desktop"));
     }
@@ -1112,16 +1136,19 @@ void FolderView::createActions()
 
     KAction *rename = new KAction(KIcon("edit-rename"), i18n("&Rename"), this);
     rename->setShortcut(Qt::Key_F2);
+    rename->setShortcutContext(Qt::WidgetShortcut);
     connect(rename, SIGNAL(triggered()), SLOT(renameSelectedIcon()));
 
     KAction *trash = new KAction(KIcon("user-trash"), i18n("&Move to Trash"), this);
     trash->setShortcut(Qt::Key_Delete);
+    trash->setShortcutContext(Qt::WidgetShortcut);
     connect(trash, SIGNAL(triggered(Qt::MouseButtons, Qt::KeyboardModifiers)),
             SLOT(moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers)));
 
     KAction *del = new KAction(i18n("&Delete"), this);
     del->setIcon(KIcon("edit-delete"));
     del->setShortcut(Qt::SHIFT + Qt::Key_Delete);
+    del->setShortcutContext(Qt::WidgetShortcut);
     connect(del, SIGNAL(triggered()), SLOT(deleteSelectedIcons()));
 
     m_actionCollection.addAction("cut", cut);
@@ -1202,20 +1229,6 @@ void FolderView::createActions()
 
         updateSortActionsState();
     }
-
-    // Note: We have to create our own action collection, because the one Plasma::Applet
-    //       provides can only be manipulated indirectly, and we need to be able to pass
-    //       a pointer to the collection to KNewMenu and KonqPopupMenu.
-    //       But we still have to add all the actions to the collection in Plasma::Applet
-    //       in order for the shortcuts to work.
-    addAction("cut", cut);
-    addAction("undo", undo);
-    addAction("copy", copy);
-    addAction("paste", paste);
-    addAction("reload", reload);
-    addAction("rename", rename);
-    addAction("trash", trash);
-    addAction("del", del);
 }
 
 QList<QAction*> FolderView::contextualActions()
