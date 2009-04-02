@@ -99,6 +99,11 @@ protected slots:
     void updateIconWidget();
     void iconWidgetClicked();
 
+    void addPanel();
+    void runCommand();
+    void lockScreen();
+    void logout();
+
     void activated(const QModelIndex &index);
     void indexesMoved(const QModelIndexList &indexes);
     void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
