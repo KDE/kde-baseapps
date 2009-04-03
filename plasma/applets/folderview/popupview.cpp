@@ -76,6 +76,8 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos, const IconView *parentV
     setAttribute(Qt::WA_TranslucentBackground);
     KWindowSystem::setState(effectiveWinId(), NET::SkipTaskbar | NET::SkipPager);
 
+    setAcceptDrops(true);
+
     QPalette pal = palette();
     pal.setColor(backgroundRole(), Qt::transparent);
     setPalette(pal);
@@ -122,7 +124,14 @@ PopupView::~PopupView()
 
 void PopupView::delayedHide()
 {
-    m_hideTimer.start(400, this);
+    if (!m_iconView || !m_iconView->dragInProgress()) {
+        m_hideTimer.start(400, this);
+    }
+}
+
+bool PopupView::dragInProgress()
+{
+    return m_iconView && m_iconView->dragInProgress();
 }
 
 void PopupView::init()
@@ -494,7 +503,8 @@ bool PopupView::callOnParent(const char *method)
 
 void PopupView::maybeClose()
 {
-    if (!underMouse() && !m_showingMenu && !callOnParent("maybeClose") && !m_hideTimer.isActive()) {
+    if (!underMouse() && !m_showingMenu && !m_iconView->dragInProgress() &&
+        !callOnParent("maybeClose") && !m_hideTimer.isActive()) {
         m_hideTimer.start(400, this);
     }
 }
@@ -533,6 +543,27 @@ void PopupView::leaveEvent(QEvent *event)
     if (!m_iconView->popupVisible()) {
         maybeClose();
     }
+}
+
+void PopupView::dragEnterEvent(QDragEnterEvent *event)
+{
+    m_hideTimer.stop();
+    callOnParent("cancelHideTimer");
+
+    // If the popup is open during a drag and drop operation,
+    // assume that we accept the mimetype.
+    event->setAccepted(true);
+}
+
+void PopupView::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    if (!m_iconView->popupVisible()) {
+        maybeClose();
+    }
+
+    // If the popup is open during a drag and drop operation,
+    // assume that we accept the mimetype.
+    event->setAccepted(true);
 }
 
 void PopupView::timerEvent(QTimerEvent *event)

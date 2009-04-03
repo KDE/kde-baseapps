@@ -104,6 +104,7 @@ public:
     QStringList iconPositionsData() const;
 
     bool renameInProgress() const;
+    bool dragInProgress() const;
     bool popupVisible() const;
 
     int scrollBarExtent() const;

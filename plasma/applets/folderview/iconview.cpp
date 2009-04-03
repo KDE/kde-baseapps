@@ -1167,6 +1167,11 @@ bool IconView::renameInProgress() const
     return m_editorIndex.isValid();
 }
 
+bool IconView::dragInProgress() const
+{
+    return m_dragInProgress || (m_popupView && m_popupView->dragInProgress());
+}
+
 bool IconView::popupVisible() const
 {
     return !m_popupView.isNull();
@@ -1592,7 +1597,16 @@ void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         if (!onOurself) {
             m_hoveredIndex = index;
             dirtyRect |= visualRect(index);
+
+            // Open a popup view if the hovered index is a folder
+            if (!targetFolder(index).isEmpty()) {
+                m_toolTipShowTimer.start(500, this);
+            } else if (m_popupView) {
+                m_popupView->delayedHide();
+            }
         }
+    } else if (!index.isValid() && m_popupView) {
+        m_popupView->delayedHide();
     }
 
     markAreaDirty(dirtyRect);
@@ -1939,6 +1953,11 @@ void IconView::timerEvent(QTimerEvent *event)
 
         if (m_popupView && m_popupIndex == m_hoveredIndex) {
             // The popup is already showing the hovered index
+            return;
+        }
+
+        if (m_popupView && m_popupView->dragInProgress()) {
+            // Don't delete the popup view when a drag is in progress
             return;
         }
 

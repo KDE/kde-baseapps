@@ -55,6 +55,7 @@ public:
     ~PopupView();
 
     void delayedHide();
+    bool dragInProgress();
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -63,6 +64,8 @@ protected:
     void enterEvent(QEvent *event);
     void leaveEvent(QEvent *event);
     void timerEvent(QTimerEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dragLeaveEvent(QDragLeaveEvent *event);
 
 signals:
     void requestClose();
