@@ -46,9 +46,14 @@ void IconWidget::setModel(KDirModel *model)
 void IconWidget::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     if (KUrl::List::canDecode(event->mimeData())){
-        Plasma::IconWidget::dragEnterEvent(event);
-        event->setAccepted(true);
+        Plasma::IconWidget::sceneEventFilter(this, event);
+        event->accept();
     }
+}
+
+void IconWidget::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+{
+    Plasma::IconWidget::sceneEventFilter(this, event);
 }
 
 void IconWidget::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
