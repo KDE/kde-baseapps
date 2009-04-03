@@ -174,6 +174,7 @@ void PopupView::init()
     m_iconView->setIconSize(m_parentView->iconSize());
     m_iconView->setGridSize(m_parentView->gridSize());
     m_iconView->setWordWrap(m_parentView->wordWrap());
+    m_iconView->setIconsMoveable(false);
 
     connect(m_iconView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
     connect(m_iconView, SIGNAL(contextMenuRequest(QWidget*,QPoint)), SLOT(contextMenuRequest(QWidget*,QPoint)));
