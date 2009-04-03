@@ -67,6 +67,7 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos, const IconView *parentV
       m_view(0),
       m_parentView(parentView),
       m_busyWidget(0),
+      m_iconView(0),
       m_url(url),
       m_actionCollection(this),
       m_newMenu(0),
