@@ -70,7 +70,8 @@ IconView::IconView(QGraphicsWidget *parent)
       m_alignToGrid(false),
       m_wordWrap(false),
       m_drawShadows(true),
-      m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft)
+      m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
+      m_popupCausedWidget(0)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
@@ -1281,12 +1282,14 @@ KUrl IconView::targetFolder(const QModelIndex &index) const
     return KUrl(); 
 }
 
-void IconView::updateToolTip(const QModelIndex &index)
+void IconView::updateToolTip(const QModelIndex &index, QWidget *causedWidget)
 {
     if (!targetFolder(index).isEmpty()) {
         m_toolTipShowTimer.start(500, this);
+        m_popupCausedWidget = causedWidget;
     } else {
         m_toolTipShowTimer.stop();
+        m_popupCausedWidget = 0;
         if (m_popupView) {
             if (index.isValid()) {
                 delete m_popupView;
@@ -1305,7 +1308,7 @@ void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
     }
-    updateToolTip(m_hoveredIndex);
+    updateToolTip(m_hoveredIndex, event->widget());
 }
 
 void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
@@ -1315,7 +1318,7 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     if (m_hoveredIndex.isValid()) {
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = QModelIndex();
-        updateToolTip(QModelIndex());
+        updateToolTip(QModelIndex(), event->widget());
     }
 }
 
@@ -1327,7 +1330,7 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
 
-        updateToolTip(index);
+        updateToolTip(index, event->widget());
     }
 }
 
@@ -1601,12 +1604,15 @@ void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
             // Open a popup view if the hovered index is a folder
             if (!targetFolder(index).isEmpty()) {
                 m_toolTipShowTimer.start(500, this);
+                m_popupCausedWidget = event->widget();
             } else if (m_popupView) {
                 m_popupView->delayedHide();
+                m_popupCausedWidget = 0;
             }
         }
     } else if (!index.isValid() && m_popupView) {
         m_popupView->delayedHide();
+        m_popupCausedWidget = 0;
     }
 
     markAreaDirty(dirtyRect);
@@ -1970,11 +1976,15 @@ void IconView::timerEvent(QTimerEvent *event)
             const QPoint scenePos = mapToScene(viewPos).toPoint();
             QPoint pos;
 
-            // We position the popup relative to the view under the mouse cursor
-            foreach (QGraphicsView *view, scene()->views()) {
-                if (view->underMouse()) {
-                    pos = view->mapToGlobal(scenePos);
-                    break;
+            if (m_popupCausedWidget) {
+                pos = m_popupCausedWidget->mapToGlobal(scenePos);
+            } else {
+                // We position the popup relative to the view under the mouse cursor
+                foreach (QGraphicsView *view, scene()->views()) {
+                    if (view->underMouse()) {
+                        pos = view->mapToGlobal(scenePos);
+                        break;
+                    }
                 }
             }
 

@@ -180,7 +180,7 @@ private:
     void updateScrollBar();
     void updateScrollBarGeometry();
     void updateTextShadows(const QColor &textColor);
-    void updateToolTip(const QModelIndex &index);
+    void updateToolTip(const QModelIndex &index, QWidget *causedWidget = 0);
     QStyleOptionViewItemV4 viewOptions() const;
 
 private:
@@ -218,6 +218,7 @@ private:
     QBasicTimer m_toolTipShowTimer;
     ToolTipWidget *m_toolTipWidget;
     QPointer<PopupView> m_popupView;
+    QPointer<QWidget> m_popupCausedWidget;
     QPersistentModelIndex m_popupIndex;
 };
 
