@@ -27,6 +27,7 @@
 #include <QGraphicsLinearLayout>
 #include <QGraphicsView>
 #include <QGraphicsSceneDragDropEvent>
+#include <QImageReader>
 #include <QItemSelectionModel>
 #include <QScrollBar>
 
@@ -42,9 +43,12 @@
 #include <kfilepreviewgenerator.h>
 #include <KGlobalSettings>
 #include <KMenu>
+#include <KStandardDirs>
 #include <KStandardShortcut>
 #include <KStringHandler>
+#include <KTemporaryFile>
 
+#include <kio/copyjob.h>
 #include <kio/fileundomanager.h>
 #include <kio/paste.h>
 #include <KParts/BrowserExtension>
@@ -65,10 +69,11 @@
 #  include <windows.h>
 #endif // Q_OS_WIN
 
-#include "plasma/corona.h"
-#include "plasma/paintutils.h"
-#include "plasma/theme.h"
-#include "plasma/tooltipmanager.h"
+#include <Plasma/Corona>
+#include <Plasma/PaintUtils>
+#include <Plasma/Theme>
+#include <Plasma/ToolTipManager>
+#include <Plasma/Wallpaper>
 
 #include "dirlister.h"
 #include "dialog.h"
@@ -231,6 +236,40 @@ public:
         return !model->isHidden(index);
     }
 };
+
+
+
+// ---------------------------------------------------------------------------
+
+
+
+RemoteWallpaperSetter::RemoteWallpaperSetter(const KUrl &url, FolderView *containment)
+    : QObject(containment)
+{
+    const QString suffix = QFileInfo(url.fileName()).suffix();
+
+    KTemporaryFile file;
+    file.setPrefix(KGlobal::dirs()->saveLocation("wallpaper"));
+    file.setSuffix(QString(".") + suffix);
+    file.setAutoRemove(false);
+
+    if (file.open()) {
+        KIO::FileCopyJob *job = KIO::file_copy(url, KUrl::fromPath(file.fileName()), -1, KIO::Overwrite);
+        connect(job, SIGNAL(result(KJob*)), SLOT(result(KJob*)));
+    } else {
+        deleteLater();
+    }
+}
+
+void RemoteWallpaperSetter::result(KJob *job)
+{
+    if (!job->error()) {
+        FolderView *containment = static_cast<FolderView*>(parent());
+        KIO::FileCopyJob *copyJob = static_cast<KIO::FileCopyJob*>(job);
+        containment->setWallpaper(copyJob->destUrl());
+    }
+    deleteLater();
+}
 
 
 
@@ -683,6 +722,52 @@ void FolderView::configAccepted()
 
     m_delayedSaveTimer.start(5000, this);
     emit configNeedsSaving();
+}
+
+void FolderView::setWallpaper(const KUrl &url)
+{
+    if (!url.isLocalFile()) {
+        return;
+    }
+
+    const QString wallpaper = url.toLocalFile();
+    Plasma::Wallpaper::ResizeMethod resizeMethod = Plasma::Wallpaper::MaxpectResize;
+
+    // Try to read the image size without loading the image
+    QImageReader reader(wallpaper);
+    QSize size = reader.size();
+
+    if (!size.isEmpty()) {
+        if (size.width() < geometry().width() / 2 && size.height() < geometry().height() / 2) {
+            // If the image size is less than a quarter of the size of the containment,
+            // center it instead of scaling it.
+           resizeMethod = Plasma::Wallpaper::CenteredResize;
+        } else {
+            // Permit up to 10% of the image to be cropped in either dimension as a result of scaling.
+            size.scale(geometry().size().toSize(), Qt::KeepAspectRatioByExpanding);
+            if (size.width() / geometry().width() < 1.1 && size.height() / geometry().height() < 1.1) {
+                resizeMethod = Plasma::Wallpaper::ScaledAndCroppedResize;
+            } else {
+                resizeMethod = Plasma::Wallpaper::MaxpectResize;
+            }
+        }
+    }
+
+    KConfigGroup cg = config();
+    cg = KConfigGroup(&cg, "Wallpaper");
+    cg = KConfigGroup(&cg, "image");
+
+    QStringList userWallpapers = cg.readEntry("userswallpapers", QStringList());
+    if (!userWallpapers.contains(wallpaper)) {
+        userWallpapers.append(wallpaper);
+        cg.writeEntry("userswallpapers", userWallpapers);
+    }
+
+    cg.writeEntry("wallpaper", wallpaper);
+    cg.writeEntry("wallpaperposition", int(resizeMethod));
+    cg.sync();
+
+    Plasma::Containment::setWallpaper("image", "SingleImage");
 }
 
 void FolderView::showPreviewConfigDialog()

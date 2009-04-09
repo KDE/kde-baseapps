@@ -22,6 +22,7 @@
 #ifdef Q_WS_X11
 #include <fixx11h.h>
 #endif
+#include <QActionGroup>
 #include <QApplication>
 #include <QDebug>
 #include <QDrag>
@@ -29,6 +30,7 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsProxyWidget>
+#include <QImageReader>
 #include <QItemSelectionModel>
 #include <QPainter>
 #include <QPaintEngine>
@@ -39,11 +41,13 @@
 #include <KDesktopFile>
 #include <KFileItemDelegate>
 #include <KGlobalSettings>
+#include <KIcon>
 
 #include <konqmimedata.h>
 #include <konq_operations.h>
 
 #include "dirlister.h"
+#include "folderview.h"
 #include "proxymodel.h"
 #include "previewpluginsmodel.h"
 #include "tooltipwidget.h"
@@ -1619,6 +1623,76 @@ void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
     event->setAccepted(!event->mimeData()->hasFormat(appletMimeType));
 }
 
+void IconView::createDropActions(const KUrl::List &urls, QActionGroup *actions)
+{
+    Plasma::Containment *containment = qobject_cast<Plasma::Containment*>(parentWidget());
+
+    // Only add actions for creating applets and setting the wallpaper if a single
+    // URL has been dropped. If there are multiple URL's, we could check if they all
+    // have the same mimetype, but there's no way of knowing if the applet wants all
+    // the URL's, or if we should create one applet for each URL. Positioning multiple
+    // applets can also be tricky.
+    if (containment && containment->isContainment() && urls.count() == 1) {
+        KMimeType::Ptr mime = KMimeType::findByUrl(urls.first());
+        QString mimeName = mime->name();
+        KPluginInfo::List appletList = Plasma::Applet::listAppletInfoForMimetype(mimeName);
+
+        if (!appletList.isEmpty()) {
+            foreach (const KPluginInfo &info, appletList) {
+                QAction *action = new QAction(info.name(), actions);
+                action->setData(info.pluginName());
+                if (!info.icon().isEmpty()) {
+                    action->setIcon(KIcon(info.icon()));
+                }
+            }
+        }
+
+        // Since it is possible that the URL is a remote URL, we have to rely on the file
+        // extension to decide if URL refers to a file we can use as a wallpaper.
+        // Unfortunately QImageReader::supportedImageFormats() returns some formats in upper case
+        // and others in lower case, but all the important ones are in lower case.
+        const QByteArray suffix = QFileInfo(urls.first().fileName()).suffix().toLower().toUtf8();
+        if (mimeName.startsWith("image/") || QImageReader::supportedImageFormats().contains(suffix)) {
+            QAction *action = new QAction(i18n("Set as &Wallpaper"), actions);
+            action->setData("internal:folderview:set-as-wallpaper");
+            action->setIcon(KIcon("preferences-desktop-wallpaper"));
+        }
+    }
+}
+
+void IconView::dropActionTriggered(QAction *action)
+{
+    Q_ASSERT(m_dropOperation != 0);
+
+    FolderView *containment = qobject_cast<FolderView*>(parentWidget());
+    const KUrl::List urls = m_dropOperation->droppedUrls();
+
+    if (containment && containment->isContainment() && urls.count() == 1) {
+        const QString name = action->data().toString();
+
+        if (name == "internal:folderview:set-as-wallpaper") {
+            if (!urls.first().isLocalFile()) {
+                (void) new RemoteWallpaperSetter(urls.first(), containment);
+            } else {
+                containment->setWallpaper(urls.first());
+            }
+        } else {
+            const QVariantList args = QVariantList() << urls.first().url();
+            const QPoint pos = m_dropOperation->dropPosition();
+            const QRectF geom(pos, QSize());
+
+            containment->addApplet(name, args, geom);
+        }
+    }
+}
+
+void IconView::dropCompleted()
+{
+    delete m_dropActions;
+    m_dropActions = 0;
+    m_dropOperation = 0; // Auto deleted
+}
+
 void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     // If the dropped item is an applet, let the parent widget handle it
@@ -1647,7 +1721,22 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
         QDropEvent ev(event->screenPos(), event->dropAction(), event->mimeData(),
                       event->buttons(), event->modifiers());
         //kDebug() << "dropping to" << m_url << "with" << view() << event->modifiers();
-        KonqOperations::doDrop(item, m_dirModel->dirLister()->url(), &ev, event->widget());
+
+        // If we're dropping on the view itself
+        QList<QAction *> userActions;
+        if (!m_hoveredIndex.isValid()) {
+            m_dropActions = new QActionGroup(this);
+            createDropActions(KUrl::List::fromMimeData(event->mimeData()), m_dropActions);
+            connect(m_dropActions, SIGNAL(triggered(QAction*)), SLOT(dropActionTriggered(QAction*)));
+            userActions = m_dropActions->actions();
+        }
+
+        m_dropOperation = KonqOperations::doDrop(item, m_dirModel->dirLister()->url(), &ev, event->widget(), userActions);
+        if (m_dropOperation) {
+            connect(m_dropOperation, SIGNAL(destroyed(QObject*)), SLOT(dropCompleted()));
+        } else {
+            dropCompleted();
+        }
         //kDebug() << "all done!";
         return;
     }

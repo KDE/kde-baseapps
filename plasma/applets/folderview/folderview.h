@@ -48,13 +48,38 @@ class KFilePlacesModel;
 class KFilePreviewGenerator;
 class KNewMenu;
 class KFileItemActions;
+class KJob;
 class QItemSelectionModel;
+class FolderView;
 class ProxyModel;
 class IconView;
 class IconWidget;
 class ListView;
 class Label;
 class Dialog;
+
+
+/**
+ * Helper class that downloads a wallpaper image asynchronously to a suitable
+ * temporary directory in the user's home folder, and applies it to the given
+ * folderview containment when the download finishes.
+ *
+ * The class deletes itself automatically when the operation is completed.
+ */
+class RemoteWallpaperSetter : public QObject
+{
+    Q_OBJECT
+
+public:
+    RemoteWallpaperSetter(const KUrl &url, FolderView *containment);
+
+private slots:
+    void result(KJob *job);
+};
+
+
+// ----------------------------------------------------------------------------
+
 
 
 class FolderView : public Plasma::Containment
@@ -69,6 +94,7 @@ public:
     void saveState(KConfigGroup &config) const;
     void paintInterface(QPainter *painter, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void setPath(const QString&);
+    void setWallpaper(const KUrl &url);
 
 protected:
     void createConfigurationInterface(KConfigDialog *parent);

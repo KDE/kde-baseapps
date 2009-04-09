@@ -37,8 +37,10 @@ class KFileItemDelegate;
 class KFileItemList;
 class KFilePreviewGenerator;
 class KNewMenu;
+class KonqOperations;
 class QItemSelectionModel;
 class ProxyModel;
+class QActionGroup;
 class QStyleOptionViewItemV4;
 class QScrollBar;
 class ToolTipWidget;
@@ -163,6 +165,8 @@ private slots:
     void listingError(const QString &message);
     void itemsDeleted(const KFileItemList &items);
     void popupCloseRequested();
+    void dropActionTriggered(QAction *action);
+    void dropCompleted();
 
 private:
     void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
@@ -181,6 +185,7 @@ private:
     void updateScrollBarGeometry();
     void updateTextShadows(const QColor &textColor);
     void updateToolTip(const QModelIndex &index, QWidget *causedWidget = 0);
+    void createDropActions(const KUrl::List &urls, QActionGroup *actions);
     QStyleOptionViewItemV4 viewOptions() const;
 
 private:
@@ -219,6 +224,8 @@ private:
     ToolTipWidget *m_toolTipWidget;
     QPointer<PopupView> m_popupView;
     QPointer<QWidget> m_popupCausedWidget;
+    KonqOperations *m_dropOperation;
+    QActionGroup *m_dropActions;
     QPersistentModelIndex m_popupIndex;
 };
 
