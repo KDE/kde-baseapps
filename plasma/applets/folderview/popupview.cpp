@@ -149,7 +149,7 @@ void PopupView::init()
     DirLister *lister = new DirLister(this);
     lister->setDelayedMimeTypes(true);
     lister->setAutoErrorHandlingEnabled(false, 0);
-    lister->openUrl(m_url, KDirLister::Reload);
+    lister->openUrl(m_url);
 
     m_dirModel = new KDirModel(this);
     m_dirModel->setDropsAllowed(KDirModel::DropOnDirectory | KDirModel::DropOnLocalExecutable);
