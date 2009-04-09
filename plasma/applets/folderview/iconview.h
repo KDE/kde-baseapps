@@ -132,6 +132,7 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);

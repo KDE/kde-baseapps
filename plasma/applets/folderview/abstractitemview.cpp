@@ -340,6 +340,19 @@ void AbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEd
 }
 
 
+void AbstractItemView::scrollTo(const QModelIndex &index,  QAbstractItemView::ScrollHint hint)
+{
+    Q_UNUSED(hint)
+
+    const QRectF r = mapFromViewport(visualRect(index));
+
+    if (r.top() < 0) {
+        smoothScroll(0, r.top());
+    } else if (r.bottom() > geometry().height()) {
+        smoothScroll(0, r.bottom() - geometry().height());
+    }
+}
+
 void AbstractItemView::scrollBarValueChanged(int value)
 {
     Q_UNUSED(value)

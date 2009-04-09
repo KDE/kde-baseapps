@@ -1338,6 +1338,116 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     }
 }
 
+void IconView::keyPressEvent(QKeyEvent *event)
+{
+    if (m_columns == 0)        //The layout isn't done until items are actually inserted into the model, so until that happens, m_columns will be 0
+        return;
+
+    int hdirection = 0;
+    int vdirection = 0;
+
+    QModelIndex currentIndex = m_selectionModel->currentIndex();
+
+    switch (event->key()) {
+    case Qt::Key_Up:
+        vdirection = -1;
+        break;
+    case Qt::Key_Down:
+        vdirection = 1;
+        break;
+    case Qt::Key_Left:
+        hdirection = -1;
+        break;
+    case Qt::Key_Right:
+        hdirection = 1;
+        break;
+
+    case Qt::Key_Return:
+    case Qt::Key_Enter:        //Enter key located on the keypad
+        emit activated(currentIndex);
+        return;
+    default:
+        break;
+    }
+
+    QModelIndex nextIndex = QModelIndex();        //Will store the final index we calculate to move to, initialized with Invalid QModelIndex
+
+    if (!m_layoutBroken) {                //If the view is sorted
+        int prevItem = currentIndex.row();
+        int newItem = 0;
+        int hMultiplier = 1;
+        int vMultiplier = 1;
+        
+        switch (m_flow)        //Perform flow related calculations
+        {
+        case RightToLeft:
+            hMultiplier = -1;
+        case LeftToRight:        //Fall through because in both RightToLeft and LeftToRight, we move m_columns time vertically
+            vMultiplier = m_columns;
+            break;
+        case TopToBottom:
+            hMultiplier = m_rows;
+            break;
+        case TopToBottomRightToLeft:
+            hMultiplier = m_rows*(-1);
+            break;
+        }
+
+        newItem = currentIndex.row() + hdirection*hMultiplier + vdirection*vMultiplier;
+
+        if ( (newItem < 0) || (newItem >= m_dirModel->rowCount()) ) {
+            newItem = prevItem;
+        }
+
+        nextIndex = currentIndex.sibling(newItem, currentIndex.column());
+    }
+
+    else {        //If the user has moved the icons, i.e. the view is no longer sorted
+        QPoint currentPos = visualRect(currentIndex).center();
+
+        //Store distance between the first and the current index-
+        int lastDistance = (visualRect(m_model->index(0, 0)).center() - currentPos).manhattanLength();
+        int distance = 0;
+
+        for (int i = 0; i < m_validRows; i++) {
+            const QModelIndex tempIndex = m_model->index(i, 0);
+            const QPoint pos = visualRect(tempIndex).center();
+            if (tempIndex == currentIndex)    continue;
+
+            if (hdirection == 0) {                                //Moving in vertical direction
+                if (vdirection*pos.y() > vdirection*currentPos.y()) {
+                    distance = (pos - currentPos).manhattanLength();
+                    if (distance < lastDistance || !nextIndex.isValid()) {
+                        nextIndex = tempIndex;
+                        lastDistance = distance;
+                    }
+                }
+            }
+
+            else if (vdirection == 0) {                //Moving in horizontal direction
+                if (hdirection*pos.x() > hdirection*currentPos.x()) {
+                    distance = (pos - currentPos).manhattanLength();
+                    if (distance < lastDistance || !nextIndex.isValid()) {
+                        nextIndex = tempIndex;
+                        lastDistance = distance;
+                    }
+                }
+            }
+        }
+
+        if (!nextIndex.isValid()) {
+            return;
+        }
+    }
+
+    markAreaDirty(visualRect(currentIndex));
+    m_selectionModel->select(nextIndex, QItemSelectionModel::ClearAndSelect);
+    m_selectionModel->setCurrentIndex(nextIndex, QItemSelectionModel::NoUpdate);
+    scrollTo(nextIndex);
+    markAreaDirty(visualRect(nextIndex));
+    m_pressedIndex = nextIndex;
+}
+
 void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     // Make sure that any visible tooltip is hidden

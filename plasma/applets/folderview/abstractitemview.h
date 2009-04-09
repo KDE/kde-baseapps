@@ -22,6 +22,7 @@
 
 #include <QGraphicsWidget>
 #include <QAbstractItemDelegate>
+#include <QAbstractItemView>
 #include <QPointer>
 #include <QCache>
 #include <QTime>
@@ -69,6 +70,8 @@ public:
     QRect visibleArea() const;
     virtual QModelIndex indexAt(const QPointF &point) const = 0;
     virtual QRect visualRect(const QModelIndex &index) const = 0;
+
+    void scrollTo(const QModelIndex &index, QAbstractItemView::ScrollHint hint =  QAbstractItemView::EnsureVisible);
 
 signals:
     void activated(const QModelIndex &index);
