@@ -1367,7 +1367,8 @@ void IconView::keyPressEvent(QKeyEvent *event)
         emit activated(currentIndex);
         return;
     default:
-        break;
+        event->ignore();
+        return;
     }
 
     QModelIndex nextIndex = QModelIndex();        //Will store the final index we calculate to move to, initialized with Invalid QModelIndex
