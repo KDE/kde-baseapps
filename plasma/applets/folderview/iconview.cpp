@@ -25,6 +25,7 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QDebug>
+#include <QDesktopWidget>
 #include <QDrag>
 #include <QGraphicsView>
 #include <QGraphicsSceneHoverEvent>
@@ -43,6 +44,8 @@
 #include <KGlobalSettings>
 #include <KIcon>
 #include <KProtocolInfo>
+
+#include <KIO/NetAccess>
 
 #include <konqmimedata.h>
 #include <konq_operations.h>
@@ -1279,7 +1282,13 @@ KUrl IconView::targetFolder(const QModelIndex &index) const
                     return destItem.targetUrl();
                 }
             } else if (KProtocolInfo::protocolClass(url.protocol()) == QString(":local")) {
-                return url;
+                KIO::UDSEntry entry;
+                KIO::NetAccess::stat(url, entry,
+                                     static_cast<QApplication*>(QApplication::instance())->desktop());
+                KFileItem destItem(entry, url, true /* delayedMimeTypes */);
+                if (destItem.isDir()) {
+                    return url;
+                }
             }
         }
     }
