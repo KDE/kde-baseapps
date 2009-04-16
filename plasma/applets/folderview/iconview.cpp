@@ -42,6 +42,7 @@
 #include <KFileItemDelegate>
 #include <KGlobalSettings>
 #include <KIcon>
+#include <KProtocolInfo>
 
 #include <konqmimedata.h>
 #include <konq_operations.h>
@@ -1277,7 +1278,7 @@ KUrl IconView::targetFolder(const QModelIndex &index) const
                 if (destItem.isDir()) {
                     return destItem.targetUrl();
                 }
-            } else if (url.equals(KUrl("trash:/"), KUrl::CompareWithoutTrailingSlash)) {
+            } else if (KProtocolInfo::protocolClass(url.protocol()) == QString(":local")) {
                 return url;
             }
         }
