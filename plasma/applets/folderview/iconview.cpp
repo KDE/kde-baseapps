@@ -1524,6 +1524,10 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
+
+    if (event->button() == Qt::MidButton) {
+        event->ignore();
+    }
 }
 
 void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)

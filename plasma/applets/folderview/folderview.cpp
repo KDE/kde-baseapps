@@ -75,6 +75,12 @@
 #include <Plasma/ToolTipManager>
 #include <Plasma/Wallpaper>
 
+#include <config-folderview.h>
+
+#ifdef HAVE_KWORKSPACE
+#  include <kworkspace/kwindowlistmenu.h>
+#endif
+
 #include "dirlister.h"
 #include "dialog.h"
 #include "folderviewadapter.h"
@@ -288,6 +294,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
       m_iconWidget(0),
       m_dialog(0),
       m_newMenu(0),
+      m_windowListMenu(0),
       m_actionCollection(this)
 {
     setContainmentType(DesktopContainment);
@@ -407,6 +414,9 @@ void FolderView::init()
 FolderView::~FolderView()
 {
     delete m_newMenu;
+#ifdef HAVE_KWORKSPACE
+    delete m_windowListMenu;
+#endif
 }
 
 void FolderView::saveState(KConfigGroup &config) const
@@ -1113,8 +1123,19 @@ void FolderView::updateScreenRegion()
 
 void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (isContainment() && event->widget()->window()->inherits("DashboardView")) {
-        emit releaseVisualFocus();
+    if (isContainment()) {
+        if (event->widget()->window()->inherits("DashboardView")) {
+            emit releaseVisualFocus();
+        }
+#ifdef HAVE_KWORKSPACE
+        else if (event->button() == Qt::MidButton) {
+            if (!m_windowListMenu) {
+                m_windowListMenu = new KWindowListMenu;
+                connect(m_windowListMenu, SIGNAL(aboutToShow()), SLOT(aboutToShowWindowList()));
+            }
+            m_windowListMenu->exec(event->screenPos());
+        }
+#endif
         return;
     }
 
@@ -1510,6 +1531,15 @@ void FolderView::aboutToShowCreateNew()
         m_newMenu->slotCheckUpToDate();
         m_newMenu->setPopupFiles(m_url);
     }
+}
+
+void FolderView::aboutToShowWindowList()
+{
+#ifdef HAVE_KWORKSPACE
+    if (m_windowListMenu) {
+        m_windowListMenu->init();
+    }
+#endif
 }
 
 KUrl::List FolderView::selectedUrls() const

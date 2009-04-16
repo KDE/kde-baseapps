@@ -47,6 +47,7 @@ class KFileItemDelegate;
 class KFilePlacesModel;
 class KFilePreviewGenerator;
 class KNewMenu;
+class KWindowListMenu;
 class KFileItemActions;
 class KJob;
 class QItemSelectionModel;
@@ -122,6 +123,7 @@ protected slots:
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
     void aboutToShowCreateNew();
+    void aboutToShowWindowList();
     void updateIconWidget();
     void iconWidgetClicked();
 
@@ -181,6 +183,7 @@ private:
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
     QPointer<KNewMenu> m_newMenu;
+    KWindowListMenu *m_windowListMenu;
     KActionCollection m_actionCollection;
     QActionGroup *m_sortingGroup;
     int m_sortColumn;
