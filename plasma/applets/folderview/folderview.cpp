@@ -75,8 +75,6 @@
 #include <Plasma/ToolTipManager>
 #include <Plasma/Wallpaper>
 
-#include <config-folderview.h>
-
 #ifdef HAVE_KWORKSPACE
 #  include <kworkspace/kwindowlistmenu.h>
 #endif
@@ -294,7 +292,9 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
       m_iconWidget(0),
       m_dialog(0),
       m_newMenu(0),
+#ifdef HAVE_KWORKSPACE
       m_windowListMenu(0),
+#endif      
       m_actionCollection(this)
 {
     setContainmentType(DesktopContainment);

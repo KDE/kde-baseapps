@@ -42,6 +42,8 @@
 #include "ui_folderviewLocationConfig.h"
 #include "ui_folderviewPreviewConfig.h"
 
+#include <config-folderview.h>
+
 class KDirModel;
 class KFileItemDelegate;
 class KFilePlacesModel;
@@ -183,7 +185,9 @@ private:
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
     QPointer<KNewMenu> m_newMenu;
+#ifdef HAVE_KWORKSPACE
     KWindowListMenu *m_windowListMenu;
+#endif
     KActionCollection m_actionCollection;
     QActionGroup *m_sortingGroup;
     int m_sortColumn;

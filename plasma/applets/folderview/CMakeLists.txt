@@ -5,7 +5,7 @@ if (EXISTS "${kdebase_SOURCE_DIR}")
     set (KDE4WORKSPACE_KWORKSPACE_LIBRARY_INCLUDE_DIR ${kdebase_SOURCE_DIR}/workspace/libs)
     set (KDE4WORKSPACE_KWORKSPACE_LIBS kworkspace)
 else (EXISTS "${kdebase_SOURCE_DIR}")
-    find_package(KDE4Workspace REQUIRED)
+    macro_optional_find_package(KDE4Workspace)
 endif (EXISTS "${kdebase_SOURCE_DIR}")
 
 include (ConfigureChecks.cmake)
