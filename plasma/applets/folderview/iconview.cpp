@@ -2184,6 +2184,11 @@ void IconView::timerEvent(QTimerEvent *event)
         Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
         delete m_popupView;
 
+        if (QApplication::activePopupWidget() || QApplication::activeModalWidget()) {
+            // Don't open a popup view when a menu or similar widget is being shown 
+            return;
+        }
+
         const KUrl dir = targetFolder(m_hoveredIndex);
         if (!dir.isEmpty()) {
             const QPointF viewPos = mapFromViewport(visualRect(m_hoveredIndex)).center();
