@@ -2188,19 +2188,21 @@ void IconView::timerEvent(QTimerEvent *event)
         if (!dir.isEmpty()) {
             const QPointF viewPos = mapFromViewport(visualRect(m_hoveredIndex)).center();
             const QPoint scenePos = mapToScene(viewPos).toPoint();
-            QPoint pos;
+            QGraphicsView *gv = 0;
 
             if (m_popupCausedWidget) {
-                pos = m_popupCausedWidget->mapToGlobal(scenePos);
+                gv = qobject_cast<QGraphicsView*>(m_popupCausedWidget->parentWidget());
             } else {
                 // We position the popup relative to the view under the mouse cursor
                 foreach (QGraphicsView *view, scene()->views()) {
                     if (view->underMouse()) {
-                        pos = view->mapToGlobal(scenePos);
+                        gv = view;
                         break;
                     }
                 }
             }
+
+            const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
 
             m_popupView = new PopupView(dir, pos, this);
             connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
