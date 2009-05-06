@@ -939,6 +939,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     // =========================================
     if (!m_dirtyRegion.isEmpty()) {
         QStyleOptionViewItemV4 opt = viewOptions();
+        QSize oldDecorationSize;
 
         QPainter p(&m_pixmap);
         p.translate(-cr.topLeft() - QPoint(0, offset));
@@ -984,7 +985,17 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
                 opt.rect = m_items[i].rect;
             }
 
+            if (m_pressedIndex == index) {
+                opt.state |= QStyle::State_Sunken;
+                oldDecorationSize = opt.decorationSize;
+                opt.decorationSize *= 0.9;
+            }
+
             m_delegate->paint(&p, opt, index);
+            if (!oldDecorationSize.isEmpty()) {
+                opt.decorationSize = oldDecorationSize;
+                oldDecorationSize = QSize();
+            }
         }
 
         if (m_rubberBand.isValid())
@@ -1495,14 +1506,19 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // If an icon was pressed
         if (index.isValid())
         {
+            //if ctrl is held
             if (event->modifiers() & Qt::ControlModifier) {
                 m_selectionModel->select(index, QItemSelectionModel::Toggle);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 markAreaDirty(visualRect(index));
             } else if (!m_selectionModel->isSelected(index)) {
+                //if not already selected
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 markAreaDirty(visibleArea());
+            }
+            else {
+                markAreaDirty(visualRect(index));
             }
             m_pressedIndex = index;
             m_buttonDownPos = pos;
@@ -1569,7 +1585,6 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 markAreaDirty(visibleArea());
             }
             m_doubleClick = false;
-            return;
         }
     }
 
@@ -1614,6 +1629,7 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (m_pressedIndex.isValid()) {
         const QPointF point = event->pos() - event->buttonDownPos(Qt::LeftButton);
         if (point.toPoint().manhattanLength() >= QApplication::startDragDistance()) {
+            m_pressedIndex = QModelIndex();
             startDrag(m_buttonDownPos, event->widget());
         }
         return;
