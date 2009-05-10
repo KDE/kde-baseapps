@@ -79,7 +79,8 @@ IconView::IconView(QGraphicsWidget *parent)
       m_wordWrap(false),
       m_drawShadows(true),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
-      m_popupCausedWidget(0)
+      m_popupCausedWidget(0),
+      m_dropOperation(0)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
