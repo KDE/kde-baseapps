@@ -74,7 +74,6 @@ Name[zh_TW]=資料夾檢視
 Comment=Display the contents of folders (User's home folder as default)
 Comment[ca]=Mostra el contingut de les carpetes (per defecte la carpeta inicial de l'usuari)
 Comment[ca@valencia]=Mostra el contingut de les carpetes (per defecte la carpeta inicial de l'usuari)
-Comment[cs]=Zobrazuje obsah složek (ve výchozím stavu složku uživatele)
 Comment[de]=Ordnerinhalte anzeigen (Voreinstellung: Persönlicher Ordner)
 Comment[el]=Εμφάνιση περιεχομένων φακέλων (προκαθορισμένα ο προσωπικός φάκελος)
 Comment[et]=Kataloogide sisu näitamine (vaikimisi kasutaja kodukataloog)
