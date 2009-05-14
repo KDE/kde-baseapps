@@ -80,7 +80,8 @@ IconView::IconView(QGraphicsWidget *parent)
       m_drawShadows(true),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
-      m_dropOperation(0)
+      m_dropOperation(0),
+      m_dropActions(0)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
