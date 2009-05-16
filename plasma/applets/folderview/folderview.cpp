@@ -498,10 +498,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     if (m_iconView) {
         uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), -1);
     }
-    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_name")->text(), KDirModel::Name);
-    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_size")->text(), KDirModel::Size);
-    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_type")->text(), KDirModel::Type);
-    uiDisplay.sortCombo->addItem(m_actionCollection.action("sort_date")->text(), KDirModel::ModifiedTime);
+    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_name")->text()), KDirModel::Name);
+    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_size")->text()), KDirModel::Size);
+    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_type")->text()), KDirModel::Type);
+    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_date")->text()), KDirModel::ModifiedTime);
 
     uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), IconView::TopToBottom);
     uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), IconView::TopToBottomRightToLeft);
