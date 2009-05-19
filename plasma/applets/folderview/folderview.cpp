@@ -1375,7 +1375,8 @@ QList<QAction*> FolderView::contextualActions()
 {
     QList<QAction*> actions;
 
-    if (KAuthorized::authorize("action/kdesktop_rmb"))
+    KFileItem rootItem = m_model->itemForIndex(QModelIndex());
+    if (KAuthorized::authorize("action/kdesktop_rmb") && !rootItem.isNull())
     {
         if (QAction *action = m_actionCollection.action("new_menu")) {
             actions.append(action);
@@ -1403,7 +1404,6 @@ QList<QAction*> FolderView::contextualActions()
         if (!m_itemActions) {
             // Create a new KFileItem to prevent the target URL in the root item
             // from being used. In this case we want the configured URL instead.
-            KFileItem rootItem = m_model->itemForIndex(QModelIndex());
             KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
 
             KFileItemListProperties itemList(KFileItemList() << item);
