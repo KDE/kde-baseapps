@@ -1719,8 +1719,28 @@ void IconView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
     event->setAccepted(KUrl::List::canDecode(event->mimeData()));
 }
 
+void IconView::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
+{
+    Q_UNUSED(event)
+
+    stopAutoScrolling();
+}
+
 void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
+    // Auto scroll the view when the cursor is close to the top or bottom edge
+    const int maxSpeed = 500; // Pixels per second
+    const int distance = gridSize().height() * .75;
+    if (event->pos().y() < contentsRect().y() + distance) {
+        int speed = maxSpeed / distance * (distance - event->pos().y() - contentsRect().y());
+        autoScroll(ScrollUp, speed);
+    } else if (event->pos().y() > contentsRect().bottom() - distance) {
+        int speed = maxSpeed / distance * (event->pos().y() - contentsRect().bottom() + distance);
+        autoScroll(ScrollDown, speed);
+    } else {
+        stopAutoScrolling();
+    }
+
     const QModelIndex index = indexAt(mapToViewport(event->pos()));
     if (index == m_hoveredIndex) {
         return;

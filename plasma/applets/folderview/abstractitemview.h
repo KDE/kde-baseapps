@@ -50,6 +50,8 @@ class AbstractItemView : public QGraphicsWidget
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
 
 public:
+    enum ScrollDirection { ScrollUp, ScrollDown };
+
     AbstractItemView(QGraphicsWidget *parent = 0);
     ~AbstractItemView();
 
@@ -72,6 +74,8 @@ public:
     virtual QRect visualRect(const QModelIndex &index) const = 0;
 
     void scrollTo(const QModelIndex &index, QAbstractItemView::ScrollHint hint =  QAbstractItemView::EnsureVisible);
+    void autoScroll(ScrollDirection direction, int pixelsPerSecond);
+    void stopAutoScrolling();
 
 signals:
     void activated(const QModelIndex &index);
@@ -139,7 +143,12 @@ protected:
     int m_rdy;
     bool m_smoothScrolling;
     QBasicTimer m_smoothScrollTimer;
+    QBasicTimer m_autoScrollTimer;
     QTime m_smoothScrollStopwatch;
+    QTime m_autoScrollTime;
+    ScrollDirection m_scrollDirection;
+    int m_autoScrollSpeed;
+    int m_autoScrollSetSpeed;
 };
 
 inline QPointF AbstractItemView::mapToViewport(const QPointF &point) const

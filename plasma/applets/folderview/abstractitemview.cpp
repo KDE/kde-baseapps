@@ -53,7 +53,8 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
       m_ddy(0),
       m_dddy(0),
       m_rdy(0),
-      m_smoothScrolling(false)
+      m_smoothScrolling(false),
+      m_autoScrollSpeed(0)
 {
     m_scrollBar = new Plasma::ScrollBar(this);
     connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
@@ -353,6 +354,23 @@ void AbstractItemView::scrollTo(const QModelIndex &index,  QAbstractItemView::Sc
     }
 }
 
+void AbstractItemView::autoScroll(ScrollDirection direction, int pixelsPerSecond)
+{
+    m_scrollDirection = direction;
+    m_autoScrollSetSpeed = direction == ScrollUp ? -pixelsPerSecond : pixelsPerSecond;
+
+    if (!m_autoScrollTimer.isActive()) {
+        m_autoScrollSpeed = 1;
+        m_autoScrollTime.restart();
+        m_autoScrollTimer.start(1000 / 30, this);
+    }
+}
+
+void AbstractItemView::stopAutoScrolling()
+{
+    m_autoScrollSetSpeed = 0;
+}
+
 void AbstractItemView::scrollBarValueChanged(int value)
 {
     Q_UNUSED(value)
@@ -393,6 +411,40 @@ void AbstractItemView::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == m_smoothScrollTimer.timerId()) {
         scrollTick();
+    } else if (event->timerId() == m_autoScrollTimer.timerId()) {
+        int step = qRound(m_autoScrollTime.elapsed() * (m_autoScrollSpeed / 1000.));
+        m_autoScrollTime.restart();
+
+        if (m_scrollDirection == ScrollUp && m_scrollBar->value() > m_scrollBar->minimum()) {
+            m_scrollBar->setValue(qMax(m_scrollBar->minimum(), m_scrollBar->value() + step));
+        } else if (m_scrollDirection == ScrollDown && m_scrollBar->value() < m_scrollBar->maximum()) {
+            m_scrollBar->setValue(qMin(m_scrollBar->maximum(), m_scrollBar->value() + step));
+        } else {
+            m_autoScrollSetSpeed = 0;
+            m_autoScrollSpeed = 0;
+        }
+
+        if (m_autoScrollSetSpeed > m_autoScrollSpeed) {
+            int delta;
+            if (m_autoScrollSpeed >= 0) {
+                delta = qBound(2, m_autoScrollSpeed * 2, 30);
+            } else {
+                delta = qBound(2, qAbs(m_autoScrollSpeed) / 2, 30);
+            }
+            m_autoScrollSpeed = qMin(m_autoScrollSpeed + delta, m_autoScrollSetSpeed);
+        } else if (m_autoScrollSetSpeed < m_autoScrollSpeed) {
+            int delta;
+            if (m_autoScrollSpeed >= 0) {
+                delta = qBound(2, m_autoScrollSpeed / 2, 30);
+            } else {
+                delta = qBound(2, qAbs(m_autoScrollSpeed * 2), 30);
+            }
+            m_autoScrollSpeed = qMax(m_autoScrollSetSpeed, m_autoScrollSpeed - delta);
+        }
+
+        if (m_autoScrollSpeed == 0 && m_autoScrollSetSpeed == 0) {
+            m_autoScrollTimer.stop();
+        }
     }
 }
 

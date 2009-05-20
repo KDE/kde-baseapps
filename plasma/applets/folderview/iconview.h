@@ -139,6 +139,7 @@ protected:
     void wheelEvent(QGraphicsSceneWheelEvent *event);
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
     void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
     void dropEvent(QGraphicsSceneDragDropEvent *event);
     void timerEvent(QTimerEvent *event);
