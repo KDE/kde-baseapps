@@ -1191,7 +1191,7 @@ bool IconView::renameInProgress() const
 
 bool IconView::dragInProgress() const
 {
-    return m_dragInProgress || (m_popupView && m_popupView->dragInProgress());
+    return m_dragInProgress || m_dropOperation || (m_popupView && m_popupView->dragInProgress());
 }
 
 bool IconView::popupVisible() const
