@@ -297,7 +297,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 #endif      
       m_actionCollection(this)
 {
-    setContainmentType(DesktopContainment);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
     setAcceptHoverEvents(true);
@@ -327,6 +326,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 void FolderView::init()
 {
     Containment::init();
+    setContainmentType(DesktopContainment);
 
     // Find out about icon and font settings changes
     connect(KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()), SLOT(fontSettingsChanged()));
