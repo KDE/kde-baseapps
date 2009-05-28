@@ -848,7 +848,6 @@ void FolderView::addActions(AbstractItemView *view)
     view->addAction(m_actionCollection.action("paste"));
     view->addAction(m_actionCollection.action("pasteto"));
     view->addAction(m_actionCollection.action("refresh"));
-    view->addAction(m_actionCollection.action("rename"));
     view->addAction(m_actionCollection.action("trash"));
     view->addAction(m_actionCollection.action("del"));
 }
