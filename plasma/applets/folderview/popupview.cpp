@@ -303,11 +303,7 @@ void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
     actionGroups.insert("editactions", editActions);
 
     KParts::BrowserExtension::PopupFlags flags = KParts::BrowserExtension::ShowProperties;
-    // Use the Dolphin setting for showing the "Copy To" and "Move To" actions
-    KConfig dolphin("dolphinrc");
-    if (KConfigGroup(&dolphin, "General").readEntry("ShowCopyMoveMenu", false)) {
-        flags |= KParts::BrowserExtension::ShowUrlOperations;
-    }
+    flags |= KParts::BrowserExtension::ShowUrlOperations;
 
     // m_newMenu can be NULL here but KonqPopupMenu does handle this.
     KonqPopupMenu *contextMenu = new KonqPopupMenu(items, m_url, m_actionCollection, m_newMenu,
