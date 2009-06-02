@@ -311,7 +311,8 @@ void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
 
     // m_newMenu can be NULL here but KonqPopupMenu does handle this.
     KonqPopupMenu *contextMenu = new KonqPopupMenu(items, m_url, m_actionCollection, m_newMenu,
-                                                   KonqPopupMenu::ShowNewWindow, flags, widget,
+                                                   KonqPopupMenu::ShowNewWindow, flags,
+                                                   QApplication::desktop(),
                                                    KBookmarkManager::userBookmarksManager(),
                                                    actionGroups);
 
