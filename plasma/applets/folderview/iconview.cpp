@@ -74,6 +74,7 @@ IconView::IconView(QGraphicsWidget *parent)
       m_positionsLoaded(false),
       m_doubleClick(false),
       m_dragInProgress(false),
+      m_hoverDrag(false),
       m_iconsLocked(false),
       m_alignToGrid(false),
       m_wordWrap(false),
@@ -1274,57 +1275,86 @@ void IconView::focusOutEvent(QFocusEvent *event)
     markAreaDirty(visibleArea());
 }
 
-KUrl IconView::targetFolder(const QModelIndex &index) const
+void IconView::triggerToolTip(ToolTipType type)
 {
-    if (!index.isValid()) {
-        return KUrl();
-    }
-
-    KFileItem item = m_model->itemForIndex(index);
-    if (item.isDir()) {
-        return item.targetUrl();
-    }
-
-    if (item.isDesktopFile()) {
-        KDesktopFile file(item.targetUrl().path());
-        if (file.readType() == "Link") {
-            KUrl url(file.readUrl());
-            if (url.isLocalFile()) {
-                KFileItem destItem(KFileItem::Unknown, KFileItem::Unknown, url);
-                if (destItem.isDir()) {
-                    return destItem.targetUrl();
-                }
-            } else if (KProtocolInfo::protocolClass(url.protocol()) == QString(":local")) {
-                KIO::UDSEntry entry;
-                KIO::NetAccess::stat(url, entry,
-                                     static_cast<QApplication*>(QApplication::instance())->desktop());
-                KFileItem destItem(entry, url, true /* delayedMimeTypes */);
-                if (destItem.isDir()) {
-                    return url;
-                }
-            }
+    if (type == FolderTip && m_hoveredIndex.isValid()) {
+        if (!m_popupView || m_hoveredIndex != m_popupIndex) {
+            m_toolTipShowTimer.start(500, this);
         }
-    }
-
-    return KUrl(); 
-}
-
-void IconView::updateToolTip(const QModelIndex &index, QWidget *causedWidget)
-{
-    if (!targetFolder(index).isEmpty()) {
-        m_toolTipShowTimer.start(500, this);
-        m_popupCausedWidget = causedWidget;
     } else {
+        // Close the popup view if one is open
         m_toolTipShowTimer.stop();
         m_popupCausedWidget = 0;
+        m_popupUrl = KUrl();
         if (m_popupView) {
-            if (index.isValid()) {
-                delete m_popupView;
-            } else {
-                m_popupView->delayedHide();
+            m_popupView->delayedHide();
+        }
+        // Don't show file tips when the user is dragging something over the view
+        if (!m_hoverDrag) {
+            m_toolTipWidget->updateToolTip(m_hoveredIndex, mapFromViewport(visualRect(m_hoveredIndex)));
+        } else {
+            m_toolTipWidget->updateToolTip(QModelIndex(), QRect());
+        }
+    }
+}
+
+// Updates the tooltip for the hovered index
+// causedWidget is the widget that received the mouse event that triggered the update
+void IconView::updateToolTip(QWidget *causedWidget)
+{
+    if (!m_hoveredIndex.isValid()) {
+        triggerToolTip(FileTip); // Will close any open tips
+        return;
+    }
+
+    if (m_popupView && m_hoveredIndex == m_popupIndex) {
+        // If we're already showing a popup view for this index
+        return;
+    }
+
+    // Decide if we're going to show a popup view or a regular tooltip
+    IconView::ToolTipType type = IconView::FileTip;
+    bool delayedResult = false;
+
+    KFileItem item = m_model->itemForIndex(m_hoveredIndex);
+    KUrl url = item.targetUrl();
+
+    if (item.isDir()) {
+        type = IconView::FolderTip;
+    } else if (item.isDesktopFile()) {
+        // Check if the desktop file is a link to a local folder
+        KDesktopFile file(url.path());
+        if (file.readType() == "Link") {
+            url = file.readUrl();
+            if (url.isLocalFile()) {
+                KFileItem destItem(KFileItem::Unknown, KFileItem::Unknown, url);
+                type = destItem.isDir() ? IconView::FolderTip : IconView::FileTip;
+            } else if (KProtocolInfo::protocolClass(url.protocol()) == QString(":local")) {
+                KIO::StatJob *job = KIO::stat(url, KIO::HideProgressInfo);
+                job->setSide(KIO::StatJob::SourceSide); // We will only read the file
+                connect(job, SIGNAL(result(KJob*)), SLOT(statResult(KJob*)));
+                delayedResult = true;
             }
         }
-        m_toolTipWidget->updateToolTip(index, mapFromViewport(visualRect(index)));
+    } 
+
+    m_popupUrl = url;
+    m_popupCausedWidget = causedWidget;
+
+    if (!delayedResult) {
+        triggerToolTip(type);
+    }
+}
+
+void IconView::statResult(KJob *job)
+{
+    if (!job->error()) {
+        KIO::StatJob *statJob = static_cast<KIO::StatJob*>(job);
+        if (statJob->statResult().isDir()) {
+            triggerToolTip(IconView::FolderTip);
+        } else {
+            triggerToolTip(IconView::FileTip);
+        }
     }
 }
 
@@ -1335,7 +1365,7 @@ void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
     }
-    updateToolTip(m_hoveredIndex, event->widget());
+    updateToolTip(event->widget());
 }
 
 void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
@@ -1345,7 +1375,7 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     if (m_hoveredIndex.isValid()) {
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = QModelIndex();
-        updateToolTip(QModelIndex(), event->widget());
+        updateToolTip(event->widget());
     }
 }
 
@@ -1356,8 +1386,7 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(index));
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
-
-        updateToolTip(index, event->widget());
+        updateToolTip(event->widget());
     }
 }
 
@@ -1716,7 +1745,9 @@ void IconView::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 void IconView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
-    event->setAccepted(KUrl::List::canDecode(event->mimeData()));
+    bool accepted = KUrl::List::canDecode(event->mimeData());
+    event->setAccepted(accepted);
+    m_hoverDrag = accepted;
 }
 
 void IconView::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
@@ -1724,6 +1755,7 @@ void IconView::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
     Q_UNUSED(event)
 
     stopAutoScrolling();
+    m_hoverDrag = false;
 }
 
 void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
@@ -1767,20 +1799,9 @@ void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
         if (!onOurself) {
             m_hoveredIndex = index;
             dirtyRect |= visualRect(index);
-
-            // Open a popup view if the hovered index is a folder
-            if (!targetFolder(index).isEmpty()) {
-                m_toolTipShowTimer.start(500, this);
-                m_popupCausedWidget = event->widget();
-            } else if (m_popupView) {
-                m_popupView->delayedHide();
-                m_popupCausedWidget = 0;
-            }
         }
-    } else if (!index.isValid() && m_popupView) {
-        m_popupView->delayedHide();
-        m_popupCausedWidget = 0;
     }
+    updateToolTip(event->widget());
 
     markAreaDirty(dirtyRect);
     event->setAccepted(!event->mimeData()->hasFormat(appletMimeType));
@@ -1858,6 +1879,8 @@ void IconView::dropCompleted()
 
 void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
+    m_hoverDrag = false;
+
     // If the dropped item is an applet, let the parent widget handle it
     Plasma::Corona *corona = qobject_cast<Plasma::Corona*>(scene());
     const QString appletMimeType = (corona ? corona->appletMimeType() : QString());
@@ -2227,8 +2250,7 @@ void IconView::timerEvent(QTimerEvent *event)
             return;
         }
 
-        const KUrl dir = targetFolder(m_hoveredIndex);
-        if (!dir.isEmpty()) {
+        if (!m_popupUrl.isEmpty()) {
             const QPointF viewPos = mapFromViewport(visualRect(m_hoveredIndex)).center();
             const QPoint scenePos = mapToScene(viewPos).toPoint();
             QGraphicsView *gv = 0;
@@ -2247,7 +2269,7 @@ void IconView::timerEvent(QTimerEvent *event)
 
             const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
 
-            m_popupView = new PopupView(dir, pos, this);
+            m_popupView = new PopupView(m_popupUrl, pos, this);
             connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
             connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
             m_popupIndex = m_hoveredIndex;

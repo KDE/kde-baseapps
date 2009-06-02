@@ -36,6 +36,7 @@ class KDirModel;
 class KFileItemDelegate;
 class KFileItemList;
 class KFilePreviewGenerator;
+class KJob;
 class KNewMenu;
 class KonqOperations;
 class QItemSelectionModel;
@@ -64,6 +65,7 @@ class IconView : public AbstractItemView
 
 public:
     enum Flow { LeftToRight, TopToBottom, RightToLeft, TopToBottomRightToLeft };
+    enum ToolTipType { FolderTip, FileTip };
 
     Q_PROPERTY(QSize gridSize READ gridSize WRITE setGridSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
@@ -118,6 +120,8 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
+    void triggerToolTip(ToolTipType type);
+
 signals:
     void indexesMoved(const QModelIndexList &indexes);
     void popupViewClosed();
@@ -169,6 +173,7 @@ private slots:
     void popupCloseRequested();
     void dropActionTriggered(QAction *action);
     void dropCompleted();
+    void statResult(KJob *job);
 
 private:
     void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
@@ -176,7 +181,6 @@ private:
     int rowsForHeight(qreal height) const;
     QPoint nextGridPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
     QPoint findNextEmptyPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
-    KUrl targetFolder(const QModelIndex &index) const;
     void layoutItems();
     void alignIconsToGrid();
     QRect itemsBoundingRect() const;
@@ -186,7 +190,7 @@ private:
     void updateScrollBar();
     void updateScrollBarGeometry();
     void updateTextShadows(const QColor &textColor);
-    void updateToolTip(const QModelIndex &index, QWidget *causedWidget = 0);
+    void updateToolTip(QWidget *causedWidget = 0);
     void createDropActions(const KUrl::List &urls, QActionGroup *actions);
     QStyleOptionViewItemV4 viewOptions() const;
 
@@ -204,6 +208,7 @@ private:
     bool m_positionsLoaded;
     bool m_doubleClick;
     bool m_dragInProgress;
+    bool m_hoverDrag;
     bool m_iconsLocked;
     bool m_alignToGrid;
     bool m_wordWrap;
@@ -226,6 +231,7 @@ private:
     ToolTipWidget *m_toolTipWidget;
     QPointer<PopupView> m_popupView;
     QPointer<QWidget> m_popupCausedWidget;
+    KUrl m_popupUrl;
     KonqOperations *m_dropOperation;
     QActionGroup *m_dropActions;
     QPersistentModelIndex m_popupIndex;
