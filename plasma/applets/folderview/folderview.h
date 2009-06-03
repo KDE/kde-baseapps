@@ -130,6 +130,7 @@ protected slots:
     void iconWidgetClicked();
 
     void addPanel();
+    void addPanel(const QString &plugin);
     void runCommand();
     void lockScreen();
     void logout();

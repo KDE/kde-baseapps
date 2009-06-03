@@ -30,6 +30,7 @@
 #include <QImageReader>
 #include <QItemSelectionModel>
 #include <QScrollBar>
+#include <QSignalMapper>
 
 #include <KAction>
 #include <KApplication>
@@ -1280,9 +1281,28 @@ void FolderView::createActions()
     m_actionCollection.addAction("del", del);
 
     QAction *addPanelAction = new QAction(i18n("Add Panel"), this);
-    connect(addPanelAction, SIGNAL(triggered(bool)), this, SLOT(addPanel()));
     addPanelAction->setIcon(KIcon("list-add"));
     addPanelAction->setVisible(immutability() == Plasma::Mutable);
+
+    KPluginInfo::List panelPlugins = listContainmentsOfType("panel");
+    if (panelPlugins.size() == 1) {
+        connect(addPanelAction, SIGNAL(triggered(bool)), this, SLOT(addPanel()));
+    } else if (!panelPlugins.isEmpty()) {
+        QSignalMapper *mapper = new QSignalMapper(this);
+        connect(mapper, SIGNAL(mapped(QString)), SLOT(addPanel(QString)));
+ 
+        QMenu *menu = new QMenu();
+        foreach (const KPluginInfo &plugin, panelPlugins) {
+            QAction *action = new QAction(plugin.name(), this);
+            if (!plugin.icon().isEmpty()) {
+                action->setIcon(KIcon(plugin.icon()));
+            }
+            mapper->setMapping(action, plugin.pluginName());
+            connect(action, SIGNAL(triggered(bool)), mapper, SLOT(map()));
+            menu->addAction(action);
+        }
+        addPanelAction->setMenu(menu);
+    }
 
     QAction *runCommandAction = new QAction(i18n("Run Command..."), this);
     connect(runCommandAction, SIGNAL(triggered(bool)), this, SLOT(runCommand()));
@@ -1449,15 +1469,24 @@ QList<QAction*> FolderView::contextualActions()
 
 void FolderView::addPanel()
 {
+    KPluginInfo::List panelPlugins = listContainmentsOfType("panel");
+
+    if (!panelPlugins.isEmpty()) {
+        addPanel(panelPlugins.first().pluginName());
+    }
+}
+
+void FolderView::addPanel(const QString &plugin)
+{
     if (corona()) {
         // make a panel at the top
-        Containment* panel = corona()->addContainment("panel");
+        Containment* panel = corona()->addContainment(plugin);
         panel->showConfigurationInterface();
 
         panel->setScreen(screen());
 
         QList<Plasma::Location> freeEdges = corona()->freeEdges(screen());
-        kDebug() << freeEdges;
+        //kDebug() << freeEdges;
         Plasma::Location destination;
         if (freeEdges.contains(Plasma::TopEdge)) {
             destination = Plasma::TopEdge;
@@ -1475,11 +1504,35 @@ void FolderView::addPanel()
         // rather than waiting around for the event loop
         panel->updateConstraints(Plasma::StartupCompletedConstraint);
         panel->flushPendingConstraintsEvents();
-        if (destination == Plasma::LeftEdge || destination == Plasma::RightEdge) {
-            panel->setMinimumSize(10, 35);
-            panel->setMaximumSize(35, corona()->screenGeometry(screen()).height());
-            panel->resize(QSize(35, corona()->screenGeometry(screen()).height()));
+
+        const QRect screenGeom = corona()->screenGeometry(screen());
+        const QRegion availGeom = corona()->availableScreenRegion(screen());
+        int minH = 10;
+        int minW = 10;
+        int w = 35;
+        int h = 35;
+
+        if (destination == Plasma::LeftEdge) {
+            QRect r = availGeom.intersected(QRect(0, 0, w, screenGeom.height())).boundingRect();
+            h = r.height();
+            minW = 35;
+        } else if (destination == Plasma::RightEdge) {
+            QRect r = availGeom.intersected(QRect(screenGeom.width() - w, 0, w, screenGeom.height())).boundingRect();
+            h = r.height();
+            minW = 35;
+        } else if (destination == Plasma::TopEdge) {
+            QRect r = availGeom.intersected(QRect(0, 0, screenGeom.width(), h)).boundingRect();
+            w = r.width();
+            minH = 35;
+        } else if (destination == Plasma::BottomEdge) {
+            QRect r = availGeom.intersected(QRect(0, screenGeom.height() - h, screenGeom.width(), h)).boundingRect();
+            w = r.width();
+            minH = 35;
         }
+
+        panel->setMinimumSize(minW, minH);
+        panel->setMaximumSize(w, h);
+        panel->resize(w, h);
     }
 }
 
