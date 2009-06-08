@@ -29,7 +29,6 @@
 #include <QGraphicsSceneDragDropEvent>
 #include <QImageReader>
 #include <QItemSelectionModel>
-#include <QScrollBar>
 #include <QSignalMapper>
 
 #include <KAction>
@@ -1098,8 +1097,6 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             if (screen() >= 0) {
                 updateScreenRegion();
                 connect(c, SIGNAL(availableScreenRegionChanged()), this, SLOT(updateScreenRegion()));
-            } else {
-                m_iconView->setContentsMargins(0, 0, 0, 0);
             }
         }
     }
