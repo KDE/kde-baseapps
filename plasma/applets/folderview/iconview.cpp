@@ -1073,16 +1073,16 @@ bool IconView::indexIntersectsRect(const QModelIndex &index, const QRect &rect) 
 
 QModelIndex IconView::indexAt(const QPointF &point) const
 {
-    if (!mapToViewport(contentsRect()).contains(point))
+    if (!mapToViewport(contentsRect()).contains(point)) {
         return QModelIndex();
+    }
 
     const QPoint pt = point.toPoint();
 
     // If we have a hovered index, check it before walking the list
-    if (m_hoveredIndex.isValid()) {
+    if (m_hoveredIndex.isValid() && m_items.count() > m_hoveredIndex.row()) {
         if (m_items[m_hoveredIndex.row()].rect.contains(pt) &&
-            visualRegion(m_hoveredIndex).contains(pt))
-        {
+            visualRegion(m_hoveredIndex).contains(pt)) {
             return m_hoveredIndex;
         }
     }
