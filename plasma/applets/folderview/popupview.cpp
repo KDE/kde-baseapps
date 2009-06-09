@@ -68,6 +68,8 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos, const IconView *parentV
       m_parentView(parentView),
       m_busyWidget(0),
       m_iconView(0),
+      m_dirModel(0),
+      m_model(0),
       m_url(url),
       m_actionCollection(this),
       m_newMenu(0),
@@ -85,7 +87,7 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos, const IconView *parentV
 
     m_background = new Plasma::FrameSvg(this);
     m_background->setImagePath("dialogs/background");
- 
+
     int left   = m_background->marginSize(Plasma::LeftMargin);
     int top    = m_background->marginSize(Plasma::TopMargin);
     int right  = m_background->marginSize(Plasma::RightMargin);
@@ -137,6 +139,10 @@ bool PopupView::dragInProgress()
 
 void PopupView::init()
 {
+    if (m_model) {
+        return;
+    }
+
     m_scene = new QGraphicsScene(this);
     m_view = new QGraphicsView(m_scene, this);
     m_view->setFrameShape(QFrame::NoFrame);
@@ -253,6 +259,10 @@ void PopupView::createActions()
 
 void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
 {
+    // contextMenuRequest is only called from the icon view, which is created in init()
+    // which mean m_model should always be initialized
+    Q_ASSERT(m_model);
+
     if (m_actionCollection.isEmpty()) {
         createActions();
     }
@@ -324,6 +334,8 @@ void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
 
 KUrl::List PopupView::selectedUrls() const
 {
+    Q_ASSERT(m_model);
+
     KUrl::List urls;
     foreach (const QModelIndex &index, m_selectionModel->selectedIndexes())
     {
@@ -454,6 +466,10 @@ void PopupView::paintEvent(QPaintEvent *event)
 
 void PopupView::contextMenuEvent(QContextMenuEvent *event)
 {
+    if (!m_model) {
+        init();
+    }
+
     if (m_actionCollection.isEmpty()) {
         createActions();
     }
