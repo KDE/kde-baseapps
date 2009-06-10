@@ -555,7 +555,7 @@ void PopupView::leaveEvent(QEvent *event)
     // and so on.  If no popups in the chain is under the mouse cursor,
     // the root popup will start the hide timer which will close the whole 
     // chain when it fires. 
-    if (!m_iconView->popupVisible()) {
+    if (!m_iconView || !m_iconView->popupVisible()) {
         maybeClose();
     }
 }
