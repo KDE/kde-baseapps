@@ -1110,8 +1110,19 @@ void FolderView::updateScreenRegion()
         return;
     }
 
-    QRect availRect = c->availableScreenRegion(screen()).boundingRect();
+    QRect availRect;
     QRect screenRect = c->screenGeometry(screen());
+    // we pick the biggest rect from the available screen region; all the screen used bits
+    // are on the edges, which means that the "middle" part which is free of panels and other
+    // such strut-claimers will aways be the biggest rect barring some really messed
+    // up configuration - aseigo
+    foreach (const QRect &rect, c->availableScreenRegion(screen()).rects()) {
+        if (rect.width() * rect.height() > availRect.width() * availRect.height()) {
+            availRect = rect;
+        }
+    }
+
+    //kDebug() << c->availableScreenRegion(screen()).rects();
     m_iconView->setContentsMargins(availRect.x() - screenRect.x(),
                                    availRect.y() - screenRect.y(),
                                    screenRect.right() - availRect.right(),
