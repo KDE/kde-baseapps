@@ -518,8 +518,9 @@ bool PopupView::callOnParent(const char *method)
 
 void PopupView::maybeClose()
 {
-    if (!underMouse() && !m_iconView->isUnderMouse() && !m_showingMenu &&
-        !m_iconView->dragInProgress() && !callOnParent("maybeClose") && !m_hideTimer.isActive()) {
+    if (!underMouse() && !m_showingMenu &&
+        (!m_iconView || (!m_iconView->isUnderMouse() && !m_iconView->dragInProgress())) &&
+        !callOnParent("maybeClose") && !m_hideTimer.isActive()) {
         m_hideTimer.start(400, this);
     }
 }
