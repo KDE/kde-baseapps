@@ -78,10 +78,10 @@ void ToolTipWidget::updateToolTip(const QModelIndex &index, const QRectF &rect)
 
 static qreal convertToReal(const QString &string)
 {
-    int pos = string.indexOf('/');
+    const int pos = string.indexOf('/');
     if (pos != -1) {
-        int left = string.left(pos).toInt();
-        int right = string.mid(pos + 1).toInt();
+        const int left = string.left(pos).toInt();
+        const int right = string.mid(pos + 1).toInt();
         return right > 0 ? qreal(left) / qreal(right) : 0.0;
     }
 

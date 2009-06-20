@@ -68,7 +68,7 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
     m_style = new FolderViewStyle;
     m_styleWidget->setStyle(m_style);
 
-    int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
+    const int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
 }
 
@@ -152,8 +152,8 @@ void AbstractItemView::markAreaDirty(const QRect &rect)
 // has moved since the last time this function was called.
 QRect AbstractItemView::scrollBackBuffer()
 {
-    int value = m_scrollBar->value();
-    int delta = m_lastScrollValue - value;
+    const int value = m_scrollBar->value();
+    const int delta = m_lastScrollValue - value;
     m_lastScrollValue = value;
 
     if (qAbs(delta) >= m_pixmap.height()) {

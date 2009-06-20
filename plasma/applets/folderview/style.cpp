@@ -43,8 +43,8 @@ void FolderViewStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         return QCommonStyle::drawPrimitive(element, option, painter, widget);
     }
 
-    bool hover = (option->state & State_MouseOver);
-    bool selected = (option->state & State_Selected);
+    const bool hover = (option->state & State_MouseOver);
+    const bool selected = (option->state & State_Selected);
 
     if (selected && hover) {
         m_frame->setElementPrefix("selected+hover");

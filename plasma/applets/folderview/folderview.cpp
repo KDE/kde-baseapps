@@ -207,7 +207,7 @@ bool ProxyMimeModel::filterAcceptsRow(int source_row, const QModelIndex &source_
         return true;
     }
 
-    bool fastRet = mime->comment().contains(m_filter, Qt::CaseInsensitive) ||
+    const bool fastRet = mime->comment().contains(m_filter, Qt::CaseInsensitive) ||
                    ((!mime->patterns().count() || mime->comment().isEmpty()) && mime->name().contains(m_filter, Qt::CaseInsensitive));
 
     if (fastRet) {
@@ -380,8 +380,8 @@ void FolderView::init()
         //FIXME: 4.3 Need to update folderview's description
         QString path = QDir::homePath();
         if (isContainment()) {
-            QString desktopPath = KGlobalSettings::desktopPath();
-            QDir desktopFolder(desktopPath);
+            const QString desktopPath = KGlobalSettings::desktopPath();
+            const QDir desktopFolder(desktopPath);
 
             if (desktopPath != QDir::homePath() && desktopFolder.exists()) {
                 path = QString("desktop:/");
@@ -445,7 +445,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     QString desktopPath = KGlobalSettings::desktopPath();
     QDir desktopFolder(desktopPath);
 
-    bool desktopVisible = desktopPath != QDir::homePath() && desktopFolder.exists();
+    const bool desktopVisible = desktopPath != QDir::homePath() && desktopFolder.exists();
     uiLocation.showDesktopFolder->setVisible(desktopVisible);
 
     if (desktopVisible && m_url == KUrl("desktop:/")) {
@@ -455,7 +455,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     } else {
         QModelIndex index;
         for (int i = 0; i < placesFilter->rowCount(); i++) {
-            KUrl url = m_placesModel->url(placesFilter->mapToSource(placesFilter->index(i, 0)));
+            const KUrl url = m_placesModel->url(placesFilter->mapToSource(placesFilter->index(i, 0)));
             if (url.equals(m_url, KUrl::CompareWithoutTrailingSlash)) {
                 index = placesFilter->index(i, 0);
                 break;
@@ -560,7 +560,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
     KConfigGroup cg = config();
-    int filter = cg.readEntry("filter", 0);
+    const int filter = cg.readEntry("filter", 0);
     uiFilter.filterType->setCurrentIndex(filter);
     filterChanged(filter);
 
@@ -607,7 +607,7 @@ void FolderView::configAccepted()
         }
     }
 
-    int filterType = uiFilter.filterType->currentIndex();
+    const int filterType = uiFilter.filterType->currentIndex();
     KConfigGroup cg = config();
     bool needReload = false;
 
@@ -642,7 +642,7 @@ void FolderView::configAccepted()
     }
 
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
-    int size = iconSizes.at(uiDisplay.sizeSlider->value());
+    const int size = iconSizes.at(uiDisplay.sizeSlider->value());
     if (size != iconSize().width())
     {
         m_customIconSize = size;
@@ -654,7 +654,7 @@ void FolderView::configAccepted()
         }
     }
 
-    int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
+    const int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
     if (m_sortColumn != sortColumn) {
         m_sortColumn = sortColumn;
         if (m_sortColumn != -1) {
@@ -667,7 +667,7 @@ void FolderView::configAccepted()
         cg.writeEntry("sortColumn", m_sortColumn);
     }
 
-    int flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).toInt();
+    const int flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).toInt();
     if (m_flow != flow) {
         m_flow = static_cast<IconView::Flow>(flow);
         cg.writeEntry("flow", flow);
@@ -1111,7 +1111,7 @@ void FolderView::updateScreenRegion()
     }
 
     QRect availRect;
-    QRect screenRect = c->screenGeometry(screen());
+    const QRect screenRect = c->screenGeometry(screen());
     // we pick the biggest rect from the available screen region; all the screen used bits
     // are on the edges, which means that the "middle" part which is free of panels and other
     // such strut-claimers will aways be the biggest rect barring some really messed
@@ -1477,7 +1477,7 @@ QList<QAction*> FolderView::contextualActions()
 
 void FolderView::addPanel()
 {
-    KPluginInfo::List panelPlugins = listContainmentsOfType("panel");
+    const KPluginInfo::List panelPlugins = listContainmentsOfType("panel");
 
     if (!panelPlugins.isEmpty()) {
         addPanel(panelPlugins.first().pluginName());
@@ -1639,7 +1639,7 @@ void FolderView::paste()
 
 void FolderView::pasteTo()
 {
-    KUrl::List urls = selectedUrls();
+    const KUrl::List urls = selectedUrls();
     Q_ASSERT(urls.count() == 1);
     KonqOperations::doPaste(view(), urls.first());
 }
@@ -1691,7 +1691,7 @@ void FolderView::toggleDirectoriesFirst(bool enable)
 
 void FolderView::sortingChanged(QAction *action)
 {
-    int column = action->data().toInt();
+    const int column = action->data().toInt();
 
     if (column != m_sortColumn) {
         m_model->invalidate();

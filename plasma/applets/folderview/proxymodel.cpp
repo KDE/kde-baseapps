@@ -109,7 +109,7 @@ bool ProxyModel::isDir(const QModelIndex &index, const KDirModel *dirModel) cons
         // Check if the desktop file is a link to a directory
         KDesktopFile file(item.targetUrl().path());
         if (file.readType() == "Link") {
-            KUrl url(file.readUrl());
+            const KUrl url(file.readUrl());
             if (url.isLocalFile()) {
                 KDE_struct_stat buf;
                 const QString path = url.toLocalFile(KUrl::RemoveTrailingSlash);

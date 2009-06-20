@@ -230,16 +230,17 @@ void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 {
     Q_UNUSED(widget)
 
-    int offset = m_scrollBar->value();
     const QRect cr = contentsRect().toRect();
     if (!cr.isValid()) {
         return;
     }
 
+
     QRect clipRect = cr & option->exposedRect.toAlignedRect();
     if (clipRect.isEmpty()) {
         return;
     }
+    int offset = m_scrollBar->value();
 
     prepareBackBuffer();
 
@@ -431,7 +432,7 @@ void ListView::wheelEvent(QGraphicsSceneWheelEvent *event)
         return;
     }
 
-    int pixels = 96 * event->delta() / 120;
+    const int pixels = 96 * event->delta() / 120;
     smoothScroll(0, -pixels);
 }
 
