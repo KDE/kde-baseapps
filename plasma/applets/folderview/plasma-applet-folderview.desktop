@@ -74,6 +74,7 @@ Name[x-test]=xxFolder Viewxx
 Name[zh_CN]=文件夹视图
 Name[zh_TW]=資料夾檢視
 Comment=Display the contents of folders (User's home folder as default)
+Comment[bg]=Показва съсдържанието на директория
 Comment[ca]=Mostra el contingut de les carpetes (per defecte la carpeta inicial de l'usuari)
 Comment[ca@valencia]=Mostra el contingut de les carpetes (per defecte la carpeta inicial de l'usuari)
 Comment[csb]=Wëskrzënianié zamkłosców katalogów (Domôcy katalog brëkòwnika jakno domëszlny)
