@@ -241,7 +241,7 @@ By default it contains the name of the place being shown in the applet, but if y
       <item row="1" column="1" >
        <layout class="QHBoxLayout" name="horizontalLayout_4" >
         <item>
-         <widget class="QSpinBox" name="numLinesEdit" >
+         <widget class="KIntSpinBox" name="numLinesEdit" >
           <property name="sizePolicy" >
            <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
             <horstretch>0</horstretch>
@@ -408,6 +408,11 @@ This option is useful if you want to avoid accidentally moving the icons while i
    <class>KColorButton</class>
    <extends>QPushButton</extends>
    <header>kcolorbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KIntSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>knuminput.h</header>
   </customwidget>
   <customwidget>
    <class>KLineEdit</class>
