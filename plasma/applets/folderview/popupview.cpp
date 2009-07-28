@@ -259,6 +259,7 @@ void PopupView::createActions()
 
 void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
 {
+    Q_UNUSED(widget)
     // contextMenuRequest is only called from the icon view, which is created in init()
     // which mean m_model should always be initialized
     Q_ASSERT(m_model);
