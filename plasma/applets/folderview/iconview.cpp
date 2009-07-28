@@ -82,7 +82,8 @@ IconView::IconView(QGraphicsWidget *parent)
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
       m_dropOperation(0),
-      m_dropActions(0)
+      m_dropActions(0),
+      m_editorProxy(0)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
@@ -90,6 +91,7 @@ IconView::IconView(QGraphicsWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
 
     m_scrollBar->hide();
+    connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(repositionWidgetsManually()));
 
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
@@ -1172,11 +1174,12 @@ void IconView::renameSelectedIcon()
     QWidget *editor = m_delegate->createEditor(0, option, index);
     editor->setAttribute(Qt::WA_NoSystemBackground);
     editor->installEventFilter(m_delegate);
-
-    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
-    proxy->setWidget(editor);
-
     m_delegate->updateEditorGeometry(editor, option, index);
+
+    m_editorProxy = new QGraphicsProxyWidget(this);
+    m_editorProxy->setWidget(editor);
+    m_editorProxy->setPos(mapFromViewport(editor->pos()));
+
     m_delegate->setEditorData(editor, index);
 
     editor->show();
@@ -1260,6 +1263,19 @@ void IconView::resizeEvent(QGraphicsSceneResizeEvent *e)
         // is really necessary.
         m_delayedRelayoutTimer.start(500, this);
         updateScrollBar();
+    }
+}
+
+void IconView::repositionWidgetsManually()
+{
+    if (m_editorProxy) {
+        QWidget *editor = m_editorProxy->widget();
+        QModelIndex index = m_selectionModel->currentIndex();
+        const QRect rect = visualRect(index);
+        QStyleOptionViewItemV4 option = viewOptions();
+        option.rect = rect;
+        m_delegate->updateEditorGeometry(editor, option, index);
+        m_editorProxy->setPos(mapFromViewport(editor->pos()));
     }
 }
 

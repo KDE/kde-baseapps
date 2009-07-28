@@ -174,6 +174,7 @@ private slots:
     void dropActionTriggered(QAction *action);
     void dropCompleted();
     void statResult(KJob *job);
+    void repositionWidgetsManually();
 
 private:
     void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
@@ -235,6 +236,7 @@ private:
     KonqOperations *m_dropOperation;
     QActionGroup *m_dropActions;
     QPersistentModelIndex m_popupIndex;
+    QPointer<QGraphicsProxyWidget> m_editorProxy;
 };
 
 #endif
