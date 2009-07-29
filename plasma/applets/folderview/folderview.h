@@ -161,7 +161,7 @@ private:
     void updateListViewState();
     void updateIconViewState();
     void saveIconPositions() const;
-    KUrl::List selectedUrls() const;
+    KUrl::List selectedUrls(bool forTrash) const;
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     void timerEvent(QTimerEvent *event);
 
