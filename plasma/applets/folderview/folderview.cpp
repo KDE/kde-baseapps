@@ -1602,16 +1602,21 @@ void FolderView::aboutToShowWindowList()
 #endif
 }
 
-KUrl::List FolderView::selectedUrls() const
+KUrl::List FolderView::selectedUrls(bool forTrash) const
 {
     KUrl::List urls;
     foreach (const QModelIndex &index, m_selectionModel->selectedIndexes())
     {
         KFileItem item = m_model->itemForIndex(index);
-        // Prefer the local URL if there is one, since we can't trash remote URL's
-        const QString path = item.localPath();
-        if (!path.isEmpty()) {
-            urls.append(path);
+
+        if (forTrash) {
+            // Prefer the local URL if there is one, since we can't trash remote URL's
+            const QString path = item.localPath();
+            if (!path.isEmpty()) {
+                urls.append(path);
+            } else {
+                urls.append(item.url());
+            }
         } else {
             urls.append(item.url());
         }
@@ -1639,7 +1644,7 @@ void FolderView::paste()
 
 void FolderView::pasteTo()
 {
-    const KUrl::List urls = selectedUrls();
+    const KUrl::List urls = selectedUrls(false);
     Q_ASSERT(urls.count() == 1);
     KonqOperations::doPaste(view(), urls.first());
 }
@@ -1745,7 +1750,7 @@ void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers mod
     KonqOperations::Operation op = (modifiers & Qt::ShiftModifier) ?
             KonqOperations::DEL : KonqOperations::TRASH;
 
-    KonqOperations::del(view(), op, selectedUrls());
+    KonqOperations::del(view(), op, selectedUrls(op == KonqOperations::TRASH));
 }
 
 void FolderView::deleteSelectedIcons()
@@ -1754,7 +1759,7 @@ void FolderView::deleteSelectedIcons()
         return;
     }
 
-    KonqOperations::del(view(), KonqOperations::DEL, selectedUrls());
+    KonqOperations::del(view(), KonqOperations::DEL, selectedUrls(false));
 }
 
 void FolderView::renameSelectedIcon()
