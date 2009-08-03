@@ -318,6 +318,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     }
 
     resize(600, 400);
+    setPreferredSize(600, 400);
 
     // As we use some part of konqueror libkonq must be added to have translations
     KGlobal::locale()->insertCatalog("libkonq");
