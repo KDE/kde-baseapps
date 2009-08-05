@@ -318,7 +318,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     }
 
     resize(600, 400);
-    setPreferredSize(600, 400);
 
     // As we use some part of konqueror libkonq must be added to have translations
     KGlobal::locale()->insertCatalog("libkonq");
@@ -1972,6 +1971,20 @@ void FolderView::timerEvent(QTimerEvent *event)
     }
 
     Containment::timerEvent(event);
+}
+
+QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
+{
+    if (which == Qt::PreferredSize) {
+        if (!constraint.isEmpty()) {
+            return QSizeF(600, 400).boundedTo(constraint);
+        } else {
+            return QSizeF(600, 400);
+        }
+    }
+
+    return Containment::sizeHint(which, constraint);
+
 }
 
 #include "folderview.moc"
