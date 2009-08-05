@@ -74,6 +74,7 @@
 #include <Plasma/Theme>
 #include <Plasma/ToolTipManager>
 #include <Plasma/Wallpaper>
+#include <Plasma/WindowEffects>
 
 #ifdef HAVE_KWORKSPACE
 #  include <kworkspace/kwindowlistmenu.h>
@@ -1782,6 +1783,7 @@ void FolderView::activated(const QModelIndex &index)
     item.run();
 
     if (m_dialog && m_dialog->isVisible()) {
+        Plasma::WindowEffects::slideWindow(m_dialog, location());
         m_dialog->hide();
     }
 
@@ -1938,6 +1940,7 @@ void FolderView::updateIconWidget()
 
 void FolderView::iconWidgetClicked()
 {
+    Plasma::WindowEffects::slideWindow(m_dialog, location());
     if (m_dialog->isVisible()) {
         m_dialog->hide();
     } else {
