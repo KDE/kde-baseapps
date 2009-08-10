@@ -475,6 +475,12 @@ void PopupView::contextMenuEvent(QContextMenuEvent *event)
         createActions();
     }
 
+    KFileItem rootItem = m_model->itemForIndex(QModelIndex());
+    //The root item is invalid (non-existant)
+    if (rootItem.isNull()) {
+        return;
+    }
+    
     QMenu menu;
     menu.addAction(m_actionCollection.action("new_menu"));
     menu.addSeparator();
@@ -486,7 +492,6 @@ void PopupView::contextMenuEvent(QContextMenuEvent *event)
     if (!m_itemActions) {
         // Create a new KFileItem to prevent the target URL in the root item
         // from being used. In this case we want the configured URL instead.
-        KFileItem rootItem = m_model->itemForIndex(QModelIndex());
         KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
 
         KFileItemListProperties itemList(KFileItemList() << item);
