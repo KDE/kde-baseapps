@@ -6,15 +6,16 @@ if ( NOT Q_WS_MAC )
         set (KDE4WORKSPACE_FOUND TRUE)
         set (KDE4WORKSPACE_KWORKSPACE_LIBRARY_INCLUDE_DIR ${kdebase_SOURCE_DIR}/workspace/libs)
         set (KDE4WORKSPACE_KWORKSPACE_LIBS kworkspace)
+        include_directories (${KDE4WORKSPACE_KWORKSPACE_LIBRARY_INCLUDE_DIR})
     else (EXISTS "${kdebase_SOURCE_DIR}")
         macro_optional_find_package(KDE4Workspace)
+        include_directories (${KDE4WORKSPACE_INCLUDE_DIR})
     endif (EXISTS "${kdebase_SOURCE_DIR}")
 endif ( NOT Q_WS_MAC )
 
 include (ConfigureChecks.cmake)
 configure_file(config-folderview.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-folderview.h)
 
-include_directories (${KDE4WORKSPACE_KWORKSPACE_LIBRARY_INCLUDE_DIR})
 
 set(folderview_SRCS
     folderview.cpp
