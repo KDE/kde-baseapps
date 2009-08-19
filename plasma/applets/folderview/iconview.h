@@ -162,6 +162,8 @@ protected:
 
 public slots:
     void renameSelectedIcon();
+    void selectFirstIcon();
+    void selectLastIcon();
 
 private slots:
     void listingStarted(const KUrl &url);
@@ -194,6 +196,8 @@ private:
     void updateToolTip(QWidget *causedWidget = 0);
     void createDropActions(const KUrl::List &urls, QActionGroup *actions);
     QStyleOptionViewItemV4 viewOptions() const;
+    void selectIcon(QModelIndex index);
+    void selectFirstOrLastIcon(bool firstIcon);        //Useful to select first or last icon when view is unsorted
 
 private:
     QVector<ViewItem> m_items;

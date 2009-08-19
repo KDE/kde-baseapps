@@ -1188,6 +1188,26 @@ void IconView::renameSelectedIcon()
     m_editorIndex = index;
 }
 
+void IconView::selectFirstIcon()
+{
+    if (!m_layoutBroken) {
+        selectIcon(m_model->index(0, 0));
+    }
+    else {        //In case the user has made the view unsorted
+        selectFirstOrLastIcon(true);
+    }
+}
+
+void IconView::selectLastIcon()
+{
+    if (!m_layoutBroken) {
+        selectIcon(m_model->index(m_model->rowCount()-1, 0));
+    }
+    else {        //In case the user has made the view unsorted
+        selectFirstOrLastIcon(false);
+    }
+}
+
 bool IconView::renameInProgress() const
 {
     return m_editorIndex.isValid();
@@ -1417,6 +1437,12 @@ void IconView::keyPressEvent(QKeyEvent *event)
     QModelIndex currentIndex = m_selectionModel->currentIndex();
 
     switch (event->key()) {
+    case Qt::Key_Home:
+        selectFirstIcon();
+        return;
+    case Qt::Key_End:
+        selectLastIcon();
+        return;
     case Qt::Key_Up:
         vdirection = -1;
         break;
@@ -1510,11 +1536,7 @@ void IconView::keyPressEvent(QKeyEvent *event)
     }
 
     markAreaDirty(visualRect(currentIndex));
-    m_selectionModel->select(nextIndex, QItemSelectionModel::ClearAndSelect);
-    m_selectionModel->setCurrentIndex(nextIndex, QItemSelectionModel::NoUpdate);
-    scrollTo(nextIndex);
-    markAreaDirty(visualRect(nextIndex));
-    m_pressedIndex = nextIndex;
+    selectIcon(nextIndex);
 }
 
 void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -2179,6 +2201,44 @@ QStyleOptionViewItemV4 IconView::viewOptions() const
     }
 
     return option;
+}
+
+void IconView::selectIcon(QModelIndex index)
+{
+    markAreaDirty(visualRect(m_selectionModel->currentIndex()));
+    m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
+    m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+    scrollTo(index);
+    markAreaDirty(visualRect(index));
+    m_pressedIndex = index;
+}
+
+void IconView::selectFirstOrLastIcon(bool firstIcon)
+{
+    int minVertical;
+    int minHorizontal;
+    int dirn=1;    //Useful in calculations as it stores whether view is LeftToRight or RightToLeft
+    int isFirst = firstIcon ? 1 : -1;    //Useful in calculations to decide whether to select First or Last icon
+    QModelIndex toSelect;
+
+    if (m_flow == RightToLeft || m_flow == TopToBottomRightToLeft) {
+        dirn=-1;
+    }
+
+    for (int i = 0; i < m_validRows; i++) {
+        const QModelIndex tempIndex = m_model->index(i, 0);
+        const QPoint pos = visualRect(tempIndex).center();
+        //i==0 is used so that minHorizontal and minVertical are set to some value at the first item
+        if (((pos.x()*dirn*isFirst) < (minHorizontal*dirn*isFirst) && (pos.y()*isFirst) <= (minVertical*isFirst)) || i==0) {
+            minHorizontal = pos.x();
+            toSelect = tempIndex;
+        }
+        if (((pos.y()*isFirst) < (minVertical*isFirst) && (pos.x()*dirn*isFirst) <= (minHorizontal*dirn*isFirst)) || i==0) {
+            minVertical = pos.y();
+            toSelect = tempIndex;
+        }
+    }
+    selectIcon(toSelect);
 }
 
 void IconView::popupCloseRequested()
