@@ -2,13 +2,13 @@ project(plasma-folderview)
 
 
 if ( NOT Q_WS_MAC )
-    if (EXISTS "${kdebase_SOURCE_DIR}")
+    if (EXISTS "${kdebase_SOURCE_DIR}" AND EXISTS "${kdebase_SOURCE_DIR}/workspace")
         set (KDE4WORKSPACE_FOUND TRUE)
         set (KDE4WORKSPACE_KWORKSPACE_LIBRARY_INCLUDE_DIR ${kdebase_SOURCE_DIR}/workspace/libs)
         set (KDE4WORKSPACE_KWORKSPACE_LIBS kworkspace)
-    else (EXISTS "${kdebase_SOURCE_DIR}")
+    else (EXISTS "${kdebase_SOURCE_DIR}" AND EXISTS "${kdebase_SOURCE_DIR}/workspace")
         macro_optional_find_package(KDE4Workspace)
-    endif (EXISTS "${kdebase_SOURCE_DIR}")
+    endif (EXISTS "${kdebase_SOURCE_DIR}" AND EXISTS "${kdebase_SOURCE_DIR}/workspace")
 endif ( NOT Q_WS_MAC )
 
 include (ConfigureChecks.cmake)
