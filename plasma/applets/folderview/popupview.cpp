@@ -97,7 +97,7 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos, const IconView *parentV
 
     resize(parentView->sizeForRowsColumns(2, 3) + QSize(left + right, top + bottom));
 
-    const QRect available = QApplication::desktop()->availableGeometry();
+    const QRect available = QApplication::desktop()->availableGeometry(pos);
     QPoint pt = pos;
 
     if (pt.x() + width() > available.right()) {
