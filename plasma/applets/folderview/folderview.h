@@ -103,7 +103,6 @@ protected:
     void createConfigurationInterface(KConfigDialog *parent);
     QList<QAction*> contextualActions();
     void constraintsEvent(Plasma::Constraints);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
     void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
     void dropEvent(QGraphicsSceneDragDropEvent *event);
@@ -126,7 +125,6 @@ protected slots:
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
     void aboutToShowCreateNew();
-    void aboutToShowWindowList();
     void updateIconWidget();
     void iconWidgetClicked();
 

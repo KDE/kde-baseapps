@@ -1130,27 +1130,6 @@ void FolderView::updateScreenRegion()
                                    screenRect.bottom() - availRect.bottom());
 }
 
-void FolderView::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    if (isContainment()) {
-        if (event->widget()->window()->inherits("DashboardView")) {
-            emit releaseVisualFocus();
-        }
-#ifdef HAVE_KWORKSPACE
-        else if (event->button() == Qt::MidButton) {
-            if (!m_windowListMenu) {
-                m_windowListMenu = new KWindowListMenu;
-                connect(m_windowListMenu, SIGNAL(aboutToShow()), SLOT(aboutToShowWindowList()));
-            }
-            m_windowListMenu->exec(event->screenPos());
-        }
-#endif
-        return;
-    }
-
-    Containment::mousePressEvent(event);
-}
-
 void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
@@ -1592,15 +1571,6 @@ void FolderView::aboutToShowCreateNew()
         m_newMenu->slotCheckUpToDate();
         m_newMenu->setPopupFiles(m_url);
     }
-}
-
-void FolderView::aboutToShowWindowList()
-{
-#ifdef HAVE_KWORKSPACE
-    if (m_windowListMenu) {
-        m_windowListMenu->init();
-    }
-#endif
 }
 
 KUrl::List FolderView::selectedUrls(bool forTrash) const
