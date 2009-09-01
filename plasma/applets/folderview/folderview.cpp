@@ -29,10 +29,8 @@
 #include <QGraphicsSceneDragDropEvent>
 #include <QImageReader>
 #include <QItemSelectionModel>
-#include <QSignalMapper>
 
 #include <KAction>
-#include <KApplication>
 #include <KAuthorized>
 #include <KBookmarkManager>
 #include <KConfigDialog>
@@ -75,10 +73,6 @@
 #include <Plasma/ToolTipManager>
 #include <Plasma/Wallpaper>
 #include <Plasma/WindowEffects>
-
-#ifdef HAVE_KWORKSPACE
-#  include <kworkspace/kwindowlistmenu.h>
-#endif
 
 #include "dirlister.h"
 #include "dialog.h"
@@ -293,9 +287,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
       m_iconWidget(0),
       m_dialog(0),
       m_newMenu(0),
-#ifdef HAVE_KWORKSPACE
-      m_windowListMenu(0),
-#endif      
       m_actionCollection(this)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -415,9 +406,6 @@ void FolderView::init()
 FolderView::~FolderView()
 {
     delete m_newMenu;
-#ifdef HAVE_KWORKSPACE
-    delete m_windowListMenu;
-#endif
 }
 
 void FolderView::saveState(KConfigGroup &config) const
