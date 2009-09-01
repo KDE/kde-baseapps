@@ -1942,8 +1942,9 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 
     if (!item.isNull()) {
-        QDropEvent ev(event->screenPos(), event->dropAction(), event->mimeData(),
+        QDropEvent ev(event->screenPos(), event->possibleActions(), event->mimeData(),
                       event->buttons(), event->modifiers());
+        ev.setDropAction(event->dropAction());
         //kDebug() << "dropping to" << m_url << "with" << view() << event->modifiers();
 
         // If we're dropping on the view itself
