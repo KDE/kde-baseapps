@@ -1561,11 +1561,11 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 markAreaDirty(visibleArea());
             }
-            event->ignore(); // Causes contextMenuEvent() to get called
         } else if (m_selectionModel->hasSelection()) {
             m_selectionModel->clearSelection();
             markAreaDirty(visibleArea());
         }
+        event->ignore(); // Causes contextMenuEvent() to get called
         return;
     }
 
