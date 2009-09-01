@@ -1084,13 +1084,6 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
         }
     }
 
-    if (constraints & Plasma::ImmutableConstraint) {
-        // We need to update the menu items that have already been created
-        if (QAction *addPanel = m_actionCollection.action("add panel")) {
-            addPanel->setVisible(immutability() == Plasma::Mutable);
-        }
-    }
-
     if (constraints & Plasma::ScreenConstraint) {
         Plasma::Corona *c = corona();
         disconnect(c, SIGNAL(availableScreenRegionChanged()), this, SLOT(updateScreenRegion()));
@@ -1268,47 +1261,6 @@ void FolderView::createActions()
     m_actionCollection.addAction("trash", trash);
     m_actionCollection.addAction("del", del);
 
-    QAction *addPanelAction = new QAction(i18n("Add Panel"), this);
-    addPanelAction->setIcon(KIcon("list-add"));
-    addPanelAction->setVisible(immutability() == Plasma::Mutable);
-
-    KPluginInfo::List panelPlugins = listContainmentsOfType("panel");
-    if (panelPlugins.size() == 1) {
-        connect(addPanelAction, SIGNAL(triggered(bool)), this, SLOT(addPanel()));
-    } else if (!panelPlugins.isEmpty()) {
-        QSignalMapper *mapper = new QSignalMapper(this);
-        connect(mapper, SIGNAL(mapped(QString)), SLOT(addPanel(QString)));
- 
-        QMenu *menu = new QMenu();
-        foreach (const KPluginInfo &plugin, panelPlugins) {
-            QAction *action = new QAction(plugin.name(), this);
-            if (!plugin.icon().isEmpty()) {
-                action->setIcon(KIcon(plugin.icon()));
-            }
-            mapper->setMapping(action, plugin.pluginName());
-            connect(action, SIGNAL(triggered(bool)), mapper, SLOT(map()));
-            menu->addAction(action);
-        }
-        addPanelAction->setMenu(menu);
-    }
-
-    QAction *runCommandAction = new QAction(i18n("Run Command..."), this);
-    connect(runCommandAction, SIGNAL(triggered(bool)), this, SLOT(runCommand()));
-    runCommandAction->setIcon(KIcon("system-run"));
-
-    QAction *lockScreenAction = new QAction(i18n("Lock Screen"), this);
-    lockScreenAction->setIcon(KIcon("system-lock-screen"));
-    connect(lockScreenAction, SIGNAL(triggered(bool)), this, SLOT(lockScreen()));
-
-    QAction *logoutAction = new QAction(i18n("Leave..."), this);
-    logoutAction->setIcon(KIcon("system-shutdown"));
-    connect(logoutAction, SIGNAL(triggered(bool)), this, SLOT(logout()));
-
-    m_actionCollection.addAction("add panel", addPanelAction);
-    m_actionCollection.addAction("run command", runCommandAction);
-    m_actionCollection.addAction("lock screen", lockScreenAction);
-    m_actionCollection.addAction("logout", logoutAction);
-
     if (KAuthorized::authorize("editable_desktop_icons")) {
         KAction *alignToGrid = new KAction(i18n("Align to Grid"), this);
         alignToGrid->setCheckable(true);
@@ -1425,144 +1377,7 @@ QList<QAction*> FolderView::contextualActions()
         actions.append(separator);
     }
 
-    if (isContainment()) {
-        actions.append(action("add widgets"));
-        actions.append(m_actionCollection.action("add panel"));
-        if (KAuthorized::authorizeKAction("run_command")) {
-            actions.append(m_actionCollection.action("run command"));
-        }
-        if (screen() == -1) {
-            actions.append(action("remove"));
-        }   
-        actions.append(action("lock widgets"));
-
-        QAction *separator = new QAction(this);
-        separator->setSeparator(true);
-        actions.append(separator);
- 
-        if (KAuthorized::authorizeKAction("lock_screen")) {
-            actions.append(m_actionCollection.action("lock screen"));
-        }
-        if (KAuthorized::authorizeKAction("logout")) {
-            actions.append(m_actionCollection.action("logout"));
-        }
-
-        separator = new QAction(this);
-        separator->setSeparator(true);
-        actions.append(separator);
-    } 
-
     return actions;
-}
-
-void FolderView::addPanel()
-{
-    const KPluginInfo::List panelPlugins = listContainmentsOfType("panel");
-
-    if (!panelPlugins.isEmpty()) {
-        addPanel(panelPlugins.first().pluginName());
-    }
-}
-
-void FolderView::addPanel(const QString &plugin)
-{
-    if (corona()) {
-        // make a panel at the top
-        Containment* panel = corona()->addContainment(plugin);
-        panel->showConfigurationInterface();
-
-        panel->setScreen(screen());
-
-        QList<Plasma::Location> freeEdges = corona()->freeEdges(screen());
-        //kDebug() << freeEdges;
-        Plasma::Location destination;
-        if (freeEdges.contains(Plasma::TopEdge)) {
-            destination = Plasma::TopEdge;
-        } else if (freeEdges.contains(Plasma::BottomEdge)) {
-            destination = Plasma::BottomEdge;
-        } else if (freeEdges.contains(Plasma::LeftEdge)) {
-            destination = Plasma::LeftEdge;
-        } else if (freeEdges.contains(Plasma::RightEdge)) {
-            destination = Plasma::RightEdge;
-        } else destination = Plasma::TopEdge;
-
-        panel->setLocation(destination);
-
-        // trigger an instant layout so we immediately have a proper geometry
-        // rather than waiting around for the event loop
-        panel->updateConstraints(Plasma::StartupCompletedConstraint);
-        panel->flushPendingConstraintsEvents();
-
-        const QRect screenGeom = corona()->screenGeometry(screen());
-        const QRegion availGeom = corona()->availableScreenRegion(screen());
-        int minH = 10;
-        int minW = 10;
-        int w = 35;
-        int h = 35;
-
-        if (destination == Plasma::LeftEdge) {
-            QRect r = availGeom.intersected(QRect(0, 0, w, screenGeom.height())).boundingRect();
-            h = r.height();
-            minW = 35;
-        } else if (destination == Plasma::RightEdge) {
-            QRect r = availGeom.intersected(QRect(screenGeom.width() - w, 0, w, screenGeom.height())).boundingRect();
-            h = r.height();
-            minW = 35;
-        } else if (destination == Plasma::TopEdge) {
-            QRect r = availGeom.intersected(QRect(0, 0, screenGeom.width(), h)).boundingRect();
-            w = r.width();
-            minH = 35;
-        } else if (destination == Plasma::BottomEdge) {
-            QRect r = availGeom.intersected(QRect(0, screenGeom.height() - h, screenGeom.width(), h)).boundingRect();
-            w = r.width();
-            minH = 35;
-        }
-
-        panel->setMinimumSize(minW, minH);
-        panel->setMaximumSize(w, h);
-        panel->resize(w, h);
-    }
-}
-
-void FolderView::runCommand()
-{
-    if (!KAuthorized::authorizeKAction("run_command")) {
-        return;
-    }
-
-    QDBusInterface krunner("org.kde.krunner", "/App", "org.kde.krunner.App", QDBusConnection::sessionBus());
-    krunner.call("display");
-}
-
-void FolderView::lockScreen()
-{
-    if (!KAuthorized::authorizeKAction("lock_screen")) {
-        return;
-    }
-
-#ifndef Q_OS_WIN
-    QDBusInterface screensaver("org.freedesktop.ScreenSaver", "/ScreenSaver",
-                               "org.freedesktop.ScreenSaver", QDBusConnection::sessionBus());
-    if (screensaver.isValid()) {
-        screensaver.call("Lock");
-    }
-#else
-    LockWorkStation();
-#endif
-}
-
-void FolderView::logout()
-{
-    if (!KAuthorized::authorizeKAction("logout")) {
-        return;
-    }
-
-#ifndef Q_WS_WIN
-    QApplication::syncX();
-    static_cast<KApplication*>(QApplication::instance())->updateRemoteUserTimestamp("org.kde.ksmserver");
-    QDBusInterface ksmserver("org.kde.ksmserver", "/KSMServer", "org.kde.KSMServerInterface", QDBusConnection::sessionBus());
-    ksmserver.call("logout", -1, -1, -1);
-#endif
 }
 
 void FolderView::aboutToShowCreateNew()
