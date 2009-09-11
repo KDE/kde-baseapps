@@ -1453,6 +1453,10 @@ void IconView::keyPressEvent(QKeyEvent *event)
         hdirection = -1;
         break;
     case Qt::Key_Right:
+        if (!currentIndex.isValid()) {
+            selectFirstIcon();
+            return;
+        }
         hdirection = 1;
         break;
 
