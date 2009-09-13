@@ -938,7 +938,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
     prepareBackBuffer();
 
-    painter->setClipRect(clipRect);
+    painter->setClipRect(clipRect, Qt::IntersectClip);
 
     // Update the dirty region in the backbuffer
     // =========================================
