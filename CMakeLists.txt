@@ -5,6 +5,8 @@ find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
 include(MacroLibrary)
 
+include_directories(${CMAKE_SOURCE_DIR}/kdewebkit) # required; otherwise kdewebkit_export.h cannot be found when building from toplevel (just temporary until kdewebkit is in kdelibs) -uwolfer
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/kdewebkit/cmake/modules
     ${CMAKE_SOURCE_DIR}/part/cmake/modules)
