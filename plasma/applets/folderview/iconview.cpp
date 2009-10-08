@@ -1584,6 +1584,14 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 m_selectionModel->select(index, QItemSelectionModel::Toggle);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 markAreaDirty(visualRect(index));
+            } else if (event->modifiers() & Qt::ShiftModifier) {        //If shift is held
+                QModelIndex current = m_selectionModel->currentIndex();
+                if (m_layoutBroken) {
+                    selectIconsInArea(QRect(visualRect(current).center(), visualRect(index).center()), pos.toPoint());
+                }
+                else {
+                    selectIconRange(current, index);
+                }
             } else if (!m_selectionModel->isSelected(index)) {
                 //if not already selected
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
@@ -1642,7 +1650,8 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         const QPointF pos = mapToViewport(event->pos());
         const QModelIndex index = indexAt(pos);
 
-        if (index.isValid() && index == m_pressedIndex && !(event->modifiers() & Qt::ControlModifier)) {
+        bool ctrlOrShiftPressed = (event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier));
+        if (index.isValid() && index == m_pressedIndex && !ctrlOrShiftPressed) {
             if (!m_doubleClick && KGlobalSettings::singleClick()) {
                 emit activated(index);
                 m_selectionModel->clearSelection();
@@ -1724,38 +1733,9 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         dirtyRect |= visualRect(m_hoveredIndex);
         m_hoveredIndex = QModelIndex();
 
-        foreach (const QModelIndex &index, m_selectionModel->selectedIndexes()) {
-            dirtyRect |= visualRect(index);
-        }
+        repaintSelectedIcons();
+        selectIconsInArea(m_rubberBand, pt);
 
-        // Select the indexes inside the rubber band
-        QItemSelection selection;
-        for (int i = 0; i < m_items.size(); i++) {
-            QModelIndex index = m_model->index(i, 0);
-            if (!indexIntersectsRect(index, m_rubberBand))
-                continue;
-
-            int start = i;
-
-            do {
-                dirtyRect |= m_items[i].rect;
-                if (m_items[i].rect.contains(pt) && visualRegion(index).contains(pt)) {
-                    m_hoveredIndex = index;
-                }
-                index = m_model->index(++i, 0);
-            } while (i < m_items.size() && indexIntersectsRect(index, m_rubberBand));
-
-            selection.select(m_model->index(start, 0), m_model->index(i - 1, 0));
-        }
-        m_selectionModel->select(selection, QItemSelectionModel::ToggleCurrent);
-
-        // Update the current index
-        if (m_hoveredIndex.isValid()) {
-            if (m_hoveredIndex != m_selectionModel->currentIndex()) {
-                dirtyRect |= visualRect(m_selectionModel->currentIndex());
-            }
-            m_selectionModel->setCurrentIndex(m_hoveredIndex, QItemSelectionModel::NoUpdate);
-        }
         markAreaDirty(dirtyRect);
     }
 }
@@ -2210,12 +2190,12 @@ QStyleOptionViewItemV4 IconView::viewOptions() const
 
 void IconView::selectIcon(QModelIndex index)
 {
-    markAreaDirty(visualRect(m_selectionModel->currentIndex()));
+    repaintSelectedIcons();
     m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
     m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
     scrollTo(index);
-    markAreaDirty(visualRect(index));
     m_pressedIndex = index;
+    markAreaDirty(visualRect(index));
 }
 
 void IconView::selectFirstOrLastIcon(bool firstIcon)
@@ -2244,6 +2224,57 @@ void IconView::selectFirstOrLastIcon(bool firstIcon)
         }
     }
     selectIcon(toSelect);
+}
+
+void IconView::selectIconsInArea(const QRect &area, const QPoint &finalPos)
+{
+    QModelIndex m;
+    QRect dirtyRect;
+
+    // Select the indexes inside the area
+    QItemSelection selection;
+    for (int i = 0; i < m_items.size(); i++) {
+        QModelIndex index = m_model->index(i, 0);
+        if (!indexIntersectsRect(index, area))
+            continue;
+
+        int start = i;
+
+        do {
+            dirtyRect |= m_items[i].rect;
+            if (m_items[i].rect.contains(finalPos) && visualRegion(index).contains(finalPos)) {
+               m_hoveredIndex = index;
+            }
+            index = m_model->index(++i, 0);
+        } while (i < m_items.size() && indexIntersectsRect(index, area));
+
+        selection.select(m_model->index(start, 0), m_model->index(i - 1, 0));
+    }
+    m_selectionModel->select(selection, QItemSelectionModel::ToggleCurrent);
+
+    // Update the current index
+    if (m_hoveredIndex.isValid()) {
+        if (m_hoveredIndex != m_selectionModel->currentIndex()) {
+            dirtyRect |= visualRect(m_selectionModel->currentIndex());
+        }
+        m_selectionModel->setCurrentIndex(m_hoveredIndex, QItemSelectionModel::NoUpdate);
+    }
+    markAreaDirty(dirtyRect);
+}
+
+void IconView::selectIconRange(const QModelIndex &begin, const QModelIndex &end)
+{
+    m_selectionModel->select(QItemSelection(begin, end), QItemSelectionModel::Select);
+    repaintSelectedIcons();
+}
+
+void IconView::repaintSelectedIcons()
+{
+    QRect dirtyRect;
+    foreach (const QModelIndex &index, m_selectionModel->selectedIndexes()) {
+            dirtyRect |= visualRect(index);
+    }
+    markAreaDirty(dirtyRect);
 }
 
 void IconView::popupCloseRequested()

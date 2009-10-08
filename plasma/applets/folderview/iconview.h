@@ -198,6 +198,9 @@ private:
     QStyleOptionViewItemV4 viewOptions() const;
     void selectIcon(QModelIndex index);
     void selectFirstOrLastIcon(bool firstIcon);        //Useful to select first or last icon when view is unsorted
+    void selectIconsInArea(const QRect &area, const QPoint &finalPos);            //Selects all icons in the specified rectangular area
+    void selectIconRange(const QModelIndex &begin, const QModelIndex &end);
+    void repaintSelectedIcons();
 
 private:
     QVector<ViewItem> m_items;
