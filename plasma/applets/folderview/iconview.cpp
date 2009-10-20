@@ -1523,7 +1523,8 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
     Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
     delete m_popupView;
 
-    if (!contentsRect().contains(event->pos()) || !m_errorMessage.isEmpty()) {
+    if (scene()->itemAt(event->scenePos()) != this || !contentsRect().contains(event->pos()) ||
+        !m_errorMessage.isEmpty()) {
         event->ignore();
         return;
     }
