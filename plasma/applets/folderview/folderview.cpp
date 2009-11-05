@@ -400,6 +400,19 @@ void FolderView::init()
         m_iconView->setZValue(INT_MIN);
     }
 
+    // Set the associated application
+    KService::List offers = KFileItemActions::associatedApplications(QStringList() << "inode/directory", QString());
+    if (!offers.isEmpty()) {
+        setAssociatedApplication(offers.first()->exec());
+        setAssociatedApplicationUrls(KUrl::List() << m_url);
+
+        // contextualActions() includes KFileItemActions::preferredOpenWithAction(),
+        // so we'll hide the one Plasma provides.
+        if (QAction *runAction = action("run associated application")) {
+            runAction->setVisible(false);
+        }
+    }
+
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardDataChanged()));
 }
 
@@ -1135,6 +1148,8 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
 void FolderView::setUrl(const KUrl &url)
 {
     m_url = url;
+
+    setAssociatedApplicationUrls(KUrl::List() << m_url);
 
     // Only parse desktop files when sorting if we're showing the desktop folder
     m_model->setParseDesktopFiles(m_url.protocol() == "desktop");
