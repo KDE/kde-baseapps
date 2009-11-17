@@ -20,17 +20,18 @@
 #include <QStringList>
 #include "previewpluginsmodel.h"
 
+static bool lessThan(const KService::Ptr &a, const KService::Ptr &b)
+{
+    return QString::localeAwareCompare(a->name(), b->name()) < 0;
+}
+
 PreviewPluginsModel::PreviewPluginsModel(QObject *parent)
     : QAbstractListModel(parent)
 {
     plugins = KServiceTypeTrader::self()->query("ThumbCreator");
 
     // Sort the list alphabetially
-    QMap<QString, KSharedPtr<KService> > map;
-    for (int i = 0; i < plugins.size(); i++) {
-        map.insert(plugins[i]->name().toLower(), plugins[i]);
-    }
-    plugins = map.values();
+    qStableSort(plugins.begin(), plugins.end(), lessThan);
 }
 
 PreviewPluginsModel::~PreviewPluginsModel()
