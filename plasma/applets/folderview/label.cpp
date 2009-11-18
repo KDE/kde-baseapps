@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Andrew Lake <jamboarder@yahoo.com>
  *
  *   This library is free software; you can redistribute it and/or
@@ -28,8 +28,9 @@
 Label::Label(QGraphicsWidget *parent)
     : QGraphicsWidget(parent)
 {
-    setMinimumHeight(QFontMetrics(font()).lineSpacing() + 4);
-    setMaximumHeight(QFontMetrics(font()).lineSpacing() + 4);
+    QFontMetrics fm(font());
+    setMinimumHeight(fm.height() + 4);
+    setMaximumHeight(fm.height() + 4);
     setCacheMode(DeviceCoordinateCache);
 }
 
@@ -64,45 +65,17 @@ void Label::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
     Q_UNUSED(option)
     Q_UNUSED(widget)
 
-    const QString text = QFontMetrics(font()).elidedText(m_text, Qt::ElideMiddle, contentsRect().width());
+    QColor color = palette().color(QPalette::Text);
+    color.setAlphaF(.75);
 
-    QColor shadowColor;
-    QPoint shadowOffset;
-    if (!m_drawShadow) {
-        shadowColor = Qt::transparent;
-        shadowOffset = QPoint();
-    } else if (qGray(palette().color(QPalette::Text).rgb()) > 192) {
-        shadowColor = Qt::black;
-        shadowOffset = QPoint(1, 1);
-    } else {
-        shadowColor = Qt::white;
-        shadowOffset = QPoint();
-    }
+    QFontMetrics fm(font());
+    const QString text = fm.elidedText(m_text, Qt::ElideMiddle, contentsRect().width());
 
-    QPixmap titlePixmap = Plasma::PaintUtils::shadowText(text, palette().color(QPalette::Text),
-                                                         shadowColor, shadowOffset);
-    painter->drawPixmap(contentsRect().topLeft(), titlePixmap);
-
-    int width = contentsRect().width();
-
-    //Draw underline
-    if (m_divider.width() != width) {
-        qreal fw = 1.0 / width * 20.0;
-        m_divider = QPixmap(width, 2);
-        m_divider.fill(Qt::transparent);
-        QLinearGradient g(0, 0, width, 0);
-        g.setColorAt(0, Qt::transparent);
-        g.setColorAt(fw, Qt::black);
-        g.setColorAt(1 - fw, Qt::black);
-        g.setColorAt(1, Qt::transparent);
-        QPainter p(&m_divider);
-        p.setCompositionMode(QPainter::CompositionMode_Source);
-        p.fillRect(0, 0, width, 1, QColor(0, 0, 0, 64));
-        p.fillRect(0, 1, width, 1, QColor(255, 255, 255, 64));
-        p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-        p.fillRect(m_divider.rect(), g);
-    }
-    painter->drawPixmap(0, contentsRect().height() - 2, m_divider);
+    painter->save();
+    painter->setFont(font());
+    painter->setPen(color);
+    painter->drawText(contentsRect(), Qt::AlignCenter, text);
+    painter->restore();
 }
 
 #include "label.moc"

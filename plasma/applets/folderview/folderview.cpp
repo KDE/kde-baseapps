@@ -872,6 +872,11 @@ void FolderView::setupIconView()
     if (!isContainment()) {
         m_label = new Label(this);
         m_label->setText(m_titleText);
+
+        QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
+        font.setPointSize(font.pointSize() + 1);
+        font.setBold(true);
+        m_label->setFont(font);
     }
 
     updateIconViewState();
@@ -902,13 +907,15 @@ void FolderView::setupIconView()
 
 void FolderView::fontSettingsChanged()
 {
-    const QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
+    QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
 
     if (m_iconView) {
         m_iconView->setFont(font);
     }
 
     if (m_label) {
+        font.setPointSize(font.pointSize() + 1);
+        font.setBold(true);
         m_label->setFont(font);
     }
 }
