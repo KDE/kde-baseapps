@@ -22,6 +22,7 @@
  */
 
 #include "abstractitemview.h"
+#include "halopainter.h"
 #include "proxymodel.h"
 #include "style.h"
 
@@ -434,7 +435,9 @@ void AbstractItemView::drawTextLayout(QPainter *painter, const QTextLayout &layo
         const QColor color = painter->pen().color();
         if (qGray(color.rgb()) < 192) {
             // Draw halos
-            // ### TODO
+            foreach (const QRect &haloRect, haloRects) {
+                HaloPainter::drawHalo(painter, haloRect.translated(rect.topLeft()));
+            }
         } else {
             // Draw shadow
             QImage shadow = pixmap.toImage();
