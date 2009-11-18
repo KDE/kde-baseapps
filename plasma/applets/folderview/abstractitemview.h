@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Library General Public
@@ -25,6 +25,7 @@
 #include <QAbstractItemView>
 #include <QPointer>
 #include <QCache>
+#include <QTextLayout>
 #include <QTime>
 #include <QBasicTimer>
 
@@ -48,6 +49,7 @@ class AbstractItemView : public QGraphicsWidget
     Q_OBJECT
 
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
+    Q_PROPERTY(bool drawShadows READ drawShadows WRITE setDrawShadows)
 
 public:
     enum ScrollDirection { ScrollUp, ScrollDown };
@@ -66,6 +68,9 @@ public:
 
     virtual void setIconSize(const QSize &iconSize);
     QSize iconSize() const;
+
+    void setDrawShadows(bool on);
+    bool drawShadows() const;
 
     QScrollBar *verticalScrollBar() const;
 
@@ -87,6 +92,10 @@ protected:
     QRect scrollBackBuffer();
     void prepareBackBuffer();
     void syncBackBuffer(QPainter *painter, const QRect &clipRect);
+
+    QSize doTextLayout(QTextLayout &layout, const QSize &constraints, Qt::Alignment alignment,
+                       QTextOption::WrapMode wrapMode) const;
+    void drawTextLayout(QPainter *painter, const QTextLayout &layout, const QRect &rect) const; 
 
     QPointF mapToViewport(const QPointF &point) const;
     QRectF mapToViewport(const QRectF &rect) const;
@@ -149,6 +158,7 @@ protected:
     ScrollDirection m_scrollDirection;
     int m_autoScrollSpeed;
     int m_autoScrollSetSpeed;
+    bool m_drawShadows;
 };
 
 inline QPointF AbstractItemView::mapToViewport(const QPointF &point) const

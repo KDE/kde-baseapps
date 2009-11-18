@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *
  *   The smooth scrolling code is based on the code in KHTMLView,
  *   Copyright © 2006-2008 Germain Garand <germain@ebooksfrance.org>
@@ -30,6 +30,10 @@
 #include <KDirModel>
 #include <KFileItemDelegate>
 
+#include <Plasma/PaintUtils>
+
+#include <limits.h>
+
 #ifdef Q_WS_X11
 #  include <QX11Info>
 #  include <X11/Xlib.h>
@@ -54,7 +58,8 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
       m_dddy(0),
       m_rdy(0),
       m_smoothScrolling(false),
-      m_autoScrollSpeed(0)
+      m_autoScrollSpeed(0),
+      m_drawShadows(true)
 {
     m_scrollBar = new Plasma::ScrollBar(this);
     connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
@@ -127,6 +132,20 @@ void AbstractItemView::setIconSize(const QSize &iconSize)
 QSize AbstractItemView::iconSize() const
 {
     return m_iconSize;
+}
+
+void AbstractItemView::setDrawShadows(bool on)
+{
+    if (m_drawShadows != on) {
+        m_drawShadows = on;
+        markAreaDirty(visibleArea());
+        update();
+    }
+}
+
+bool AbstractItemView::drawShadows() const
+{
+    return m_drawShadows;
 }
 
 QScrollBar *AbstractItemView::verticalScrollBar() const
@@ -299,6 +318,133 @@ void AbstractItemView::syncBackBuffer(QPainter *painter, const QRect &clipRect)
     {
         painter->drawPixmap(cr.topLeft(), m_pixmap);
     }
+}
+
+QSize AbstractItemView::doTextLayout(QTextLayout &layout, const QSize &constraints, Qt::Alignment alignment,
+                                     QTextOption::WrapMode wrapMode) const
+{
+    QTextOption to;
+    to.setAlignment(alignment);
+    to.setTextDirection(layoutDirection());
+    to.setWrapMode(wrapMode);
+    layout.setTextOption(to);
+
+    QFontMetricsF fm = QFontMetricsF(layout.font());
+
+    QTextLine line;
+    qreal leading = fm.leading();
+    qreal widthUsed = 0;
+    qreal height = 0;
+
+    layout.beginLayout();
+    while ((line = layout.createLine()).isValid()) {
+        // Make the last line that will fit infinitely long.
+        // drawTextLayout() will handle this by fading the line out
+        // if it won't fit inside the constraints.
+        if (height + 2 * fm.lineSpacing() > constraints.height()) {
+            line.setLineWidth(INT_MAX);
+            if (line.naturalTextWidth() < constraints.width()) {
+                line.setLineWidth(constraints.width());
+                widthUsed = qMax(widthUsed, line.naturalTextWidth());
+            } else {
+                widthUsed = constraints.width();
+            }
+        } else {
+            line.setLineWidth(constraints.width());
+            widthUsed = qMax(widthUsed, line.naturalTextWidth());
+        }
+        line.setPosition(QPointF(0, height));
+        height += line.height() + leading;
+    }
+    layout.endLayout();
+
+    return QSize(widthUsed, height);    
+}
+
+void AbstractItemView::drawTextLayout(QPainter *painter, const QTextLayout &layout, const QRect &rect) const
+{
+    // Create the alpha gradient for the fade out effect
+    QLinearGradient alphaGradient(0, 0, 1, 0);
+    alphaGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+    if (layout.textOption().textDirection() == Qt::LeftToRight) {
+        alphaGradient.setColorAt(0, QColor(0, 0, 0, 255));
+        alphaGradient.setColorAt(1, QColor(0, 0, 0, 0));
+    } else {
+        alphaGradient.setColorAt(0, QColor(0, 0, 0, 0));
+        alphaGradient.setColorAt(1, QColor(0, 0, 0, 255));
+    }
+
+    QFontMetrics fm(layout.font());
+
+    QList<QRect> fadeRects;
+    QList<QRect> haloRects;
+    int fadeWidth = 30;
+
+    // Compute halo and fade rects
+    for (int i = 0; i < layout.lineCount(); i++) {
+        const QTextLine line = layout.lineAt(i);
+        const QRectF lr = line.naturalTextRect();
+
+        // Add a fade out rect to the list if the line is too long
+        if (lr.width() > rect.width()) {
+            int x = rect.width() - fadeWidth;
+            int y = lr.y();
+            QRect r = QStyle::visualRect(layout.textOption().textDirection(), QRect(QPoint(), rect.size()),
+                                         QRect(x, y, fadeWidth, int(lr.height())));
+            fadeRects.append(r);
+        }
+
+        haloRects.append((lr & rect.translated(-rect.topLeft())).toAlignedRect());
+    }
+
+    // Create a pixmap for the text
+    QPixmap pixmap(rect.size());
+    pixmap.fill(Qt::transparent);
+
+    QPainter p(&pixmap);
+    p.setPen(painter->pen());
+
+    // Draw each line in the layout
+    for (int i = 0; i < layout.lineCount(); i++)
+    {
+        const QTextLine line = layout.lineAt(i);
+        const QRectF tr = line.naturalTextRect();
+
+        if (tr.width() > rect.width()) {
+            if (layoutDirection() == Qt::LeftToRight) {
+                line.draw(&p, QPointF(-tr.x(), 0));
+            } else {
+                line.draw(&p, QPointF(rect.width() - tr.right(), 0));
+            }
+        } else {
+            line.draw(&p, QPointF());
+        }
+    }
+
+    // Reduce the alpha in each fade out rect using the alpha gradient
+    if (!fadeRects.isEmpty()) {
+        p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+        foreach (const QRect &rect, fadeRects) {
+            p.fillRect(rect, alphaGradient);
+        }
+    }
+    p.end();
+
+    if (drawShadows()) {
+        const QColor color = painter->pen().color();
+        if (qGray(color.rgb()) < 192) {
+            // Draw halos
+            // ### TODO
+        } else {
+            // Draw shadow
+            QImage shadow = pixmap.toImage();
+            Plasma::PaintUtils::shadowBlur(shadow, 2, Qt::black);
+            painter->drawImage(rect.topLeft() + QPoint(1, 1), shadow);
+        }
+    }
+
+    // Draw the text pixmap
+    painter->drawPixmap(rect.topLeft(), pixmap);
 }
 
 void AbstractItemView::rowsInserted(const QModelIndex &parent, int first, int last)

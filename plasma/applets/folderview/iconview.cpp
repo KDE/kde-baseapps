@@ -65,9 +65,11 @@
 
 IconView::IconView(QGraphicsWidget *parent)
     : AbstractItemView(parent),
+      m_itemFrame(0),
       m_columns(0),
       m_rows(0),
       m_validRows(0),
+      m_numTextLines(2),
       m_layoutBroken(false),
       m_needPostLayoutPass(false),
       m_initialListing(true),
@@ -78,12 +80,11 @@ IconView::IconView(QGraphicsWidget *parent)
       m_iconsLocked(false),
       m_alignToGrid(false),
       m_wordWrap(false),
-      m_drawShadows(true),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
       m_dropOperation(0),
       m_dropActions(0),
-      m_editorProxy(0)
+      m_editor(0)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
@@ -93,12 +94,16 @@ IconView::IconView(QGraphicsWidget *parent)
     m_scrollBar->hide();
     connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(repositionWidgetsManually()));
 
-    int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
-    m_iconSize = QSize(size, size);
-    m_gridSize = QSize(size * 2, size * 2);
-
     m_toolTipWidget = new ToolTipWidget(this);
     m_toolTipWidget->hide();
+
+    m_itemFrame = new Plasma::FrameSvg(this);
+    m_itemFrame->setImagePath("widgets/viewitem");
+    m_itemFrame->setCacheAllRenderedFrames(true);
+    m_itemFrame->setElementPrefix("normal");
+
+    int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
+    setIconSize(QSize(size, size));
 
     getContentsMargins(&m_margins[Plasma::LeftMargin], &m_margins[Plasma::TopMargin],
                        &m_margins[Plasma::RightMargin], &m_margins[Plasma::BottomMargin]);
@@ -135,28 +140,26 @@ void IconView::setIconSize(const QSize &size)
 {
     if (size != m_iconSize) {
         m_iconSize = size;
-
-        // Schedule a full relayout
-        if (m_validRows > 0) {
-            m_validRows = 0;
-            m_delayedLayoutTimer.start(10, this);
-            emit busy(true);
-        }
+        updateGridSize();
     }
 }
 
-void IconView::setGridSize(const QSize &size)
+void IconView::setTextLineCount(int count)
 {
-    if (size != m_gridSize) {
-        m_gridSize = size;
-
-        // Schedule a full relayout
-        if (m_validRows > 0) {
-            m_validRows = 0;
-            m_delayedLayoutTimer.start(10, this);
-            emit busy(true);
-        }
+    if (count != m_numTextLines) {
+        m_numTextLines = count;
+        updateGridSize();
     }
+}
+
+int IconView::textLineCount() const
+{
+    return m_numTextLines;
+}
+
+// #### remove
+void IconView::setGridSize(const QSize &)
+{
 }
 
 QSize IconView::gridSize() const
@@ -226,20 +229,6 @@ bool IconView::iconsMoveable() const
     return !m_iconsLocked;
 }
 
-void IconView::setDrawShadows(bool on)
-{
-    if (m_drawShadows != on) {
-        m_drawShadows = on;
-        markAreaDirty(visibleArea());
-        update();
-    }
-}
-
-bool IconView::drawShadows() const
-{
-    return m_drawShadows;
-}
-
 void IconView::setCustomLayout(bool value)
 {
     m_layoutBroken = value;
@@ -288,6 +277,29 @@ QStringList IconView::iconPositionsData() const
     }
 
     return data;
+}
+
+void IconView::updateGridSize()
+{
+    // Recompute the grid size
+    qreal left, top, right, bottom;
+    m_itemFrame->getMargins(left, top, right, bottom);
+
+    QFontMetrics fm(font());
+    int w = qMin(fm.width('x') * 15, m_iconSize.width() * 2);
+
+    QSize size;
+    size.rwidth() = qMax(w, m_iconSize.width()) + left + right;
+    size.rheight() = top + bottom + m_iconSize.height() + fm.lineSpacing() * textLineCount() + 4;
+
+    // Schedule a full relayout
+    if (m_validRows > 0 && size != m_gridSize) {
+        m_validRows = 0;
+        m_delayedLayoutTimer.start(10, this);
+        emit busy(true);
+    }
+
+    m_gridSize = size;
 }
 
 void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -588,8 +600,6 @@ void IconView::layoutItems()
     m_rows = rowsForHeight(maxHeight);
     bool needUpdate = false;
 
-    m_delegate->setMaximumSize(grid);
-
     // If we're starting with the first item
     if (m_validRows == 0) {
         m_needPostLayoutPass = false;
@@ -875,50 +885,148 @@ void IconView::finishedScrolling()
     }
 }
 
-void IconView::paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const
+QSize IconView::itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
 {
-    QIcon icon = KIconLoader::global()->loadIcon("dialog-error", KIconLoader::NoGroup, KIconLoader::SizeHuge,
-                                                 KIconLoader::DefaultState, QStringList(), 0, true);
+    QSize size = option.decorationSize;
+    QSize grid = gridSize();
+
+    qreal left, top, right, bottom;
+    m_itemFrame->getMargins(left, top, right, bottom);
+
+    size.rwidth() += left + right;
+    size.rheight() += top + bottom + 4;
+
+    QFont font = option.font;
+
+    KFileItem item = qvariant_cast<KFileItem>(index.data(KDirModel::FileItemRole));
+    if (item.isLink()) {
+        font.setItalic(true);
+    }
+
+    QTextLayout layout;
+    layout.setText(index.data(Qt::DisplayRole).toString());
+    layout.setFont(font);
+
+    const QSize ts = doTextLayout(layout, QSize(grid.width() - left - right, grid.height() - size.height()),
+                                  Qt::AlignHCenter, QTextOption::WrapAtWordBoundaryOrAnywhere);
+
+    size.rwidth() = qMax(size.width(), ts.width());
+    size.rheight() += ts.height();
+    return size;
+}
+
+void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
+{
+    // Draw the item background
+    // ========================
+    const bool hover = (option.state & QStyle::State_MouseOver);
+    const bool selected = (option.state & QStyle::State_Selected);
+
+    if (selected && hover) {
+        m_itemFrame->setElementPrefix("selected+hover");
+    } else if (selected) {
+        m_itemFrame->setElementPrefix("selected");
+    } else if (hover) {
+        m_itemFrame->setElementPrefix("hover");
+    } else {
+        m_itemFrame->setElementPrefix("normal");
+    }
+
+    if (selected || hover) {
+        m_itemFrame->resizeFrame(option.rect.size());
+        m_itemFrame->paintFrame(painter, option.rect.topLeft());
+    }
+
+    qreal left, top, right, bottom;
+    m_itemFrame->getMargins(left, top, right, bottom);
+    const QRect r = option.rect.adjusted(left, top, -right, -bottom);
+
+
+    // Draw the icon
+    // =============
+    const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+    const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignTop | Qt::AlignHCenter,
+                                         option.decorationSize, r);
+    icon.paint(painter, ir);
+
+    const QRect tr = r.adjusted(0, ir.bottom() - r.top() + 2, 0, 0);
+
+    QFont font = option.font;
+
+    KFileItem item = qvariant_cast<KFileItem>(index.data(KDirModel::FileItemRole));
+    if (item.isLink()) {
+        font.setItalic(true);
+    }
+
+    // Draw the text label
+    // ===================
+    QTextLayout layout;
+    layout.setText(index.data(Qt::DisplayRole).toString());
+    layout.setFont(font);
+    const QSize size = doTextLayout(layout, tr.size(), Qt::AlignHCenter,
+                                    QTextOption::WrapAtWordBoundaryOrAnywhere);
+
+    painter->setPen(option.palette.color(QPalette::Text));
+    drawTextLayout(painter, layout, tr);
+
+
+    // Draw the focus rect
+    // ===================
+    if (option.state & QStyle::State_HasFocus) {
+        QRect fr = QStyle::alignedRect(layoutDirection(), Qt::AlignCenter, size, tr);
+        fr.adjust(-2, -2, 2, 2);
+
+        QColor color = Qt::white;
+        color.setAlphaF(.33);
+
+        QColor transparent = color;
+        transparent.setAlphaF(0);
+
+        QLinearGradient g1(0, fr.top(), 0, fr.bottom());
+        g1.setColorAt(0, color);
+        g1.setColorAt(1, transparent);
+
+        QLinearGradient g2(fr.left(), 0, fr.right(), 0);
+        g2.setColorAt(0, transparent);
+        g2.setColorAt(.5, color);
+        g2.setColorAt(1, transparent);
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->setPen(QPen(g1, 0));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRoundedRect(QRectF(fr).adjusted(.5, .5, -.5, -.5), 2, 2);
+        painter->setPen(QPen(g2, 0));
+        painter->drawLine(QLineF(fr.left() + 2, fr.bottom() + .5,
+                                 fr.right() - 2, fr.bottom() + .5));
+        painter->restore();
+    }
+}
+
+void IconView::paintMessage(QPainter *painter, const QRect &rect, const QString &message,
+                            const QIcon &icon) const
+{
     const QSize iconSize = icon.isNull() ? QSize() :
                                icon.actualSize(QSize(KIconLoader::SizeHuge, KIconLoader::SizeHuge));
-    const int flags = Qt::AlignCenter | Qt::TextWordWrap;
-    const int blur = qCeil(m_delegate->shadowBlur());
+    const QSize textConstraints = rect.size() - QSize(iconSize.width() + 4, 0);
 
-    QFontMetrics fm = painter->fontMetrics();
-    QRect r = fm.boundingRect(rect.adjusted(0, 0, -iconSize.width() - 4, 0), flags, message);
-    QPixmap pm(r.size());
-    pm.fill(Qt::transparent);
-    QPainter p(&pm);
-    p.setFont(painter->font());
-    p.setPen(palette().color(QPalette::Text));
-    p.drawText(pm.rect(), flags, message);
-    p.end();
+    QTextLayout layout;
+    layout.setText(message);
+    layout.setFont(font());
 
-    QImage shadow;
-    if (m_delegate->shadowColor().alpha() > 0) {
-        shadow = QImage(pm.size() + QSize(blur * 2, blur * 2), QImage::Format_ARGB32_Premultiplied);
-        p.begin(&shadow);
-        p.setCompositionMode(QPainter::CompositionMode_Source);
-        p.fillRect(shadow.rect(), Qt::transparent);
-        p.drawPixmap(blur, blur, pm);
-        p.end();
+    const QSize textSize = doTextLayout(layout, textConstraints, Qt::AlignLeft, QTextOption::WordWrap);
+    const QSize size(iconSize.width() + 4 + textSize.width(), qMax(iconSize.height(), textSize.height()));
+    const QRect r = QStyle::alignedRect(layoutDirection(), Qt::AlignCenter, size, rect);
+    const QRect textRect = QStyle::alignedRect(layoutDirection(), Qt::AlignRight | Qt::AlignVCenter,
+                                               textSize, r);
+    const QRect iconRect = QStyle::alignedRect(layoutDirection(), Qt::AlignLeft | Qt::AlignVCenter,
+                                               iconSize, r);
 
-        Plasma::PaintUtils::shadowBlur(shadow, blur, m_delegate->shadowColor());
-    }
-
-    const QSize size(pm.width() + iconSize.width() + 4, qMax(iconSize.height(), pm.height()));
-    const QPoint iconPos = rect.topLeft() + QPoint((rect.width() - size.width()) / 2,
-                                                   (rect.height() - size.height()) / 2);
-    const QPoint textPos = iconPos + QPoint(iconSize.width() + 4, (iconSize.height() - pm.height()) / 2);
-
+    painter->setPen(palette().color(QPalette::Text));
+    drawTextLayout(painter, layout, textRect);
     if (!icon.isNull()) {
-        icon.paint(painter, QRect(iconPos, iconSize));
+        icon.paint(painter, iconRect);
     }
-
-    if (!shadow.isNull()) {
-        painter->drawImage(textPos - QPoint(blur, blur) + m_delegate->shadowOffset().toPoint(), shadow);
-    }
-    painter->drawPixmap(textPos, pm);
 }
 
 void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -973,10 +1081,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
                 if (m_dragInProgress) {
                     continue;
                 }
-                updateTextShadows(palette().color(QPalette::HighlightedText));
                 opt.state |= QStyle::State_Selected;
-            } else {
-                updateTextShadows(palette().color(QPalette::Text));
             }
 
             if (hasFocus() && index == m_selectionModel->currentIndex()) {
@@ -984,7 +1089,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
             }
 
             if (m_items[i].needSizeAdjust) {
-                const QSize size = m_delegate->sizeHint(opt, index);
+                const QSize size = itemSize(opt, index);
                 m_items[i].rect.setHeight(size.height());
                 m_items[i].needSizeAdjust = false;
                 opt.rect = m_items[i].rect;
@@ -996,7 +1101,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
                 opt.decorationSize *= 0.9;
             }
 
-            m_delegate->paint(&p, opt, index);
+            paintItem(&p, opt, index);
             if (!oldDecorationSize.isEmpty()) {
                 opt.decorationSize = oldDecorationSize;
                 oldDecorationSize = QSize();
@@ -1020,35 +1125,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     syncBackBuffer(painter, clipRect);
 
     if (!m_errorMessage.isEmpty()) {
-        paintErrorMessage(painter, cr, m_errorMessage);
-    }
-}
-
-void IconView::updateTextShadows(const QColor &textColor)
-{
-    if (!m_drawShadows) {
-        m_delegate->setShadowColor(Qt::transparent);
-        return;
-    }
-
-    QColor shadowColor;
-
-    // Use black shadows with bright text, and white shadows with dark text.
-    if (qGray(textColor.rgb()) > 192) {
-        shadowColor = Qt::black;
-    } else {
-        shadowColor = Qt::white;
-    }
-
-    if (m_delegate->shadowColor() != shadowColor) {
-        m_delegate->setShadowColor(shadowColor);
-
-        // Center white shadows to create a halo effect, and offset dark shadows slightly.
-        if (shadowColor == Qt::white) {
-            m_delegate->setShadowOffset(QPoint(0, 0));
-        } else {
-            m_delegate->setShadowOffset(QPoint(layoutDirection() == Qt::RightToLeft ? -1 : 1, 1));
-        }
+        paintMessage(painter, cr, m_errorMessage, KIcon("dialog-error"));
     }
 }
 
@@ -1116,30 +1193,46 @@ QRect IconView::visualRect(const QModelIndex &index) const
 
 QRegion IconView::visualRegion(const QModelIndex &index) const
 {
-    QStyleOptionViewItemV4 option = viewOptions();
-    option.rect = m_items[index.row()].rect;
-    if (m_selectionModel->isSelected(index)) {
-        option.state |= QStyle::State_Selected;
-    }
-    if (index == m_hoveredIndex) {
-        option.state |= QStyle::State_MouseOver;
-    }
-
-    quint64 key = quint64(option.state) << 32 | index.row();
+    const quint64 key = index.row();
     if (QRegion *region = m_regionCache.object(key)) {
         return *region;
     }
 
-    QRegion region;
+    QStyleOptionViewItemV4 option = viewOptions();
+    option.rect = m_items[index.row()].rect;
 
-    if (m_delegate) {
-        // Make this a virtual function in KDE 5
-        QMetaObject::invokeMethod(m_delegate, "shape", Q_RETURN_ARG(QRegion, region),
-                                  Q_ARG(QStyleOptionViewItem, option),
-                                  Q_ARG(QModelIndex, index));
+    qreal left, top, right, bottom;
+    m_itemFrame->getMargins(left, top, right, bottom);
 
-        m_regionCache.insert(key, new QRegion(region));
+    const QRect r = option.rect.adjusted(left, top, -right, -bottom);
+    QRect ir = QStyle::alignedRect(option.direction, Qt::AlignTop | Qt::AlignHCenter,
+                                   option.decorationSize, r);
+    QRect tr = r.adjusted(0, ir.bottom() - r.top() + 2, 0, 0);
+
+    KFileItem item = qvariant_cast<KFileItem>(index.data(KDirModel::FileItemRole));
+    QFont fnt = font();
+    if (item.isLink())
+        fnt.setBold(true);
+
+    QTextLayout layout;
+    layout.setText(index.data(Qt::DisplayRole).toString());
+    layout.setFont(font());
+    const QSize ts = doTextLayout(layout, tr.size(), Qt::AlignHCenter,
+                                  QTextOption::WrapAtWordBoundaryOrAnywhere);
+    tr = QStyle::alignedRect(layoutDirection(), Qt::AlignTop | Qt::AlignHCenter, ts, tr);
+
+    // Extend the icon rect so it touches the text rect
+    if (ir.width() < tr.width()) {
+        ir.setBottom(tr.top());
+    } else {
+        tr.setTop(ir.bottom());
     }
+
+    QRegion region;
+    region += ir;
+    region += tr;
+
+    m_regionCache.insert(key, new QRegion(region));
     return region;
 }
 
@@ -1154,6 +1247,21 @@ void IconView::updateScrollBarGeometry()
     if (m_scrollBar->geometry() != r) {
         m_scrollBar->setGeometry(r);
     }
+}
+
+void IconView::updateEditorGeometry()
+{
+    QStyleOptionViewItemV4 option = viewOptions();
+    option.rect = visualRect(m_editorIndex);
+
+    const int frameWidth = m_editor->nativeWidget()->frameWidth();
+    qreal left, top, right, bottom;
+    m_itemFrame->getMargins(left, top, right, bottom);
+    const QRect r = option.rect.adjusted(-frameWidth, top + option.decorationSize.height() + 2 - frameWidth,
+                                         frameWidth, frameWidth);
+
+    m_editor->nativeWidget()->setGeometry(r);
+    m_editor->setPos(mapFromViewport(m_editor->nativeWidget()->pos()));
 }
 
 void IconView::renameSelectedIcon()
@@ -1171,21 +1279,17 @@ void IconView::renameSelectedIcon()
     QStyleOptionViewItemV4 option = viewOptions();
     option.rect = rect;
 
-    QWidget *editor = m_delegate->createEditor(0, option, index);
-    editor->setAttribute(Qt::WA_NoSystemBackground);
-    editor->installEventFilter(m_delegate);
-    m_delegate->updateEditorGeometry(editor, option, index);
-
-    m_editorProxy = new QGraphicsProxyWidget(this);
-    m_editorProxy->setWidget(editor);
-    m_editorProxy->setPos(mapFromViewport(editor->pos()));
-
-    m_delegate->setEditorData(editor, index);
-
-    editor->show();
-    editor->setFocus();
-
     m_editorIndex = index;
+
+    m_editor = new ItemEditor(this, option, index);
+    connect(m_editor, SIGNAL(closeEditor(QGraphicsWidget*, QAbstractItemDelegate::EndEditHint)),
+                      SLOT(closeEditor(QGraphicsWidget*, QAbstractItemDelegate::EndEditHint)));
+
+    updateEditorGeometry();
+
+    m_editor->nativeWidget()->setFocus();
+    m_editor->show();
+    m_editor->setFocus();
 }
 
 void IconView::selectFirstIcon()
@@ -1240,11 +1344,13 @@ QSize IconView::sizeForRowsColumns(int rows, int columns) const
     return size;
 }
 
+// ### Remove
 void IconView::commitData(QWidget *editor)
 {
     m_delegate->setModelData(editor, m_model, m_editorIndex);
 }
 
+// ### Remove
 void IconView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint)
 {
     Q_UNUSED(hint)
@@ -1256,6 +1362,22 @@ void IconView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint h
 
     editor->hide();
     editor->deleteLater();
+    m_editorIndex = QModelIndex();
+
+    markAreaDirty(visibleArea());
+}
+
+void IconView::closeEditor(QGraphicsWidget *editor, QAbstractItemDelegate::EndEditHint hint)
+{
+    Q_UNUSED(hint)
+
+    if (editor->hasFocus()) {
+        setFocus();
+    }
+
+    editor->hide();
+    editor->deleteLater();
+
     m_editorIndex = QModelIndex();
 
     markAreaDirty(visibleArea());
@@ -1288,14 +1410,8 @@ void IconView::resizeEvent(QGraphicsSceneResizeEvent *e)
 
 void IconView::repositionWidgetsManually()
 {
-    if (m_editorProxy) {
-        QWidget *editor = m_editorProxy->widget();
-        QModelIndex index = m_selectionModel->currentIndex();
-        const QRect rect = visualRect(index);
-        QStyleOptionViewItemV4 option = viewOptions();
-        option.rect = rect;
-        m_delegate->updateEditorGeometry(editor, option, index);
-        m_editorProxy->setPos(mapFromViewport(editor->pos()));
+    if (m_editor) {
+        updateEditorGeometry();
     }
 }
 
@@ -2098,6 +2214,9 @@ void IconView::changeEvent(QEvent *event)
     }
 
     case QEvent::FontChange:
+        updateGridSize();
+        // Fallthrough intended
+
     case QEvent::PaletteChange:
     case QEvent::StyleChange:
         markAreaDirty(visibleArea());
@@ -2128,8 +2247,6 @@ void IconView::startDrag(const QPointF &pos, QWidget *widget)
     //option.state |= QStyle::State_Selected;
     option.state &= ~(QStyle::State_Selected | QStyle::State_MouseOver);
 
-    updateTextShadows(palette().color(QPalette::HighlightedText));
-
     QPainter p(&pixmap);
     foreach (const QModelIndex &index, indexes)
     {
@@ -2141,7 +2258,7 @@ void IconView::startDrag(const QPointF &pos, QWidget *widget)
         else
             option.state &= ~QStyle::State_MouseOver;
 #endif
-        m_delegate->paint(&p, option, index);
+        paintItem(&p, option, index);
     }
     p.end();
 

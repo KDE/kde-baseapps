@@ -148,7 +148,6 @@ private:
     void setupIconView();
     void setUrl(const KUrl &url);
     QSize iconSize() const;
-    QSize gridSize() const;
     void createActions();
     void updateSortActionsState();
     void updateListViewState();

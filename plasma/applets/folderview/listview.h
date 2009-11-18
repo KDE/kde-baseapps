@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -55,9 +55,6 @@ public:
 
     void setWordWrap(bool on);
     bool wordWrap() const;
-
-    void setDrawShadows(bool on);
-    bool drawShadows() const;
 
     QModelIndex indexAt(const QPointF &point) const;
     QRect visualRect(const QModelIndex &index) const;

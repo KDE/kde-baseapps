@@ -18,7 +18,8 @@ set(folderview_SRCS
     folderviewadapter.cpp
     previewpluginsmodel.cpp
     tooltipwidget.cpp
-    style.cpp)
+    style.cpp
+    itemeditor.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   folderviewFilterConfig.ui

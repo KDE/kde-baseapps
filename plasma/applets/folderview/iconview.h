@@ -23,6 +23,7 @@
 
 #include "abstractitemview.h"
 #include "popupview.h"
+#include "itemeditor.h"
 
 #include <QAbstractItemDelegate>
 #include <QPointer>
@@ -71,7 +72,6 @@ public:
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
     Q_PROPERTY(bool alignToGrid READ alignToGrid WRITE setAlignToGrid)
     Q_PROPERTY(bool iconsMoveable READ iconsMoveable WRITE setIconsMoveable)
-    Q_PROPERTY(bool drawShadows READ drawShadows WRITE setDrawShadows)
     Q_PROPERTY(bool customLayout READ customLayout WRITE setCustomLayout)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)
 
@@ -89,6 +89,9 @@ public:
     void setWordWrap(bool on);
     bool wordWrap() const;
 
+    void setTextLineCount(int rows);
+    int textLineCount() const;
+
     void setFlow(Flow flow);
     Flow flow() const;
 
@@ -98,14 +101,13 @@ public:
     void setIconsMoveable(bool on);
     bool iconsMoveable() const;
 
-    void setDrawShadows(bool on);
-    bool drawShadows() const;
-
     void setCustomLayout(bool value);
     bool customLayout() const;
 
     void setIconPositionsData(const QStringList &data);
     QStringList iconPositionsData() const;
+
+    void updateGridSize();
 
     bool renameInProgress() const;
     bool dragInProgress() const;
@@ -160,6 +162,9 @@ protected:
 
     void finishedScrolling();
 
+    QSize itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const;
+    void paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index) const;
+
 public slots:
     void renameSelectedIcon();
     void selectFirstIcon();
@@ -177,9 +182,11 @@ private slots:
     void dropCompleted();
     void statResult(KJob *job);
     void repositionWidgetsManually();
+    void closeEditor(QGraphicsWidget *editor, QAbstractItemDelegate::EndEditHint hint);
 
 private:
-    void paintErrorMessage(QPainter *painter, const QRect &rect, const QString &message) const;
+    void paintMessage(QPainter *painter, const QRect &rect, const QString &message,
+                      const QIcon &icon = QIcon()) const;
     int columnsForWidth(qreal width) const;
     int rowsForHeight(qreal height) const;
     QPoint nextGridPosition(const QPoint &prevPos, const QSize &gridSize, const QRect &contentRect) const;
@@ -192,7 +199,7 @@ private:
     void loadIconPositions();
     void updateScrollBar();
     void updateScrollBarGeometry();
-    void updateTextShadows(const QColor &textColor);
+    void updateEditorGeometry();
     void updateToolTip(QWidget *causedWidget = 0);
     void createDropActions(const KUrl::List &urls, QActionGroup *actions);
     QStyleOptionViewItemV4 viewOptions() const;
@@ -203,6 +210,7 @@ private:
     void repaintSelectedIcons();
 
 private:
+    Plasma::FrameSvg *m_itemFrame;
     QVector<ViewItem> m_items;
     QHash<QString, QPoint> m_savedPositions;
     mutable QCache<quint64, QRegion> m_regionCache;
@@ -210,6 +218,7 @@ private:
     int m_columns;
     int m_rows;
     int m_validRows;
+    int m_numTextLines;
     bool m_layoutBroken;
     bool m_needPostLayoutPass;
     bool m_initialListing;
@@ -220,7 +229,6 @@ private:
     bool m_iconsLocked;
     bool m_alignToGrid;
     bool m_wordWrap;
-    bool m_drawShadows;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
@@ -243,7 +251,7 @@ private:
     KonqOperations *m_dropOperation;
     QActionGroup *m_dropActions;
     QPersistentModelIndex m_popupIndex;
-    QPointer<QGraphicsProxyWidget> m_editorProxy;
+    QPointer<ItemEditor> m_editor;
 };
 
 #endif

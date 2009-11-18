@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -46,8 +46,7 @@ ListView::ListView(QGraphicsWidget *parent)
     : AbstractItemView(parent),
       m_rowHeight(-1),
       m_dragInProgress(false),
-      m_wordWrap(true),
-      m_drawShadows(true)
+      m_wordWrap(true)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
@@ -85,19 +84,6 @@ void ListView::setWordWrap(bool on)
 bool ListView::wordWrap() const
 {
     return m_wordWrap;
-}
-
-void ListView::setDrawShadows(bool on)
-{
-    if (m_drawShadows != on) {
-        m_drawShadows = on;
-        markAreaDirty(visibleArea());
-    }
-}
-
-bool ListView::drawShadows() const
-{
-    return m_drawShadows;
 }
 
 void ListView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -199,7 +185,7 @@ QRect ListView::visualRect(const QModelIndex &index) const
 
 void ListView::updateTextShadows(const QColor &textColor)
 {
-    if (!m_drawShadows) {
+    if (!drawShadows()) {
         m_delegate->setShadowColor(Qt::transparent);
         return;
     }

@@ -829,7 +829,7 @@ void FolderView::updateIconViewState()
 
     m_iconView->setDrawShadows(m_drawShadows);
     m_iconView->setIconSize(iconSize());
-    m_iconView->setGridSize(gridSize());
+    m_iconView->setTextLineCount(m_numTextLines);
     m_iconView->setFlow(m_flow);
     m_iconView->setWordWrap(m_numTextLines > 1);
     m_iconView->setAlignToGrid(m_alignToGrid);
@@ -904,12 +904,11 @@ void FolderView::fontSettingsChanged()
 {
     const QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont);
 
-    if (m_iconView && m_iconView->font() != font) {
+    if (m_iconView) {
         m_iconView->setFont(font);
-        m_iconView->setGridSize(gridSize());
     }
 
-    if (m_label && m_label->font() != font) {
+    if (m_label) {
         m_label->setFont(font);
     }
 }
@@ -1741,16 +1740,6 @@ QSize FolderView::iconSize() const
     const int defaultSize = KIconLoader::global()->currentSize(m_listView ? KIconLoader::Panel : KIconLoader::Desktop);
     const int size = (m_customIconSize != 0) ? m_customIconSize : defaultSize;
     return QSize(size, size);
-}
-
-QSize FolderView::gridSize() const
-{
-    const QFontMetrics fm(Plasma::Theme::defaultTheme()->font(Plasma::Theme::DesktopFont));
-    const int textHeight = fm.lineSpacing() * m_numTextLines;
-    QSize size = iconSize();
-    size.rheight() = size.height() + textHeight + 16;
-    size.rwidth() = qMax(size.width() * 2, fm.averageCharWidth() * 10);
-    return size;
 }
 
 void FolderView::timerEvent(QTimerEvent *event)
