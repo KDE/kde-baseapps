@@ -1734,13 +1734,6 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         if (event->modifiers() & Qt::ControlModifier) {
             // Make the current selection persistent
             m_selectionModel->select(m_selectionModel->selection(), QItemSelectionModel::Select);
-        } else if (parent && parent->isContainment() &&
-                   event->widget()->window()->inherits("DashboardView")) {
-            // Let the event propagate to the parent widget, which will emit releaseVisualFocus().
-            // We prefer hiding the Dashboard to allowing rubber band selections in the containment
-            // when the icon view is being shown on the Dashboard.
-            event->ignore();
-            return;
         }
 
         if (m_selectionModel->hasSelection()) {
