@@ -46,6 +46,7 @@ class QActionGroup;
 class QStyleOptionViewItemV4;
 class QScrollBar;
 class ToolTipWidget;
+class Animator;
 
 namespace Plasma
 {
@@ -252,6 +253,7 @@ private:
     QActionGroup *m_dropActions;
     QPersistentModelIndex m_popupIndex;
     QPointer<ItemEditor> m_editor;
+    Animator *m_animator;
 };
 
 #endif

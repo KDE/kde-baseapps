@@ -78,17 +78,25 @@ public:
     virtual QModelIndex indexAt(const QPointF &point) const = 0;
     virtual QRect visualRect(const QModelIndex &index) const = 0;
 
+    QPointF mapToViewport(const QPointF &point) const;
+    QRectF mapToViewport(const QRectF &rect) const;
+    QPointF mapFromViewport(const QPointF &point) const;
+    QRectF mapFromViewport(const QRectF &rect) const;
+
+    void markAreaDirty(const QRect &rect);
+    void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
+
     void scrollTo(const QModelIndex &index, QAbstractItemView::ScrollHint hint =  QAbstractItemView::EnsureVisible);
     void autoScroll(ScrollDirection direction, int pixelsPerSecond);
     void stopAutoScrolling();
 
 signals:
     void activated(const QModelIndex &index);
+    void entered(const QModelIndex &index);
+    void left(const QModelIndex &index);
     void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
 
 protected:
-    void markAreaDirty(const QRect &rect);
-    void markAreaDirty(const QRectF &rect) { markAreaDirty(rect.toAlignedRect()); }
     QRect scrollBackBuffer();
     void prepareBackBuffer();
     void syncBackBuffer(QPainter *painter, const QRect &clipRect);
@@ -96,11 +104,6 @@ protected:
     QSize doTextLayout(QTextLayout &layout, const QSize &constraints, Qt::Alignment alignment,
                        QTextOption::WrapMode wrapMode) const;
     void drawTextLayout(QPainter *painter, const QTextLayout &layout, const QRect &rect) const; 
-
-    QPointF mapToViewport(const QPointF &point) const;
-    QRectF mapToViewport(const QRectF &rect) const;
-    QPointF mapFromViewport(const QPointF &point) const;
-    QRectF mapFromViewport(const QRectF &rect) const;
 
     void timerEvent(QTimerEvent *event);
 

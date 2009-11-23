@@ -20,7 +20,8 @@ set(folderview_SRCS
     tooltipwidget.cpp
     style.cpp
     itemeditor.cpp
-    halopainter.cpp)
+    halopainter.cpp
+    animator.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   folderviewFilterConfig.ui

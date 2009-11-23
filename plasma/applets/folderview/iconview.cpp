@@ -55,6 +55,7 @@
 #include "proxymodel.h"
 #include "previewpluginsmodel.h"
 #include "tooltipwidget.h"
+#include "animator.h"
 
 #include <Plasma/Containment>
 #include <Plasma/Corona>
@@ -101,6 +102,8 @@ IconView::IconView(QGraphicsWidget *parent)
     m_itemFrame->setImagePath("widgets/viewitem");
     m_itemFrame->setCacheAllRenderedFrames(true);
     m_itemFrame->setElementPrefix("normal");
+
+    m_animator = new Animator(this);
 
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     setIconSize(QSize(size, size));
@@ -919,22 +922,32 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
 {
     // Draw the item background
     // ========================
-    const bool hover = (option.state & QStyle::State_MouseOver);
     const bool selected = (option.state & QStyle::State_Selected);
+    const qreal hoverProgress = m_animator->hoverProgress(index);
 
-    if (selected && hover) {
-        m_itemFrame->setElementPrefix("selected+hover");
-    } else if (selected) {
+    QPixmap from(option.rect.size());
+    QPixmap to(option.rect.size());
+    from.fill(Qt::transparent);
+    to.fill(Qt::transparent);
+
+    if (selected) {
+        QPainter p(&from);
         m_itemFrame->setElementPrefix("selected");
-    } else if (hover) {
-        m_itemFrame->setElementPrefix("hover");
-    } else {
-        m_itemFrame->setElementPrefix("normal");
+        m_itemFrame->resizeFrame(option.rect.size());
+        m_itemFrame->paintFrame(&p, QPoint());
     }
 
-    if (selected || hover) {
+    if (hoverProgress > 0.0) {
+        QPainter p(&to);
+        m_itemFrame->setElementPrefix(selected ? "selected+hover" : "hover");
         m_itemFrame->resizeFrame(option.rect.size());
-        m_itemFrame->paintFrame(painter, option.rect.topLeft());
+        m_itemFrame->paintFrame(&p, QPoint());
+        p.end();
+
+        QPixmap result = Plasma::PaintUtils::transition(from, to, hoverProgress);
+        painter->drawPixmap(option.rect.topLeft(), result);
+    } else if (selected) {
+        painter->drawPixmap(option.rect.topLeft(), from);
     }
 
     qreal left, top, right, bottom;
@@ -1514,6 +1527,7 @@ void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     const QModelIndex index = indexAt(mapToViewport(event->pos()));
     if (index.isValid()) {
+        emit entered(index);
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
     }
@@ -1525,6 +1539,7 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     Q_UNUSED(event)
 
     if (m_hoveredIndex.isValid()) {
+        emit left(m_hoveredIndex);
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = QModelIndex();
         updateToolTip(event->widget());
@@ -1535,6 +1550,12 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     const QModelIndex index = indexAt(mapToViewport(event->pos()));
     if (index != m_hoveredIndex) {
+        if (m_hoveredIndex.isValid()) {
+            emit left(m_hoveredIndex);
+        }
+        if (index.isValid()) {
+            emit entered(index);
+        }
         markAreaDirty(visualRect(index));
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
@@ -1837,6 +1858,8 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
     const QRect r = QRectF(rubberBand & viewportRect).toAlignedRect();
 
+    const QModelIndex prevHoveredIndex = m_hoveredIndex;
+
     if (r != m_rubberBand) {
         const QPoint pt = pos.toPoint();
         QRectF dirtyRect = m_rubberBand | r;
@@ -1849,6 +1872,15 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         selectIconsInArea(m_rubberBand, pt);
 
         markAreaDirty(dirtyRect);
+    }
+
+    if (prevHoveredIndex != m_hoveredIndex) {
+        if (prevHoveredIndex.isValid()) {
+            emit left(prevHoveredIndex);
+        }
+        if (m_hoveredIndex.isValid()) {
+            emit entered(m_hoveredIndex);
+        }
     }
 }
 
