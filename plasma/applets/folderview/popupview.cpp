@@ -406,8 +406,7 @@ void PopupView::activated(const QModelIndex &index)
     const KFileItem item = m_model->itemForIndex(index);
     item.run();
 
-    hide();
-    deleteLater();
+    closeThisAndParentPopup();
 }
 
 void PopupView::setBusy(bool busy)
@@ -529,6 +528,12 @@ void PopupView::maybeClose()
         !callOnParent("maybeClose") && !m_hideTimer.isActive()) {
         m_hideTimer.start(400, this);
     }
+}
+
+void PopupView::closeThisAndParentPopup() {
+    hide();
+    deleteLater();
+    callOnParent("closeThisAndParentPopup");
 }
 
 void PopupView::cancelHideTimer()

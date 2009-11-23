@@ -81,6 +81,7 @@ private slots:
     void setBusy(bool);
     void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
     void maybeClose();
+    void closeThisAndParentPopup();
     void cancelHideTimer();
     void aboutToShowCreateNew();
     void undoTextChanged(const QString &text);
