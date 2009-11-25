@@ -130,6 +130,7 @@ signals:
     void indexesMoved(const QModelIndexList &indexes);
     void popupViewClosed();
     void busy(bool);
+    void modelChanged();
 
 protected:
     bool indexIntersectsRect(const QModelIndex &index, const QRect &rect) const;

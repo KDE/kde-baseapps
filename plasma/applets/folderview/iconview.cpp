@@ -139,6 +139,7 @@ void IconView::setModel(QAbstractItemModel *model)
         m_delayedLayoutTimer.start(10, this);
         emit busy(true);
     }
+    emit modelChanged();
 }
 
 void IconView::setIconSize(const QSize &size)
@@ -1547,7 +1548,7 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
         updateToolTip(event->widget());
     }
 
-    m_actionOverlay->hide();
+    m_actionOverlay->forceHide(ActionOverlay::FadeOut);
 }
 
 void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
@@ -2263,6 +2264,8 @@ void IconView::changeEvent(QEvent *event)
 // widget is the widget that sent the mouse event that triggered the drag.
 void IconView::startDrag(const QPointF &pos, QWidget *widget)
 {
+    m_actionOverlay->forceHide(ActionOverlay::HideNow);
+
     QModelIndexList indexes = m_selectionModel->selectedIndexes();
     QRect boundingRect;
     foreach (const QModelIndex &index, indexes) {

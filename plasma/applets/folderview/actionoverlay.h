@@ -23,6 +23,8 @@
 
 #include "abstractitemview.h"
 
+#include <Plasma/AbstractAnimation>
+
 #include <QTimer>
 #include <QGraphicsWidget>
 #include <QPersistentModelIndex>
@@ -59,18 +61,26 @@ class ActionOverlay : public QGraphicsWidget
     Q_OBJECT
 
 public:
+    enum HideHint { HideNow, FadeOut };
+
     ActionOverlay(AbstractItemView *parent = 0);
     QPersistentModelIndex hoverIndex();
+    void forceHide(HideHint hint);
 
 private slots:
     void selected();
     void entered(const QModelIndex &index);
     void left(const QModelIndex &index);
+    void timeout();
+    void modelChanged();
+    void rowsRemoved(const QModelIndex& indexes, int start, int end);
 
 private:
     ActionIcon *m_iconToggleSelection;
     QPersistentModelIndex m_hoverIndex;
     QTimer *m_hideActionOverlayIconTimer;
+    Plasma::AbstractAnimation *fadeIn;
+    Plasma::AbstractAnimation *fadeOut;
 };
 
 #endif // ACTIONOVERLAY_H

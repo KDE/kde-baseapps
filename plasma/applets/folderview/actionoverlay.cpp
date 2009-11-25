@@ -21,6 +21,7 @@
 #include "actionoverlay.h"
 
 #include <Plasma/PaintUtils>
+#include <Plasma/Animator>
 
 #include <QPainter>
 #include <QGraphicsGridLayout>
@@ -31,6 +32,7 @@ ActionIcon::ActionIcon(QGraphicsItem* parent)
     setMinimumSize(24, 24);
     setMaximumSize(24, 24);
     setAcceptHoverEvents(true);
+    setCacheMode(DeviceCoordinateCache);
     show();
 }
 
@@ -136,17 +138,29 @@ ActionOverlay::ActionOverlay(AbstractItemView* parent)
 
     connect(parentWidget(), SIGNAL(entered(QModelIndex)), this, SLOT(entered(QModelIndex)));
     connect(parentWidget(), SIGNAL(left(QModelIndex)), this, SLOT(left(QModelIndex)));
+    connect(parentWidget(), SIGNAL(modelChanged()), this, SLOT(modelChanged()));
 
     connect(m_iconToggleSelection, SIGNAL(clicked()), this, SLOT(selected()));
 
     m_hideActionOverlayIconTimer = new QTimer(this);
-    connect(m_hideActionOverlayIconTimer, SIGNAL(timeout()), this, SLOT(close()));
+    connect(m_hideActionOverlayIconTimer, SIGNAL(timeout()), this, SLOT(timeout()));
     connect(m_iconToggleSelection, SIGNAL(iconHoverEnter()), m_hideActionOverlayIconTimer, SLOT(stop()));
     connect(m_iconToggleSelection, SIGNAL(iconHoverLeave()), m_hideActionOverlayIconTimer, SLOT(start()));
 
     connect(parent->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(close()));
 
     m_hideActionOverlayIconTimer->setInterval(500);
+    m_hideActionOverlayIconTimer->setSingleShot(true);
+
+    fadeIn = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
+    fadeIn->setProperty("startOpacity", 0);
+    fadeIn->setProperty("targetOpacity", 1);
+    fadeIn->setWidgetToAnimate(this);
+
+    fadeOut = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
+    fadeOut->setProperty("startOpacity", 1);
+    fadeOut->setProperty("targetOpacity", 0);
+    fadeOut->setWidgetToAnimate(this);
 
     hide();
 }
@@ -176,6 +190,10 @@ void ActionOverlay::entered(const QModelIndex &index)
         AbstractItemView *view = static_cast<AbstractItemView*>(parentWidget());
         setPos(view->mapFromViewport(view->visualRect(index)).topLeft());
         show();
+        if (m_hoverIndex != index) {
+            m_iconToggleSelection->update();
+            fadeIn->start();
+        }
         m_hoverIndex = index;
     }
 }
@@ -187,4 +205,41 @@ void ActionOverlay::left(const QModelIndex &index)
     if (!m_hideActionOverlayIconTimer->isActive()) {
         m_hideActionOverlayIconTimer->start();
     }
+}
+
+void ActionOverlay::timeout()
+{
+    // allow the animation to restart after hiding the ActionOverlayIcon even if m_hoverIndex didn't change
+    m_hoverIndex = QPersistentModelIndex();
+
+    fadeOut->start();
+}
+
+void ActionOverlay::forceHide(HideHint hint)
+{
+    m_hideActionOverlayIconTimer->stop();
+    if (hint == FadeOut) {
+        timeout();
+    } else {
+        hide();
+    }
+}
+
+void ActionOverlay::rowsRemoved(const QModelIndex & parent, int start, int end)
+{
+    Q_UNUSED(parent);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
+
+    if (!m_hoverIndex.isValid()) {
+        hide();
+    }
+}
+
+void ActionOverlay::modelChanged()
+{
+    AbstractItemView *view = static_cast<AbstractItemView*>(parentWidget());
+
+    QAbstractItemModel *mod = view->model();
+    connect(mod, SIGNAL(rowsRemoved(QModelIndex, int, int)), SLOT(rowsRemoved(QModelIndex, int, int)));
 }
