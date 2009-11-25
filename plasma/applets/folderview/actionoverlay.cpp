@@ -119,7 +119,7 @@ ActionOverlay::ActionOverlay(AbstractItemView* parent)
 
     connect(parent->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(close()));
 
-    m_hideActionOverlayIconTimer->setInterval(5000);
+    m_hideActionOverlayIconTimer->setInterval(500);
 
     hide();
 }
