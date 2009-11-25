@@ -26,7 +26,7 @@
 #include <QGraphicsGridLayout>
 
 ActionIcon::ActionIcon(QGraphicsItem* parent)
-    : QGraphicsWidget(parent), m_pressed(false)
+    : QGraphicsWidget(parent), m_pressed(false), m_sunken(false)
 {
     setMinimumSize(24, 24);
     setMaximumSize(24, 24);
@@ -79,7 +79,7 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     QRectF r = geometry();
 
     painter->drawImage(r.topLeft() - QPoint(2, 2), shadow);
-    painter->drawImage(r.topLeft() - (m_pressed ? QPoint(2, 2) : QPoint(3, 3)), image);
+    painter->drawImage(r.topLeft() - (m_sunken ? QPoint(2, 2) : QPoint(3, 3)), image);
 
     QGraphicsWidget::paint(painter, option, widget);
 }
@@ -87,16 +87,26 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 void ActionIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     m_pressed = true;
+    m_sunken = true;
     update();
 }
 
 void ActionIcon::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     m_pressed = false;
+    m_sunken = false;
     if (isUnderMouse()) {
         emit clicked();
     }
     update();
+}
+
+void ActionIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (m_sunken != isUnderMouse()) {
+        m_sunken = isUnderMouse();
+        update();
+    }
 }
 
 void ActionIcon::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
