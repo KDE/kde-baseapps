@@ -25,7 +25,8 @@
 #include <QPainter>
 #include <QGraphicsGridLayout>
 
-ActionIcon::ActionIcon(QGraphicsItem* parent): QGraphicsWidget(parent)
+ActionIcon::ActionIcon(QGraphicsItem* parent)
+    : QGraphicsWidget(parent), m_pressed(false)
 {
     setMinimumSize(24, 24);
     setMaximumSize(24, 24);
@@ -41,8 +42,13 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
     QLinearGradient gradient(.25, 0, .75, 1);
     gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-    gradient.setColorAt(0, QColor(128, 128, 128));
-    gradient.setColorAt(1, QColor(64, 64, 64));
+    if (isUnderMouse()) {
+        gradient.setColorAt(0, QColor(160, 160, 160));
+        gradient.setColorAt(1, QColor(96, 96, 96));
+    } else {
+        gradient.setColorAt(0, QColor(128, 128, 128));
+        gradient.setColorAt(1, QColor(64, 64, 64));
+    }
 
     QPainterPath plus;
     plus.setFillRule(Qt::WindingFill);
@@ -73,25 +79,34 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     QRectF r = geometry();
 
     painter->drawImage(r.topLeft() - QPoint(2, 2), shadow);
-    painter->drawImage(r.topLeft() - QPoint(3, 3), image);
+    painter->drawImage(r.topLeft() - (m_pressed ? QPoint(2, 2) : QPoint(3, 3)), image);
 
     QGraphicsWidget::paint(painter, option, widget);
 }
 
 void ActionIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
+    m_pressed = true;
     emit clicked();
-    QGraphicsItem::mousePressEvent(event);
+    update();
+}
+
+void ActionIcon::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+{
+    m_pressed = false;
+    update();
 }
 
 void ActionIcon::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     emit iconHoverEnter();
+    update();
 }
 
 void ActionIcon::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     emit iconHoverLeave();
+    update();
 }
 
 

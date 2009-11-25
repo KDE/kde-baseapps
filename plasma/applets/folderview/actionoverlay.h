@@ -35,6 +35,7 @@ public:
     ActionIcon(QGraphicsItem* parent = 0);
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
@@ -42,6 +43,9 @@ signals:
     void clicked();
     void iconHoverEnter();
     void iconHoverLeave();
+
+private:
+    bool m_pressed;
 };
 
 
