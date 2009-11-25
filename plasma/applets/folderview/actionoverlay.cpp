@@ -87,13 +87,15 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 void ActionIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     m_pressed = true;
-    emit clicked();
     update();
 }
 
 void ActionIcon::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     m_pressed = false;
+    if (isUnderMouse()) {
+        emit clicked();
+    }
     update();
 }
 
