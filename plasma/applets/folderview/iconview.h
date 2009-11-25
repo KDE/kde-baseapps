@@ -24,6 +24,7 @@
 #include "abstractitemview.h"
 #include "popupview.h"
 #include "itemeditor.h"
+#include "actionoverlay.h"
 
 #include <QAbstractItemDelegate>
 #include <QPointer>
@@ -254,6 +255,7 @@ private:
     QPersistentModelIndex m_popupIndex;
     QPointer<ItemEditor> m_editor;
     Animator *m_animator;
+    ActionOverlay *m_actionOverlay;
 };
 
 #endif

@@ -87,6 +87,8 @@ IconView::IconView(QGraphicsWidget *parent)
       m_dropActions(0),
       m_editor(0)
 {
+    m_actionOverlay = new ActionOverlay(this);
+
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
     setCacheMode(NoCache);
@@ -1544,6 +1546,8 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
         m_hoveredIndex = QModelIndex();
         updateToolTip(event->widget());
     }
+
+    m_actionOverlay->hide();
 }
 
 void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
@@ -2525,7 +2529,6 @@ void IconView::timerEvent(QTimerEvent *event)
             }
 
             const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
-
             m_popupView = new PopupView(m_popupUrl, pos, this);
             connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
             connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));

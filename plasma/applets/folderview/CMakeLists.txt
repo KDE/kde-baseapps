@@ -21,7 +21,8 @@ set(folderview_SRCS
     style.cpp
     itemeditor.cpp
     halopainter.cpp
-    animator.cpp)
+    animator.cpp
+    actionoverlay.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   folderviewFilterConfig.ui
