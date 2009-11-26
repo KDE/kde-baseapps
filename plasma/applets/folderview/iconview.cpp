@@ -89,6 +89,9 @@ IconView::IconView(QGraphicsWidget *parent)
 {
     m_actionOverlay = new ActionOverlay(this);
 
+    // Added for later use
+    Q_UNUSED(I18N_NOOP("This folder is empty."))
+
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
     setCacheMode(NoCache);
