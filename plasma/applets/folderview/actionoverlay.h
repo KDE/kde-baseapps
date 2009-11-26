@@ -29,6 +29,10 @@
 #include <QGraphicsWidget>
 #include <QPersistentModelIndex>
 
+namespace Plasma {
+    class Svg;
+}
+
 class ActionIcon : public QGraphicsWidget
 {
     Q_OBJECT
@@ -48,6 +52,7 @@ signals:
     void iconHoverLeave();
 
 private:
+    Plasma::Svg *m_icon;
     bool m_pressed;
     bool m_sunken;
 };

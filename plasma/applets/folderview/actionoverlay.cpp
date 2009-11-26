@@ -22,17 +22,26 @@
 
 #include <Plasma/PaintUtils>
 #include <Plasma/Animator>
+#include <Plasma/Svg>                                                
 
 #include <QPainter>
 #include <QGraphicsGridLayout>
 
 ActionIcon::ActionIcon(QGraphicsItem* parent)
-    : QGraphicsWidget(parent), m_pressed(false), m_sunken(false)
+    : QGraphicsWidget(parent),                                       
+      m_pressed(false),                                              
+      m_sunken(false)                                                
 {
-    setMinimumSize(24, 24);
-    setMaximumSize(24, 24);
     setAcceptHoverEvents(true);
     setCacheMode(DeviceCoordinateCache);
+                                                                     
+    m_icon = new Plasma::Svg(this);                                  
+    m_icon->setImagePath("widgets/action-overlays");                 
+    m_icon->setContainsMultipleImages(true);                         
+                                                                     
+    setMinimumSize(m_icon->elementSize("add-normal"));               
+    setMaximumSize(minimumSize());                                   
+                                                                     
     show();
 }
 
@@ -42,48 +51,15 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     QPersistentModelIndex index = static_cast<ActionOverlay*>(parentWidget())->hoverIndex();
     QItemSelectionModel *m_selectionModel = view->selectionModel();
 
-    QLinearGradient gradient(.25, 0, .75, 1);
-    gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
-    if (isUnderMouse()) {
-        gradient.setColorAt(0, QColor(160, 160, 160));
-        gradient.setColorAt(1, QColor(96, 96, 96));
-    } else {
-        gradient.setColorAt(0, QColor(128, 128, 128));
-        gradient.setColorAt(1, QColor(64, 64, 64));
-    }
-
-    QPainterPath plus;
-    plus.setFillRule(Qt::WindingFill);
-
-    // if the item is selected we only draw a minus sign instead of a plus
-    if (!m_selectionModel->isSelected(index)) {
-        plus.addRect(24 / 2 - 1, 8, 2, 8);
-    }
-    plus.addRect(8, 24 / 2 - 1, 8, 2);
-
-    QImage image(24, 24, QImage::Format_ARGB32_Premultiplied);
-    image.fill(0);
-
-    QPainter p(&image);
-    p.setRenderHint(QPainter::Antialiasing);
-    p.setPen(Qt::NoPen);
-    p.setBrush(Qt::white);
-    p.drawEllipse(image.rect().adjusted(3, 3, -3, -3));
-    p.setBrush(gradient);
-    p.drawEllipse(QRectF(image.rect()).adjusted(4.5, 4.5, -4.5, -4.5));
-    p.setBrush(Qt::white);
-    p.drawPath(plus);
-    p.end();
-
-    QImage shadow = image;
-    Plasma::PaintUtils::shadowBlur(shadow, 1, QColor(0, 0, 0, 192));
-
-    QRectF r = geometry();
-
-    painter->drawImage(r.topLeft() - QPoint(2, 2), shadow);
-    painter->drawImage(r.topLeft() - (m_sunken ? QPoint(2, 2) : QPoint(3, 3)), image);
-
-    QGraphicsWidget::paint(painter, option, widget);
+    QString element = m_selectionModel->isSelected(index) ? "remove" : "add";               
+    if (m_sunken) {                                                                         
+        element += "-pressed";                                                              
+    } else if (isUnderMouse()) {                                                            
+        element += "-hover";                                                                
+    } else {                                                                                
+        element += "-normal";                                                               
+    }                                                                                       
+    m_icon->paint(painter, rect(), element);                                                
 }
 
 void ActionIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
