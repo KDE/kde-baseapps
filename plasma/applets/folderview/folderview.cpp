@@ -1253,6 +1253,11 @@ void FolderView::createActions()
     connect(trash, SIGNAL(triggered(Qt::MouseButtons, Qt::KeyboardModifiers)),
             SLOT(moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers)));
 
+    KAction *emptyTrash = new KAction(KIcon("trash-empty"), i18n("&Empty Trash Bin"), this);
+    KConfig trashConfig("trashrc", KConfig::SimpleConfig);
+    emptyTrash->setEnabled(!trashConfig.group("Status").readEntry("Empty", true));
+    connect(emptyTrash, SIGNAL(triggered()), SLOT(emptyTrashBin()));
+
     KAction *del = new KAction(i18n("&Delete"), this);
     del->setIcon(KIcon("edit-delete"));
     del->setShortcut(Qt::SHIFT + Qt::Key_Delete);
@@ -1269,6 +1274,7 @@ void FolderView::createActions()
     m_actionCollection.addAction("rename", rename);
     m_actionCollection.addAction("trash", trash);
     m_actionCollection.addAction("del", del);
+    m_actionCollection.addAction("empty_trash", emptyTrash);
 
     if (KAuthorized::authorize("editable_desktop_icons")) {
         KAction *alignToGrid = new KAction(i18n("Align to Grid"), this);
@@ -1380,6 +1386,9 @@ QList<QAction*> FolderView::contextualActions()
             m_itemActions->setItemListProperties(itemList);
         }
         actions.append(m_itemActions->preferredOpenWithAction(QString()));
+        if (m_url.protocol() == "trash") {
+            actions.append(m_actionCollection.action("empty_trash"));
+        }
 
         separator = new QAction(this);
         separator->setSeparator(true);
@@ -1562,6 +1571,11 @@ void FolderView::renameSelectedIcon()
     if (m_iconView) {
         m_iconView->renameSelectedIcon();
     }
+}
+
+void FolderView::emptyTrashBin()
+{
+    KonqOperations::emptyTrash(view());
 }
 
 void FolderView::undoTextChanged(const QString &text)

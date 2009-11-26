@@ -238,6 +238,11 @@ void PopupView::createActions()
     connect(trash, SIGNAL(triggered(Qt::MouseButtons, Qt::KeyboardModifiers)),
             SLOT(moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers)));
 
+    KAction *emptyTrash = new KAction(KIcon("trash-empty"), i18n("&Empty Trash Bin"), this);
+    KConfig trashConfig("trashrc", KConfig::SimpleConfig);
+    emptyTrash->setEnabled(!trashConfig.group("Status").readEntry("Empty", true));
+    connect(emptyTrash, SIGNAL(triggered()), SLOT(emptyTrashBin()));
+
     KAction *del = new KAction(i18n("&Delete"), this);
     del->setIcon(KIcon("edit-delete"));
     del->setShortcut(Qt::SHIFT + Qt::Key_Delete);
@@ -255,6 +260,7 @@ void PopupView::createActions()
     m_actionCollection.addAction("rename", rename);
     m_actionCollection.addAction("trash", trash);
     m_actionCollection.addAction("del", del);
+    m_actionCollection.addAction("empty_trash", emptyTrash);
 }
 
 void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
@@ -422,6 +428,11 @@ void PopupView::setBusy(bool busy)
     }
 }
 
+void PopupView::emptyTrashBin()
+{
+    KonqOperations::emptyTrash(this);
+}
+
 void PopupView::undoTextChanged(const QString &text)
 {
     if (QAction *action = m_actionCollection.action("undo")) {
@@ -499,6 +510,10 @@ void PopupView::contextMenuEvent(QContextMenuEvent *event)
         m_itemActions->setItemListProperties(itemList);
     }
     menu.addAction(m_itemActions->preferredOpenWithAction(QString()));
+
+    if (m_url.protocol() == "trash") {
+        menu.addAction(m_actionCollection.action("empty_trash"));
+    }
 
     m_showingMenu = true;
     menu.exec(event->globalPos());

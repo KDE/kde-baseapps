@@ -119,6 +119,7 @@ protected slots:
     void deleteSelectedIcons();
     void renameSelectedIcon();
 
+    void emptyTrashBin();
     void undoTextChanged(const QString &text);
     void toggleIconsLocked(bool locked);
     void toggleAlignToGrid(bool align);

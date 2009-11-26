@@ -84,6 +84,7 @@ private slots:
     void closeThisAndParentPopup();
     void cancelHideTimer();
     void aboutToShowCreateNew();
+    void emptyTrashBin();
     void undoTextChanged(const QString &text);
 
     // These slots are for KonqPopupMenu
