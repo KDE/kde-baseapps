@@ -20,7 +20,6 @@ set(folderview_SRCS
     tooltipwidget.cpp
     style.cpp
     itemeditor.cpp
-    halopainter.cpp
     animator.cpp
     actionoverlay.cpp)
 

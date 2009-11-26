@@ -22,7 +22,6 @@
  */
 
 #include "abstractitemview.h"
-#include "halopainter.h"
 #include "proxymodel.h"
 #include "style.h"
 
@@ -436,7 +435,7 @@ void AbstractItemView::drawTextLayout(QPainter *painter, const QTextLayout &layo
         if (qGray(color.rgb()) < 192) {
             // Draw halos
             foreach (const QRect &haloRect, haloRects) {
-                HaloPainter::drawHalo(painter, haloRect.translated(rect.topLeft()));
+                Plasma::PaintUtils::drawHalo(painter, haloRect.translated(rect.topLeft()));
             }
         } else {
             // Draw shadow
