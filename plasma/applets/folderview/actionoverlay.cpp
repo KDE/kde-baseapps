@@ -188,7 +188,10 @@ void ActionOverlay::timeout()
     // allow the animation to restart after hiding the ActionOverlayIcon even if m_hoverIndex didn't change
     m_hoverIndex = QPersistentModelIndex();
 
-    fadeOut->start();
+    if (isVisible() && (!fadeOut->animation() || fadeOut->animation()->state() != QAbstractAnimation::Running)) {
+        fadeOut->start();
+        connect(fadeOut->animation(), SIGNAL(finished()), SLOT(close()));
+    }
 }
 
 void ActionOverlay::forceHide(HideHint hint)
@@ -219,3 +222,4 @@ void ActionOverlay::modelChanged()
     QAbstractItemModel *mod = view->model();
     connect(mod, SIGNAL(rowsRemoved(QModelIndex, int, int)), SLOT(rowsRemoved(QModelIndex, int, int)));
 }
+
