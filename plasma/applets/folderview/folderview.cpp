@@ -516,12 +516,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.showPreviews->setChecked(m_showPreviews);
     uiDisplay.previewsAdvanced->setEnabled(m_showPreviews);
     uiDisplay.numLinesEdit->setValue(m_numTextLines);
-
-    if (m_textColor != Qt::transparent) {
-        uiDisplay.colorButton->setColor(m_textColor);
-    } else {
-        uiDisplay.colorButton->setColor(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
-    }
+    uiDisplay.colorButton->setColor(textColor());
 
     for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
        if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
@@ -630,9 +625,11 @@ void FolderView::configAccepted()
         needReload = true;
     }
 
+    const QColor defaultColor = isContainment() ? Qt::white :
+            Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
     const QColor color = uiDisplay.colorButton->color();
     if ((m_textColor != Qt::transparent && color != m_textColor) ||
-        (m_textColor == Qt::transparent && color != Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor)))
+        (m_textColor == Qt::transparent && color != defaultColor))
     {
         m_textColor = color;
         cg.writeEntry("textColor", m_textColor);
@@ -804,6 +801,20 @@ void FolderView::showPreviewConfigDialog()
     delete model;
 }
 
+QColor FolderView::textColor() const
+{
+    if (m_textColor != Qt::transparent) {
+        return m_textColor;
+    }
+
+    // Default to white text on the desktop
+    if (isContainment()) {
+        return Qt::white;
+    }
+
+    return Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
+}
+
 void FolderView::updateListViewState()
 {
     QPalette palette = m_listView->palette();
@@ -823,8 +834,7 @@ void FolderView::updateListViewState()
 void FolderView::updateIconViewState()
 {
     QPalette palette = m_iconView->palette();
-    palette.setColor(QPalette::Text, m_textColor != Qt::transparent ? m_textColor :
-                     Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    palette.setColor(QPalette::Text, textColor());
     m_iconView->setPalette(palette);
 
     m_iconView->setDrawShadows(m_drawShadows);
@@ -946,7 +956,7 @@ void FolderView::themeChanged()
 
     if (m_iconView) {
         QPalette palette = m_iconView->palette();
-        palette.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+        palette.setColor(QPalette::Text, textColor());
         m_iconView->setPalette(palette);
     }
 
@@ -956,7 +966,7 @@ void FolderView::themeChanged()
 
     if (m_label) {
         QPalette palette = m_label->palette();
-        palette.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+        palette.setColor(QPalette::Text, textColor());
         m_label->setPalette(palette);
     }
 }

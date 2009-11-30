@@ -146,6 +146,7 @@ protected slots:
  
 private:
     void addActions(AbstractItemView *view);
+    QColor textColor() const;
     void setupIconView();
     void setUrl(const KUrl &url);
     QSize iconSize() const;
