@@ -62,7 +62,9 @@
 #endif
 
 
-PopupView::PopupView(const KUrl &url, const QPoint &pos, const IconView *parentView)
+PopupView::PopupView(const KUrl &url, const QPoint &pos,
+                     const bool &showPreview, const QStringList &previewPlugins,
+                     const IconView *parentView)
     : QWidget(0, Qt::X11BypassWindowManagerHint),
       m_view(0),
       m_parentView(parentView),
@@ -74,6 +76,8 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos, const IconView *parentV
       m_actionCollection(this),
       m_newMenu(0),
       m_itemActions(0),
+      m_previewPlugins(previewPlugins),
+      m_showPreview(showPreview),
       m_showingMenu(false)
 {
     setAttribute(Qt::WA_TranslucentBackground);
@@ -188,11 +192,10 @@ void PopupView::init()
     connect(m_iconView, SIGNAL(busy(bool)), SLOT(setBusy(bool)));
     connect(m_iconView, SIGNAL(popupViewClosed()), SLOT(maybeClose()));
 
-    // TODO: The preview settings should be inherited from the parent view
     FolderViewAdapter *adapter = new FolderViewAdapter(m_iconView);
     m_previewGenerator = new KFilePreviewGenerator(adapter, m_model);
-    m_previewGenerator->setPreviewShown(true);
-    m_previewGenerator->setEnabledPlugins(QStringList() << "imagethumbnail" << "jpegthumbnail");
+    m_previewGenerator->setPreviewShown(m_showPreview);
+    m_previewGenerator->setEnabledPlugins(m_previewPlugins);
 
     m_iconView->setGeometry(contentsRect());
     m_iconView->show();

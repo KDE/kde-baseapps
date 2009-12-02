@@ -109,6 +109,10 @@ public:
     void setIconPositionsData(const QStringList &data);
     QStringList iconPositionsData() const;
 
+    void setPopupPreviewSettings(const bool &showPreview, const QStringList &plugins);
+    bool popupShowPreview() const;
+    QStringList popupPreviewPlugins() const;
+
     void updateGridSize();
 
     bool renameInProgress() const;
@@ -257,6 +261,8 @@ private:
     QPointer<ItemEditor> m_editor;
     Animator *m_animator;
     ActionOverlay *m_actionOverlay;
+    QStringList m_popupPreviewPlugins;
+    bool m_popupShowPreview;
 };
 
 #endif

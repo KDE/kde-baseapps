@@ -49,9 +49,11 @@ class IconView;
 class PopupView : public QWidget
 {
     Q_OBJECT
- 
+
 public:
-    PopupView(const KUrl &url, const QPoint &pos, const IconView *parentView);
+    PopupView(const KUrl &url, const QPoint &pos,
+              const bool &showPreview, const QStringList &previewPlugins,
+              const IconView *parentView);
     ~PopupView();
 
     void delayedHide();
@@ -114,6 +116,8 @@ private:
     KFileItemActions *m_itemActions;
     QBasicTimer m_hideTimer;
     bool m_showingMenu;
+    bool m_showPreview;
+    QStringList m_previewPlugins;
 };
 
 #endif

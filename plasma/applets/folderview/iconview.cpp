@@ -81,6 +81,7 @@ IconView::IconView(QGraphicsWidget *parent)
       m_iconsLocked(false),
       m_alignToGrid(false),
       m_wordWrap(false),
+      m_popupShowPreview(true),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
       m_dropOperation(0),
@@ -109,6 +110,9 @@ IconView::IconView(QGraphicsWidget *parent)
     m_itemFrame->setElementPrefix("normal");
 
     m_animator = new Animator(this);
+
+    // set a default for popup preview plugins
+    m_popupPreviewPlugins = QStringList() << "imagethumbnail" << "jpegthumbnail";
 
     int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     setIconSize(QSize(size, size));
@@ -164,6 +168,22 @@ void IconView::setTextLineCount(int count)
 int IconView::textLineCount() const
 {
     return m_numTextLines;
+}
+
+void IconView::setPopupPreviewSettings(const bool &showPreview, const QStringList &plugins)
+{
+    m_popupShowPreview = showPreview;
+    m_popupPreviewPlugins = plugins;
+}
+
+bool IconView::popupShowPreview() const
+{
+    return m_popupShowPreview;
+}
+
+QStringList IconView::popupPreviewPlugins() const
+{
+    return m_popupPreviewPlugins;
 }
 
 // #### remove
@@ -2535,7 +2555,7 @@ void IconView::timerEvent(QTimerEvent *event)
             }
 
             const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
-            m_popupView = new PopupView(m_popupUrl, pos, this);
+            m_popupView = new PopupView(m_popupUrl, pos, m_popupShowPreview, m_popupPreviewPlugins, this);
             connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
             connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
             m_popupIndex = m_hoveredIndex;

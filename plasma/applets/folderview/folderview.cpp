@@ -849,6 +849,8 @@ void FolderView::updateIconViewState()
         m_label->setPalette(palette);
         m_label->setDrawShadow(m_drawShadows);
     }
+    // make popup inherit file preview settings:
+    m_iconView->setPopupPreviewSettings(m_showPreviews, m_previewPlugins);
 }
 
 void FolderView::addActions(AbstractItemView *view)
