@@ -22,26 +22,26 @@
 
 #include <Plasma/PaintUtils>
 #include <Plasma/Animator>
-#include <Plasma/Svg>                                                
+#include <Plasma/Svg>
 
 #include <QPainter>
 #include <QGraphicsGridLayout>
 
 ActionIcon::ActionIcon(QGraphicsItem* parent)
-    : QGraphicsWidget(parent),                                       
-      m_pressed(false),                                              
-      m_sunken(false)                                                
+    : QGraphicsWidget(parent),
+      m_pressed(false),
+      m_sunken(false)
 {
     setAcceptHoverEvents(true);
     setCacheMode(DeviceCoordinateCache);
-                                                                     
-    m_icon = new Plasma::Svg(this);                                  
-    m_icon->setImagePath("widgets/action-overlays");                 
-    m_icon->setContainsMultipleImages(true);                         
-                                                                     
-    setMinimumSize(m_icon->elementSize("add-normal"));               
-    setMaximumSize(minimumSize());                                   
-                                                                     
+
+    m_icon = new Plasma::Svg(this);
+    m_icon->setImagePath("widgets/action-overlays");
+    m_icon->setContainsMultipleImages(true);
+
+    setMinimumSize(m_icon->elementSize("add-normal"));
+    setMaximumSize(minimumSize());
+
     show();
 }
 
@@ -51,15 +51,15 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     QPersistentModelIndex index = static_cast<ActionOverlay*>(parentWidget())->hoverIndex();
     QItemSelectionModel *m_selectionModel = view->selectionModel();
 
-    QString element = m_selectionModel->isSelected(index) ? "remove" : "add";               
-    if (m_sunken) {                                                                         
-        element += "-pressed";                                                              
-    } else if (isUnderMouse()) {                                                            
-        element += "-hover";                                                                
-    } else {                                                                                
-        element += "-normal";                                                               
-    }                                                                                       
-    m_icon->paint(painter, rect(), element);                                                
+    QString element = m_selectionModel->isSelected(index) ? "remove" : "add";
+    if (m_sunken) {
+        element += "-pressed";
+    } else if (isUnderMouse()) {
+        element += "-hover";
+    } else {
+        element += "-normal";
+    }
+    m_icon->paint(painter, rect(), element);
 }
 
 void ActionIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
@@ -188,9 +188,9 @@ void ActionOverlay::timeout()
     // allow the animation to restart after hiding the ActionOverlayIcon even if m_hoverIndex didn't change
     m_hoverIndex = QPersistentModelIndex();
 
-    if (isVisible() && (!fadeOut->animation() || fadeOut->animation()->state() != QAbstractAnimation::Running)) {
+    if (isVisible() && (fadeOut->state() != QAbstractAnimation::Running)) {
         fadeOut->start();
-        connect(fadeOut->animation(), SIGNAL(finished()), SLOT(close()));
+        connect(fadeOut, SIGNAL(finished()), SLOT(close()));
     }
 }
 

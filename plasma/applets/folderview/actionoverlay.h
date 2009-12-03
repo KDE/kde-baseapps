@@ -23,7 +23,7 @@
 
 #include "abstractitemview.h"
 
-#include <Plasma/AbstractAnimation>
+#include <Plasma/Animation>
 
 #include <QTimer>
 #include <QGraphicsWidget>
@@ -84,8 +84,8 @@ private:
     ActionIcon *m_iconToggleSelection;
     QPersistentModelIndex m_hoverIndex;
     QTimer *m_hideActionOverlayIconTimer;
-    Plasma::AbstractAnimation *fadeIn;
-    Plasma::AbstractAnimation *fadeOut;
+    Plasma::Animation *fadeIn;
+    Plasma::Animation *fadeOut;
 };
 
 #endif // ACTIONOVERLAY_H
