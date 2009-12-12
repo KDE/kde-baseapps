@@ -602,7 +602,7 @@ void PopupView::dragEnterEvent(QDragEnterEvent *event)
 
 void PopupView::dragLeaveEvent(QDragLeaveEvent *event)
 {
-    if (!m_iconView->popupVisible()) {
+    if (!m_iconView || !m_iconView->popupVisible()) {
         maybeClose();
     }
 
