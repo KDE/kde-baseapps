@@ -77,9 +77,9 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
       m_actionCollection(this),
       m_newMenu(0),
       m_itemActions(0),
-      m_previewPlugins(previewPlugins),
+      m_showingMenu(false),
       m_showPreview(showPreview),
-      m_showingMenu(false)
+      m_previewPlugins(previewPlugins)
 {
     setAttribute(Qt::WA_TranslucentBackground);
     KWindowSystem::setState(effectiveWinId(), NET::SkipTaskbar | NET::SkipPager);
