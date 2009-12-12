@@ -23,6 +23,7 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QDesktopServices>
+#include <QDesktopWidget>
 #include <QDrag>
 #include <QGraphicsLinearLayout>
 #include <QGraphicsView>
@@ -1342,7 +1343,7 @@ void FolderView::createActions()
         iconsMenuAction->setMenu(iconsMenu);
 
         // Create the new menu
-        m_newMenu = new KNewMenu(&m_actionCollection, view(), "new_menu");
+        m_newMenu = new KNewMenu(&m_actionCollection, QApplication::desktop(), "new_menu");
         connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
 
         m_actionCollection.addAction("lock_icons", lockIcons);
@@ -1455,14 +1456,14 @@ void FolderView::cut()
 
 void FolderView::paste()
 {
-    KonqOperations::doPaste(view(), m_url);
+    KonqOperations::doPaste(QApplication::desktop(), m_url);
 }
 
 void FolderView::pasteTo()
 {
     const KUrl::List urls = selectedUrls(false);
     Q_ASSERT(urls.count() == 1);
-    KonqOperations::doPaste(view(), urls.first());
+    KonqOperations::doPaste(QApplication::desktop(), urls.first());
 }
 
 void FolderView::refreshIcons()
@@ -1566,7 +1567,7 @@ void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers mod
     KonqOperations::Operation op = (modifiers & Qt::ShiftModifier) ?
             KonqOperations::DEL : KonqOperations::TRASH;
 
-    KonqOperations::del(view(), op, selectedUrls(op == KonqOperations::TRASH));
+    KonqOperations::del(QApplication::desktop(), op, selectedUrls(op == KonqOperations::TRASH));
 }
 
 void FolderView::deleteSelectedIcons()
@@ -1575,7 +1576,7 @@ void FolderView::deleteSelectedIcons()
         return;
     }
 
-    KonqOperations::del(view(), KonqOperations::DEL, selectedUrls(false));
+    KonqOperations::del(QApplication::desktop(), KonqOperations::DEL, selectedUrls(false));
 }
 
 void FolderView::renameSelectedIcon()
@@ -1587,7 +1588,7 @@ void FolderView::renameSelectedIcon()
 
 void FolderView::emptyTrashBin()
 {
-    KonqOperations::emptyTrash(view());
+    KonqOperations::emptyTrash(QApplication::desktop());
 }
 
 void FolderView::undoTextChanged(const QString &text)

@@ -377,14 +377,14 @@ void PopupView::copy()
 
 void PopupView::paste()
 {
-    KonqOperations::doPaste(this, m_url);
+    KonqOperations::doPaste(QApplication::desktop(), m_url);
 }
 
 void PopupView::pasteTo()
 {
     KUrl::List urls = selectedUrls();
     Q_ASSERT(urls.count() == 1);
-    KonqOperations::doPaste(this, urls.first());
+    KonqOperations::doPaste(QApplication::desktop(), urls.first());
 }
 
 void PopupView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
@@ -394,14 +394,14 @@ void PopupView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modi
         KonqOperations::Operation op = (modifiers & Qt::ShiftModifier) ?
                 KonqOperations::DEL : KonqOperations::TRASH;
 
-        KonqOperations::del(this, op, selectedUrls());
+        KonqOperations::del(QApplication::desktop(), op, selectedUrls());
     }
 }
 
 void PopupView::deleteSelectedIcons()
 {
     if (!m_iconView->renameInProgress()) {
-        KonqOperations::del(this, KonqOperations::DEL, selectedUrls());
+        KonqOperations::del(QApplication::desktop(), KonqOperations::DEL, selectedUrls());
     }
 }
 
@@ -434,7 +434,7 @@ void PopupView::setBusy(bool busy)
 
 void PopupView::emptyTrashBin()
 {
-    KonqOperations::emptyTrash(this);
+    KonqOperations::emptyTrash(QApplication::desktop());
 }
 
 void PopupView::undoTextChanged(const QString &text)
