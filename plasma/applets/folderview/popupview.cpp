@@ -56,6 +56,7 @@
 #include <Plasma/Applet>
 #include <Plasma/BusyWidget>
 #include <Plasma/FrameSvg>
+#include <Plasma/Theme>
 
 #ifdef Q_WS_X11
 #  include <QX11Info>
@@ -87,6 +88,7 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
 
     QPalette pal = palette();
     pal.setColor(backgroundRole(), Qt::transparent);
+    pal.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     setPalette(pal);
 
     m_background = new Plasma::FrameSvg(this);
@@ -180,7 +182,6 @@ void PopupView::init()
     m_iconView->setItemDelegate(m_delegate);
     m_iconView->setSelectionModel(m_selectionModel);
     m_iconView->setFont(m_parentView->font());
-    m_iconView->setPalette(m_parentView->palette());
     m_iconView->setDrawShadows(m_parentView->drawShadows());
     m_iconView->setIconSize(m_parentView->iconSize());
     m_iconView->setGridSize(m_parentView->gridSize());
