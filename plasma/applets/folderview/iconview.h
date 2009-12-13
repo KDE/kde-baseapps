@@ -236,6 +236,7 @@ private:
     bool m_iconsLocked;
     bool m_alignToGrid;
     bool m_wordWrap;
+    bool m_popupShowPreview;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
@@ -262,7 +263,6 @@ private:
     Animator *m_animator;
     ActionOverlay *m_actionOverlay;
     QStringList m_popupPreviewPlugins;
-    bool m_popupShowPreview;
 };
 
 #endif
