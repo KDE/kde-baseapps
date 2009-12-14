@@ -182,6 +182,7 @@ void PopupView::init()
     m_iconView->setItemDelegate(m_delegate);
     m_iconView->setSelectionModel(m_selectionModel);
     m_iconView->setFont(m_parentView->font());
+    m_iconView->setPalette(palette());
     m_iconView->setDrawShadows(m_parentView->drawShadows());
     m_iconView->setIconSize(m_parentView->iconSize());
     m_iconView->setGridSize(m_parentView->gridSize());
