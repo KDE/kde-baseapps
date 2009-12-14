@@ -82,6 +82,11 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
       m_previewPlugins(previewPlugins)
 {
     setAttribute(Qt::WA_TranslucentBackground);
+
+#ifdef Q_WS_WIN
+    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
+#endif
+
     KWindowSystem::setState(effectiveWinId(), NET::SkipTaskbar | NET::SkipPager);
 
     setAcceptDrops(true);
