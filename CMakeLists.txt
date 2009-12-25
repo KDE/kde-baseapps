@@ -11,7 +11,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/kdewebkit/cmake/modules
     ${CMAKE_SOURCE_DIR}/part/cmake/modules)
 
-add_subdirectory(icons)
 if(${KDE_VERSION} VERSION_LESS 4.3.74)
   add_subdirectory(kdewebkit)
 endif(${KDE_VERSION} VERSION_LESS 4.3.74)
