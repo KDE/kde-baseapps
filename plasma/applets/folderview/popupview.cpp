@@ -60,6 +60,7 @@
 
 #ifdef Q_WS_X11
 #  include <QX11Info>
+#  include <X11/Xlib.h>
 #endif
 
 
@@ -124,6 +125,11 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
     if (pt.y() < available.top()) {
         pt.ry() = available.top();
     }
+
+#ifdef Q_WS_X11
+    Atom atom = XInternAtom(QX11Info::display(), "_KDE_SHADOW_OVERRIDE", False);
+    XChangeProperty(QX11Info::display(), winId(), atom, atom, 32, PropModeReplace, 0, 0);
+#endif
 
     move(pt);
     show();

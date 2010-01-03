@@ -33,6 +33,7 @@
 
 #ifdef Q_WS_X11
 #  include <QX11Info>
+#  include <X11/Xlib.h>
 #endif
 
 
@@ -47,6 +48,9 @@ Dialog::Dialog(QWidget *parent)
     if (!QX11Info::isCompositingManagerRunning()) {
         setAttribute(Qt::WA_NoSystemBackground);
     }
+
+    Atom atom = XInternAtom(QX11Info::display(), "_KDE_SHADOW_OVERRIDE", False);
+    XChangeProperty(QX11Info::display(), winId(), atom, atom, 32, PropModeReplace, 0, 0);
 #endif
 
     KWindowSystem::setState(effectiveWinId(), NET::SkipTaskbar | NET::SkipPager);
