@@ -97,7 +97,7 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
     setPalette(pal);
 
     m_background = new Plasma::FrameSvg(this);
-    m_background->setImagePath("dialogs/background");
+    m_background->setImagePath("widgets/tooltip");
 
     int left   = m_background->marginSize(Plasma::LeftMargin);
     int top    = m_background->marginSize(Plasma::TopMargin);
