@@ -2203,6 +2203,22 @@ void IconView::changeEvent(QEvent *event)
         qreal left, top, right, bottom;
         getContentsMargins(&left, &top, &right, &bottom);
 
+        if (!m_savedPositions.isEmpty()) {
+            // If the contents margins change while a layout with saved positions is
+            // in progress, we have to adjust all the saved positions and restart the
+            // layout process. The saved positions are relative to the top left corner
+            // of the content area.
+            const QPoint delta(left - m_margins[Plasma::LeftMargin], top - m_margins[Plasma::TopMargin]);
+            QMutableHashIterator<QString, QPoint> i(m_savedPositions);
+            while (i.hasNext()) {
+                i.next();
+                i.setValue(i.value() + delta);   
+            }
+            m_validRows = 0;
+            m_delayedLayoutTimer.start(10, this);
+            m_delayedCacheClearTimer.start(5000, this);
+        }
+
         if (m_validRows == 0) {
             m_margins[Plasma::LeftMargin]   = left;
             m_margins[Plasma::TopMargin]    = top;
