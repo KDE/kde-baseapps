@@ -131,12 +131,12 @@ ActionOverlay::ActionOverlay(AbstractItemView* parent)
     fadeIn = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
     fadeIn->setProperty("startOpacity", 0);
     fadeIn->setProperty("targetOpacity", 1);
-    fadeIn->setWidgetToAnimate(this);
+    fadeIn->setTargetWidget(this);
 
     fadeOut = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
     fadeOut->setProperty("startOpacity", 1);
     fadeOut->setProperty("targetOpacity", 0);
-    fadeOut->setWidgetToAnimate(this);
+    fadeOut->setTargetWidget(this);
 
     hide();
 }
