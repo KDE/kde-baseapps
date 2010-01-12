@@ -1410,12 +1410,14 @@ void IconView::closeEditor(QGraphicsWidget *editor, QAbstractItemDelegate::EndEd
 {
     Q_UNUSED(hint)
 
-    if (editor->hasFocus()) {
-        setFocus();
-    }
+    bool hadFocus = editor->hasFocus();
 
     editor->hide();
     editor->deleteLater();
+
+    if (hadFocus) {
+        setFocus();
+    }
 
     m_editorIndex = QModelIndex();
 
