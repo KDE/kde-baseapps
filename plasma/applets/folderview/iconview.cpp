@@ -601,7 +601,7 @@ QPoint IconView::findNextEmptyPosition(const QPoint &prevPos, const QSize &gridS
         pos = nextGridPosition(pos, gridSize, contentRect);
         const QRect r(pos, gridSize);
         for (int i = 0; i < m_items.count(); i++) {
-            if (m_items.at(i).rect.intersects(r)) {
+            if (m_items.at(i).layouted && m_items.at(i).rect.intersects(r)) {
                 done = false;
                 break;
             }
@@ -709,6 +709,7 @@ void IconView::layoutItems()
             }
             pos = findNextEmptyPosition(pos, grid, rect);
             m_items[i].rect.moveTo(pos);
+            m_items[i].layouted = true;
             if (m_items[i].rect.intersects(visibleRect)) {
                 needUpdate = true;
             }
@@ -716,7 +717,6 @@ void IconView::layoutItems()
         needUpdate |= doLayoutSanityCheck();
         m_needPostLayoutPass = false;
         emit busy(false);
-        return;
     }
 
     if (m_validRows < m_items.size() || m_needPostLayoutPass) {
