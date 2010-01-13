@@ -115,6 +115,7 @@ public:
 
     void updateGridSize();
 
+    bool listingInProgress() const;
     bool renameInProgress() const;
     bool dragInProgress() const;
     bool popupVisible() const;
@@ -228,7 +229,6 @@ private:
     int m_numTextLines;
     bool m_layoutBroken;
     bool m_needPostLayoutPass;
-    bool m_initialListing;
     bool m_positionsLoaded;
     bool m_doubleClick;
     bool m_dragInProgress;
