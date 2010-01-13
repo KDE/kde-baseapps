@@ -73,7 +73,6 @@ IconView::IconView(QGraphicsWidget *parent)
       m_numTextLines(2),
       m_layoutBroken(false),
       m_needPostLayoutPass(false),
-      m_initialListing(true),
       m_positionsLoaded(false),
       m_doubleClick(false),
       m_dragInProgress(false),
@@ -289,7 +288,7 @@ QStringList IconView::iconPositionsData() const
 {
     QStringList data;
 
-    if (m_layoutBroken && !m_initialListing && m_validRows == m_items.size()) {
+    if (m_layoutBroken && !listingInProgress() && m_validRows == m_items.size()) {
         int version = 1;
         data << QString::number(version);
         data << QString::number(m_items.size());
@@ -321,6 +320,17 @@ void IconView::updateGridSize()
     size.rwidth() = qMax(w, m_iconSize.width()) + left + right;
     size.rheight() = top + bottom + m_iconSize.height() + fm.lineSpacing() * textLineCount() + 4;
 
+    // Update the minimum size hint
+    const Plasma::Containment *containment = qobject_cast<Plasma::Containment*>(parentWidget());
+    if (!containment || !containment->isContainment()) {
+        getContentsMargins(&left, &top, &right, &bottom);
+        QSize minSize = size + QSize(20 + left + right, 20 + top + bottom);
+        if (m_flow == LeftToRight || m_flow == RightToLeft) {
+            minSize.rwidth() += m_scrollBar->geometry().width();
+        }
+        setMinimumSize(minSize);
+    }
+
     // Schedule a full relayout
     if (m_validRows > 0 && size != m_gridSize) {
         m_validRows = 0;
@@ -331,12 +341,23 @@ void IconView::updateGridSize()
     m_gridSize = size;
 }
 
+bool IconView::listingInProgress() const
+{
+    if (m_dirModel) {
+        if (KDirLister *lister = m_dirModel->dirLister()) {
+            return !lister->isFinished();
+        }
+    }
+
+    return false;
+}
+
 void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
 {
     Q_UNUSED(parent)
     m_regionCache.clear();
 
-    if (!m_layoutBroken || m_initialListing) {
+    if (!m_layoutBroken || listingInProgress()) {
         if (first < m_validRows) {
             m_validRows = 0;
         }
@@ -470,7 +491,6 @@ void IconView::listingStarted(const KUrl &url)
 
 void IconView::listingClear()
 {
-    m_initialListing = true;
     markAreaDirty(visibleArea());
     updateScrollBar();
     update();
@@ -479,7 +499,6 @@ void IconView::listingClear()
 void IconView::listingCompleted()
 {
     m_delayedCacheClearTimer.start(5000, this);
-    m_initialListing = false;
 
     if (m_validRows == m_model->rowCount()) {
         emit busy(false);
@@ -489,7 +508,6 @@ void IconView::listingCompleted()
 void IconView::listingCanceled()
 {
     m_delayedCacheClearTimer.start(5000, this);
-    m_initialListing = false;
 
     if (m_validRows == m_model->rowCount()) {
         emit busy(false);
@@ -676,7 +694,7 @@ void IconView::layoutItems()
                 }
             }
             // If we've finished laying out all the icons
-            if (!m_initialListing && !m_needPostLayoutPass && count == m_items.size()) {
+            if (!m_needPostLayoutPass && count == m_items.size() && !listingInProgress()) {
                 needUpdate |= doLayoutSanityCheck();
             }
         } else {
@@ -721,7 +739,7 @@ void IconView::layoutItems()
 
     if (m_validRows < m_items.size() || m_needPostLayoutPass) {
         m_delayedLayoutTimer.start(10, this);
-    } else if (!m_initialListing) {
+    } else if (!listingInProgress()) {
         emit busy(false);
     }
 
