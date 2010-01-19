@@ -1489,8 +1489,13 @@ void IconView::focusOutEvent(QFocusEvent *event)
 void IconView::triggerToolTip(ToolTipType type)
 {
     if (type == FolderTip && m_hoveredIndex.isValid()) {
-        if (!m_popupView || m_hoveredIndex != m_popupIndex) {
+        // Use a longer delay if we don't have any popup view open or if it's been
+        // longer than 1.5 seconds since the last popup view was opened or closed.
+        if ((m_popupView && m_hoveredIndex != m_popupIndex) ||
+            PopupView::lastOpenCloseTime().elapsed() < 1500) {
             m_toolTipShowTimer.start(500, this);
+        } else {
+            m_toolTipShowTimer.start(1000, this);
         }
     } else {
         // Close the popup view if one is open
