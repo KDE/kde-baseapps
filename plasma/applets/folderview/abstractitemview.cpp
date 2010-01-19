@@ -441,6 +441,13 @@ void AbstractItemView::drawTextLayout(QPainter *painter, const QTextLayout &layo
             // Draw shadow
             QImage shadow = pixmap.toImage();
             Plasma::PaintUtils::shadowBlur(shadow, 2, Qt::black);
+
+            // Make the shadow twice as dark
+            quint32 * const pixels = reinterpret_cast<quint32*>(shadow.bits());
+            for (int i = 0; i < shadow.width() * shadow.height(); i++) {
+                pixels[i] = qMin(255, qAlpha(pixels[i]) * 2) << 24;
+            }
+
             painter->drawImage(rect.topLeft() + QPoint(1, 1), shadow);
         }
     }
