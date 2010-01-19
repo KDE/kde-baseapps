@@ -567,7 +567,7 @@ QPoint inline IconView::nextGridPosition(const QPoint &lastPos, const QSize &gri
     }
 
     const int xOrigin = (m_flow == LeftToRight || m_flow == TopToBottom) ?
-                    r.left() :  r.right() - grid.width();
+                    r.left() :  r.right() - grid.width() + 1;
 
     if (lastPos.isNull()) {
         return QPoint(xOrigin, r.top());
@@ -751,12 +751,50 @@ void IconView::layoutItems()
     updateScrollBar();
 }
 
+// Returns the contents rect with the width and height snapped to the grid 
+// and aligned according to the direction of the flow.
+QRect IconView::adjustedContentsRect(int *rowCount, int *colCount) const
+{
+    QRect r = contentsRect().toRect();
+
+    const QSize size = gridSize() + QSize(10, 10);
+    *colCount = qMax(1, (r.width() - 10) / size.width());
+    *rowCount = qMax(1, (r.height() - 10) / size.height());
+    int dx = r.width() - (*colCount * size.width() + 10);
+    int dy = r.height() - (*rowCount * size.height() + 10);
+    r.setWidth(r.width() - dx);
+    r.setHeight(r.height() - dy);
+
+    // Take the origin into account
+    if (m_flow == RightToLeft || m_flow == TopToBottomRightToLeft) {
+        r.translate(dx, 0);
+    }
+
+    return r;
+}
+
 void IconView::alignIconsToGrid()
 {
+    int rowCount, colCount;
+    const QRect cr = adjustedContentsRect(&rowCount, &colCount);
+
+    int lastRow = rowCount - 1;
+    int lastCol = colCount - 1;
+
+    const Plasma::Containment *containment = qobject_cast<Plasma::Containment*>(parentWidget());
+    if (!containment || !containment->isContainment()) {
+        // Don't limit the max rows/columns in the scrolling direction
+        if (m_flow == LeftToRight || m_flow == RightToLeft) {
+            lastRow = INT_MAX;
+        } else {
+            lastCol = INT_MAX;
+        }
+    }
+
     int margin = 10;
     int spacing = 10;
-    const QRect cr = contentsRect().toRect();
     const QSize size = gridSize() + QSize(spacing, spacing);
+
     int topMargin = margin + cr.top();
     int leftMargin = margin + cr.left();
     int vOffset = topMargin + size.height() / 2;
@@ -765,11 +803,10 @@ void IconView::alignIconsToGrid()
 
     for (int i = 0; i < m_items.size(); i++) {
         const QPoint center = m_items[i].rect.center();
-        const int col = qRound((center.x() - hOffset) / qreal(size.width()));
-        const int row = qRound((center.y() - vOffset) / qreal(size.height()));
+        const int col = qBound(0, qRound((center.x() - hOffset) / qreal(size.width())), lastCol);
+        const int row = qBound(0, qRound((center.y() - vOffset) / qreal(size.height())), lastRow);
 
-        const QPoint pos(leftMargin + col * size.width() + (size.width() - m_items[i].rect.width() - spacing) / 2,
-                         topMargin + row * size.height());
+        const QPoint pos(leftMargin + col * size.width(), topMargin + row * size.height());
 
         if (pos != m_items[i].rect.topLeft()) {
             m_items[i].rect.moveTo(pos);
@@ -2178,7 +2215,10 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
         }
     }
 
-    const QRect cr = contentsRect().toRect();
+    int rowCount, colCount;
+    const QRect cr = m_alignToGrid ? adjustedContentsRect(&rowCount, &colCount)
+                            : contentsRect().toRect();
+
     boundingRect.adjust(-10, -10, 10, 10);
     boundingRect.translate(delta);
 
