@@ -64,6 +64,8 @@
 #endif
 
 
+QTime PopupView::s_lastOpenClose;
+
 PopupView::PopupView(const KUrl &url, const QPoint &pos,
                      const bool &showPreview, const QStringList &previewPlugins,
                      const IconView *parentView)
@@ -135,11 +137,13 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
     show();
 
     QTimer::singleShot(10, this, SLOT(init()));
+    s_lastOpenClose.restart();
 }
 
 PopupView::~PopupView()
 {
     delete m_newMenu;
+    s_lastOpenClose.restart();
 }
 
 void PopupView::delayedHide()

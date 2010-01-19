@@ -22,6 +22,7 @@
 
 #include <QBasicTimer>
 #include <QWidget>
+#include <QTime>
 
 #include <KActionCollection>
 #include <KUrl>
@@ -58,6 +59,8 @@ public:
 
     void delayedHide();
     bool dragInProgress();
+
+    static QTime lastOpenCloseTime() { return s_lastOpenClose; }
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -118,6 +121,7 @@ private:
     bool m_showingMenu;
     bool m_showPreview;
     QStringList m_previewPlugins;
+    static QTime s_lastOpenClose;
 };
 
 #endif
