@@ -608,24 +608,45 @@ void FolderView::configAccepted()
     const int filterType = uiFilter.filterType->currentIndex();
     KConfigGroup cg = config();
     bool needReload = false;
+    bool preserveIconPositions = false;
 
     if (m_drawShadows != uiDisplay.drawShadows->isChecked()) {
         m_drawShadows = uiDisplay.drawShadows->isChecked();
         cg.writeEntry("drawShadows", m_drawShadows);
     }
 
-    if (m_showPreviews != uiDisplay.showPreviews->isChecked() ||
-        (m_previewGenerator && m_previewPlugins != m_previewGenerator->enabledPlugins()))
-    {
+    if (m_showPreviews != uiDisplay.showPreviews->isChecked()) {
         m_showPreviews = uiDisplay.showPreviews->isChecked();
         cg.writeEntry("showPreviews", m_showPreviews);
-        cg.writeEntry("previewPlugins", m_previewPlugins);
 
-        m_previewGenerator->setEnabledPlugins(m_previewPlugins);
+        //As disabling the previews will force a rearrangement, we need to manually
+        //save and restore the icons positions
+
+        QStringList iconPositionsData;
+        if (!m_showPreviews) {
+            //Save the icon positions
+            iconPositionsData = m_iconView->iconPositionsData();
+        }
+
+        //Enable/disable the previews
         m_previewGenerator->setPreviewShown(m_showPreviews);
-        needReload = true;
+
+        if (!m_showPreviews) {
+            //Restore the icon positions
+            m_iconView->setIconPositionsData(iconPositionsData);
+        }
     }
 
+    if (m_previewGenerator && m_previewPlugins != m_previewGenerator->enabledPlugins()) {
+        cg.writeEntry("previewPlugins", m_previewPlugins);
+        m_previewGenerator->setEnabledPlugins(m_previewPlugins);
+
+        //Chaning the preview plugins will also need a reload to work, so we need to preserve
+        //the icons position
+        needReload = true;
+        preserveIconPositions = true;
+    }
+    
     const QColor defaultColor = isContainment() ? Qt::white :
             Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
     const QColor color = uiDisplay.colorButton->color();
@@ -723,8 +744,17 @@ void FolderView::configAccepted()
     }
 
     if (needReload) {
+        //Manually save and restore the icon positions if we need it
+        QStringList iconPositionsData;
+        if (preserveIconPositions) {
+            iconPositionsData = m_iconView->iconPositionsData();
+        }
+        
         m_dirModel->dirLister()->openUrl(m_url);
 
+        if (preserveIconPositions) {
+             m_iconView->setIconPositionsData(iconPositionsData);
+        }
         // So the KFileItemActions will be recreated for the new URL.
         delete m_itemActions;
         m_itemActions = 0;
