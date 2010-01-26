@@ -40,7 +40,7 @@ class KDirModel;
 class KFileItemDelegate;
 class KFilePlacesModel;
 class KFilePreviewGenerator;
-class KNewMenu;
+class KNewFileMenu;
 class KFileItemActions;
 class QItemSelectionModel;
 class QModelIndex;
@@ -115,7 +115,7 @@ private:
     KFilePreviewGenerator *m_previewGenerator;
     KUrl m_url;
     KActionCollection m_actionCollection;
-    KNewMenu *m_newMenu;
+    KNewFileMenu *m_newMenu;
     KFileItemActions *m_itemActions;
     QBasicTimer m_hideTimer;
     bool m_showingMenu;

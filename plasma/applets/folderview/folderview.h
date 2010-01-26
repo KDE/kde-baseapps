@@ -48,7 +48,7 @@ class KDirModel;
 class KFileItemDelegate;
 class KFilePlacesModel;
 class KFilePreviewGenerator;
-class KNewMenu;
+class KNewFileMenu;
 class KWindowListMenu;
 class KFileItemActions;
 class KJob;
@@ -179,7 +179,7 @@ private:
     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
-    QPointer<KNewMenu> m_newMenu;
+    QPointer<KNewFileMenu> m_newMenu;
     KActionCollection m_actionCollection;
     QActionGroup *m_sortingGroup;
     int m_sortColumn;

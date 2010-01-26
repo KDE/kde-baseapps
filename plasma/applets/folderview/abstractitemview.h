@@ -36,7 +36,6 @@ class KUrl;
 class KDirModel;
 class KFileItemDelegate;
 class KFilePreviewGenerator;
-class KNewMenu;
 class QItemSelectionModel;
 class ProxyModel;
 class QStyleOptionViewItemV4;

@@ -1361,7 +1361,7 @@ void FolderView::createActions()
         iconsMenuAction->setMenu(iconsMenu);
 
         // Create the new menu
-        m_newMenu = new KNewMenu(&m_actionCollection, QApplication::desktop(), "new_menu");
+        m_newMenu = new KNewFileMenu(&m_actionCollection, "new_menu", QApplication::desktop());
         connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
 
         m_actionCollection.addAction("lock_icons", lockIcons);
@@ -1432,7 +1432,7 @@ QList<QAction*> FolderView::contextualActions()
 void FolderView::aboutToShowCreateNew()
 {
     if (m_newMenu) {
-        m_newMenu->slotCheckUpToDate();
+        m_newMenu->checkUpToDate();
         m_newMenu->setPopupFiles(m_url);
     }
 }

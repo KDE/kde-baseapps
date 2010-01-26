@@ -269,7 +269,7 @@ void PopupView::createActions()
     connect(del, SIGNAL(triggered()), SLOT(deleteSelectedIcons()));
 
     // Create the new menu
-    m_newMenu = new KNewMenu(&m_actionCollection, this, "new_menu");
+    m_newMenu = new KNewFileMenu(&m_actionCollection, "new_menu", this);
     connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
 
     m_actionCollection.addAction("undo", undo);
@@ -463,7 +463,7 @@ void PopupView::undoTextChanged(const QString &text)
 void PopupView::aboutToShowCreateNew()
 {
     if (m_newMenu) {
-        m_newMenu->slotCheckUpToDate();
+        m_newMenu->checkUpToDate();
         m_newMenu->setPopupFiles(m_url);
     }
 }

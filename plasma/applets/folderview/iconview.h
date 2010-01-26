@@ -39,7 +39,6 @@ class KFileItemDelegate;
 class KFileItemList;
 class KFilePreviewGenerator;
 class KJob;
-class KNewMenu;
 class KonqOperations;
 class QItemSelectionModel;
 class ProxyModel;
