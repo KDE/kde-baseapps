@@ -11,8 +11,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/kdewebkit/cmake/modules
     ${CMAKE_SOURCE_DIR}/part/cmake/modules)
 
-if(${KDE_VERSION} VERSION_LESS 4.3.74)
+if(${KDE_VERSION} VERSION_LESS 4.3.80)
   add_subdirectory(kdewebkit)
-endif(${KDE_VERSION} VERSION_LESS 4.3.74)
+endif(${KDE_VERSION} VERSION_LESS 4.3.80)
+
 add_subdirectory(part)
 add_subdirectory(kdelauncher)
