@@ -828,7 +828,10 @@ QRect IconView::itemsBoundingRect() const
     QRect boundingRect;
     for (int i = 0; i < m_validRows; i++) {
         if (m_items[i].layouted) {
-            boundingRect |= m_items[i].rect;
+            // Make sure we use the full space available to the item.
+            // The height of the item rect is adjusted to the number
+            // of text lines actually used.
+            boundingRect |= QRect(m_items[i].rect.topLeft(), gridSize());
         }
     }
 
