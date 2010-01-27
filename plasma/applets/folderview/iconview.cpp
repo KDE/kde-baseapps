@@ -2210,7 +2210,8 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     foreach (const KUrl &url, KUrl::List::fromMimeData(event->mimeData())) {
         const QModelIndex index = m_model->indexForUrl(url);
         if (index.isValid()) {
-            boundingRect |= m_items[index.row()].rect;
+            const QRect rect(m_items[index.row()].rect.topLeft(), gridSize());
+            boundingRect |= rect;
             indexes.append(index);
         }
     }
