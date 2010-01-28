@@ -2341,7 +2341,8 @@ void IconView::changeEvent(QEvent *event)
                         m_items[i].rect.translate(delta);
                     }
                 }
-                markAreaDirty(visibleArea());
+                m_regionCache.clear();
+                markAreaDirty(mapToViewport(rect()).toAlignedRect());
                 updateScrollBar();
             }    
         }
