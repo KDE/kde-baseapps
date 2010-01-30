@@ -47,6 +47,9 @@ ActionIcon::ActionIcon(QGraphicsItem* parent)
 
 void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
+
     AbstractItemView *view = static_cast<AbstractItemView*>(parentWidget()->parentWidget());
     QPersistentModelIndex index = static_cast<ActionOverlay*>(parentWidget())->hoverIndex();
     QItemSelectionModel *m_selectionModel = view->selectionModel();
@@ -64,6 +67,8 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
 void ActionIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
+    Q_UNUSED(event)
+
     m_pressed = true;
     m_sunken = true;
     update();
@@ -71,6 +76,8 @@ void ActionIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 void ActionIcon::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_UNUSED(event)
+
     m_pressed = false;
     m_sunken = false;
     if (isUnderMouse()) {
@@ -81,6 +88,8 @@ void ActionIcon::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void ActionIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+    Q_UNUSED(event)
+
     if (m_sunken != isUnderMouse()) {
         m_sunken = isUnderMouse();
         update();
@@ -89,12 +98,16 @@ void ActionIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void ActionIcon::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
+    Q_UNUSED(event)
+
     emit iconHoverEnter();
     update();
 }
 
 void ActionIcon::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
+    Q_UNUSED(event)
+
     emit iconHoverLeave();
     update();
 }
