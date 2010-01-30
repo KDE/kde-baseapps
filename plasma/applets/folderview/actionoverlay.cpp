@@ -147,9 +147,13 @@ void ActionOverlay::selected()
     QItemSelectionModel *m_selectionModel = view->selectionModel();
 
     if (m_hoverIndex.isValid()) {
+        const QModelIndex oldCurrent = m_selectionModel->currentIndex();
         m_selectionModel->select(m_hoverIndex, QItemSelectionModel::Toggle);
         m_selectionModel->setCurrentIndex(m_hoverIndex, QItemSelectionModel::NoUpdate);
-        view->markAreaDirty(view->visibleArea());
+        view->markAreaDirty(view->visualRect(m_hoverIndex));
+        if (oldCurrent.isValid() && oldCurrent != m_hoverIndex) {
+            view->markAreaDirty(view->visualRect(oldCurrent));
+        }
     }
 }
 
