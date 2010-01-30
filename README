@@ -1,4 +1,4 @@
-Qt 4.5 or greater with QtWebkKit support is required for building the KDE WebKit
+KDE 4.4 or greater is required for building the KDE WebKit
 integration (KWebKitPart).
 
 You can switch between the different rendering engines:
