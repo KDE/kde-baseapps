@@ -43,7 +43,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QComboBox" name="placesCombo" />
+      <widget class="KComboBox" name="placesCombo" />
      </item>
     </layout>
    </item>

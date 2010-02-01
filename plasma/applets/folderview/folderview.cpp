@@ -641,7 +641,7 @@ void FolderView::configAccepted()
         cg.writeEntry("previewPlugins", m_previewPlugins);
         m_previewGenerator->setEnabledPlugins(m_previewPlugins);
 
-        //Chaning the preview plugins will also need a reload to work, so we need to preserve
+        //Changing the preview plugins will also need a reload to work, so we need to preserve
         //the icons position
         needReload = true;
         preserveIconPositions = true;

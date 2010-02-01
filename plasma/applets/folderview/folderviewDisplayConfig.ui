@@ -135,7 +135,7 @@ By default it contains the name of the place being shown in the applet, but if y
     </widget>
    </item>
    <item row="3" column="2">
-    <widget class="QComboBox" name="flowCombo">
+    <widget class="KComboBox" name="flowCombo">
      <property name="whatsThis">
       <string>Use this control to choose if you want the icons to be arranged top to bottom starting on the left side of the view, or arranged left to right starting at the top of the view.</string>
      </property>
@@ -155,7 +155,7 @@ By default it contains the name of the place being shown in the applet, but if y
     </widget>
    </item>
    <item row="4" column="2">
-    <widget class="QComboBox" name="sortCombo">
+    <widget class="KComboBox" name="sortCombo">
      <property name="whatsThis">
       <string>Use this control to choose the criteria by which the icons will be sorted in the view.</string>
      </property>

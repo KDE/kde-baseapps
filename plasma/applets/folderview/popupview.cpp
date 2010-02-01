@@ -506,7 +506,7 @@ void PopupView::contextMenuEvent(QContextMenuEvent *event)
     }
 
     KFileItem rootItem = m_model->itemForIndex(QModelIndex());
-    //The root item is invalid (non-existant)
+    //The root item is invalid (non-existent)
     if (rootItem.isNull()) {
         return;
     }

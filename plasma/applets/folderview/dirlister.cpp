@@ -17,10 +17,9 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#include <KIO/Job>
-
 #include "dirlister.h"
 
+#include <KIO/Job>
 
 DirLister::DirLister(QObject *parent)
     : KDirLister(parent)

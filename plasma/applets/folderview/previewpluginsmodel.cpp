@@ -17,8 +17,9 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#include <QStringList>
 #include "previewpluginsmodel.h"
+
+#include <QStringList>
 
 static bool lessThan(const KService::Ptr &a, const KService::Ptr &b)
 {

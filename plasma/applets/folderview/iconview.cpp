@@ -2095,7 +2095,8 @@ void IconView::createDropActions(const KUrl::List &urls, QActionGroup *actions)
         // Unfortunately QImageReader::supportedImageFormats() returns some formats in upper case
         // and others in lower case, but all the important ones are in lower case.
         const QByteArray suffix = QFileInfo(urls.first().fileName()).suffix().toLower().toUtf8();
-        if (mimeName.startsWith("image/") || QImageReader::supportedImageFormats().contains(suffix)) {
+        if (mimeName.startsWith(QLatin1String("image/")) ||
+                QImageReader::supportedImageFormats().contains(suffix)) {
             QAction *action = new QAction(i18n("Set as &Wallpaper"), actions);
             action->setData("internal:folderview:set-as-wallpaper");
             action->setIcon(KIcon("preferences-desktop-wallpaper"));
