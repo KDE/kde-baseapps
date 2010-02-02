@@ -44,6 +44,7 @@
 #include <KGlobalSettings>
 #include <KIcon>
 #include <KProtocolInfo>
+#include <KStringHandler>
 
 #include <KIO/NetAccess>
 
@@ -1057,8 +1058,10 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
 
     // Draw the text label
     // ===================
+    const QString text = index.data(Qt::DisplayRole).toString();
+
     QTextLayout layout;
-    layout.setText(index.data(Qt::DisplayRole).toString());
+    layout.setText(KStringHandler::preProcessWrap(text));
     layout.setFont(font);
     const QSize size = doTextLayout(layout, tr.size(), Qt::AlignHCenter,
                                     QTextOption::WrapAtWordBoundaryOrAnywhere);
