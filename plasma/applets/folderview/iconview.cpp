@@ -2083,7 +2083,7 @@ void IconView::createDropActions(const KUrl::List &urls, QActionGroup *actions)
         QString mimeName = mime->name();
         KPluginInfo::List appletList = Plasma::Applet::listAppletInfoForMimetype(mimeName);
 
-        if (!appletList.isEmpty()) {
+        if (containment->immutability() == Plasma::Mutable && !appletList.isEmpty()) {
             foreach (const KPluginInfo &info, appletList) {
                 QAction *action = new QAction(info.name(), actions);
                 action->setData(info.pluginName());
