@@ -91,7 +91,8 @@ static qreal convertToReal(const QString &string)
 QString ToolTipWidget::metaInfo() const
 {
     const QString mimetype = m_item.mimetype();
-    if (!mimetype.startsWith("audio/") && !mimetype.startsWith("image/") &&
+    if (!mimetype.startsWith(QLatin1String("audio/")) &&
+            !mimetype.startsWith(QLatin1String("image/")) &&
         !m_item.mimeTypePtr()->is("application/vnd.oasis.opendocument.text"))
     {
         return QString();
@@ -100,7 +101,7 @@ QString ToolTipWidget::metaInfo() const
     KFileMetaInfo info = m_item.metaInfo(true, KFileMetaInfo::TechnicalInfo | KFileMetaInfo::ContentInfo);
     QString text;
 
-    if (mimetype.startsWith("audio/")) {
+    if (mimetype.startsWith(QLatin1String("audio/"))) {
         const QString artist = info.item("http://freedesktop.org/standards/xesam/1.0/core#artist").value().toString();
         const QString title  = info.item("http://freedesktop.org/standards/xesam/1.0/core#title").value().toString();
         const QString album  = info.item("http://freedesktop.org/standards/xesam/1.0/core#album").value().toString();
@@ -118,7 +119,7 @@ QString ToolTipWidget::metaInfo() const
             }
             text += "</table>";
         }
-    } else if (mimetype.startsWith("image/")) {
+    } else if (mimetype.startsWith(QLatin1String("image/"))) {
         int width             = info.item("http://freedesktop.org/standards/xesam/1.0/core#width").value().toInt();
         int height            = info.item("http://freedesktop.org/standards/xesam/1.0/core#height").value().toInt();
         const QString camera  = info.item("http://freedesktop.org/standards/xesam/1.0/core#cameraModel").value().toString();
@@ -167,7 +168,7 @@ QString ToolTipWidget::metaInfo() const
             // Convert the APEX value to the F number
             const qreal fnumber = std::sqrt(std::pow(2, convertToReal(aperture)));
             aperture = QString("f/") + QString::number(fnumber, 'f', 1);
-            if (aperture.endsWith(".0")) {
+            if (aperture.endsWith(QLatin1String(".0"))) {
                 aperture = aperture.left(aperture.length() - 2);
             }
             text += QString("<tr><td>") + i18nc("On a camera", "Aperture:") +
