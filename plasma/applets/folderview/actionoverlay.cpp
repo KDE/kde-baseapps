@@ -137,6 +137,7 @@ ActionOverlay::ActionOverlay(AbstractItemView* parent)
     fadeOut->setProperty("startOpacity", 1);
     fadeOut->setProperty("targetOpacity", 0);
     fadeOut->setTargetWidget(this);
+    connect(fadeOut, SIGNAL(finished()), SLOT(close()));
 
     hide();
 }
@@ -172,6 +173,7 @@ void ActionOverlay::entered(const QModelIndex &index)
         show();
         if (m_hoverIndex != index) {
             m_iconToggleSelection->update();
+            fadeOut->stop();
             fadeIn->start();
         }
         m_hoverIndex = index;
@@ -193,8 +195,8 @@ void ActionOverlay::timeout()
     m_hoverIndex = QPersistentModelIndex();
 
     if (isVisible() && (fadeOut->state() != QAbstractAnimation::Running)) {
+        fadeIn->stop();
         fadeOut->start();
-        connect(fadeOut, SIGNAL(finished()), SLOT(close()));
     }
 }
 
