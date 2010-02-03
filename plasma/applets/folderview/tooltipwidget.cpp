@@ -102,9 +102,11 @@ QString ToolTipWidget::metaInfo() const
     QString text;
 
     if (mimetype.startsWith(QLatin1String("audio/"))) {
-        const QString artist = info.item("http://freedesktop.org/standards/xesam/1.0/core#artist").value().toString();
-        const QString title  = info.item("http://freedesktop.org/standards/xesam/1.0/core#title").value().toString();
-        const QString album  = info.item("http://freedesktop.org/standards/xesam/1.0/core#album").value().toString();
+        // ### Disabled because the strigi ID3 analyzer is broken
+#if 0
+        const QString title  = info.item("http://www.semanticdesktop.org/ontologies/2007/01/19/nie#title").value().toString();
+        const QString artist = info.item("http://www.semanticdesktop.org/ontologies/2009/02/19/nmm#performer").value().toString();
+        const QString album  = info.item("http://www.semanticdesktop.org/ontologies/2009/02/19/nmm#musicAlbum").value().toString();
 
         if (!artist.isEmpty() || !title.isEmpty() || !album.isEmpty()) {
             text += "<p><table border='0' cellspacing='0' cellpadding='0'>";
@@ -119,23 +121,24 @@ QString ToolTipWidget::metaInfo() const
             }
             text += "</table>";
         }
+#endif
     } else if (mimetype.startsWith(QLatin1String("image/"))) {
-        int width             = info.item("http://freedesktop.org/standards/xesam/1.0/core#width").value().toInt();
-        int height            = info.item("http://freedesktop.org/standards/xesam/1.0/core#height").value().toInt();
-        const QString camera  = info.item("http://freedesktop.org/standards/xesam/1.0/core#cameraModel").value().toString();
+        int width             = info.item("http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#width").value().toInt();
+        int height            = info.item("http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#height").value().toInt();
+        const QString camera  = info.item("http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#model").value().toString();
         const QString type    = info.item("http://www.w3.org/1999/02/22-rdf-syntax-ns#type").value().toString();
-        QString exposureTime  = info.item("http://freedesktop.org/standards/xesam/1.0/core#exposureTime").value().toString();
-        QString focalLength   = info.item("http://freedesktop.org/standards/xesam/1.0/core#focalLength").value().toString();
-        QString focal35mm     = info.item("http://freedesktop.org/standards/xesam/1.0/core#35mmEquivalent").value().toString();
-        QString aperture      = info.item("http://freedesktop.org/standards/xesam/1.0/core#aperture").value().toString();
-        QString iso           = info.item("http://freedesktop.org/standards/xesam/1.0/core#isoEquivalent").value().toString();
-        QString created       = info.item("http://freedesktop.org/standards/xesam/1.0/core#contentCreated").value().toString();
+        QString exposureTime  = info.item("http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#exposureTime").value().toString();
+        QString focalLength   = info.item("http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#focalLength").value().toString();
+        QString focal35mm     = info.item("http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#focalLengthIn35mmFilm").value().toString();
+        QString aperture      = info.item("http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#apertureValue").value().toString();
+        QString iso           = info.item("http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#isoSpeedRatings").value().toString();
+        QString created       = info.item("http://www.semanticdesktop.org/ontologies/2007/01/19/nie#contentCreated").value().toString();
 
         text += "<p><table border='0' cellspacing='0' cellpadding='0'>";
         if (width > 0 && height > 0) {
             QString size = QString::number(width) + 'x' + QString::number(height);
             // Add the megapixel count for photos
-            if (type == "http://freedesktop.org/standards/xesam/1.0/core#Photo") {
+            if (type == "http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#Photo") {
                 const qreal pixels = qreal(width * height) / 1e6;
                 size += QString(" (") +  ki18np("1 MPixel", "%1 MPixels").subs(pixels, 0, 'f', 1).toString() + QString(")");
             }
@@ -185,8 +188,8 @@ QString ToolTipWidget::metaInfo() const
         }
         text += "</table>";
     } else if (m_item.mimeTypePtr()->is("application/vnd.oasis.opendocument.text")) {
-        int wordCount = info.item("http://freedesktop.org/standards/xesam/1.0/core#wordCount").value().toInt();
-        int pageCount = info.item("http://freedesktop.org/standards/xesam/1.0/core#pageCount").value().toInt();
+        int wordCount = info.item("http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#wordCount").value().toInt();
+        int pageCount = info.item("http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#pageCount").value().toInt();
 
         const QString str1 = i18ncp("Inserted as %1 in the message below.", "1 page", "%1 pages", pageCount);
         const QString str2 = i18ncp("Inserted as %2 in the message below.", "1 word", "%1 words", wordCount); 
