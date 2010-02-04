@@ -1153,8 +1153,18 @@ void FolderView::updateScreenRegion()
     if (!c) {
         return;
     }
+
     const QRect screenRect = c->screenGeometry(screen());
-    const QRect availRect = QApplication::desktop()->availableGeometry(screen());
+    QRect availRect;
+    //FIXME: a pretty horrible hack, but there we go; should do something more elegant in 4.5
+    if (c->metaObject()->indexOfSlot("availableScreenRect(int)") != -1) {
+        QMetaObject::invokeMethod(c, "availableScreenRect",
+                                  Qt::DirectConnection, Q_RETURN_ARG(QRect, availRect), Q_ARG(int, screen()));
+    } else {
+        kDebug() << "using qdesktopwidget";
+        availRect = QApplication::desktop()->availableGeometry(screen());
+    }
+
     m_iconView->setContentsMargins(availRect.x() - screenRect.x(),
                                    availRect.y() - screenRect.y(),
                                    screenRect.right() - availRect.right(),
