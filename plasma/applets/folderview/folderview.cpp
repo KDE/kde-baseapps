@@ -1148,8 +1148,11 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
 
 void FolderView::updateScreenRegion()
 {
-    Plasma::Corona *c = corona();
+    if (!m_iconView) {
+        return;
+    }
 
+    Plasma::Corona *c = corona();
     if (!c) {
         return;
     }
