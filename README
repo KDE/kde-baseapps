@@ -1,11 +1,28 @@
-KDE 4.4 or greater is required for building the KDE WebKit
-integration (KWebKitPart).
+KWebKitPart
+===========
+
+KWebKitPart is a web browser component for KDE (KPart). You can use
+it for example for browsing the web in Konqueror.
+
+KWebKitPart is still in early development and thus not guaranted to
+be in production quality yet. Please report any issues to:
+https://bugs.kde.org
+
+There are known limitations / issues with the HTML5 <video> object.
+Please do not report them yet.
+
+KDE 4.4 or greater is required for building and running KWebKitPart.
+
+
+How to use KWebKitPart in Konqueror
+===================================
 
 You can switch between the different rendering engines:
-View -> View Mode -> {KHTML, WebKit} (Website needs to be opened)
-If WebKit does not show up in Konqueror, run 'kbuildsycoca4'.
+View -> View Mode -> {KHTML, WebKit} (Website needs to be open)
+If WebKit does not show up in Konqueror, run 'kbuildsycoca4' and
+restart Konqueror.
 
-If you want to set the WebKit part as default, run:
+If you want to set KWebKitPart as default for any website, run:
 'keditfiletype text/html'
 and move "WebKit (kwebkitpart)" in the "Embedding" tab to the top.
 
