@@ -55,7 +55,7 @@
 #include <kfileitemactions.h>
 #include <kfileitemlistproperties.h>
 
-#include <knewmenu.h>
+#include <knewfilemenu.h>
 #include <konqmimedata.h>
 #include <konq_operations.h>
 #include <konq_popupmenu.h>
