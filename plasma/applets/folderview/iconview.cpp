@@ -358,7 +358,7 @@ void IconView::rowsInserted(const QModelIndex &parent, int first, int last)
     Q_UNUSED(parent)
     m_regionCache.clear();
 
-    if (!m_layoutBroken || listingInProgress()) {
+    if (!m_layoutBroken || !m_savedPositions.isEmpty()) {
         if (first < m_validRows) {
             m_validRows = 0;
         }
