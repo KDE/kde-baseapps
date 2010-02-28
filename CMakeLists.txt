@@ -1,4 +1,4 @@
-project(webkitpart)
+project(kwebkitpart)
 
 # search packages used by KDE
 find_package(KDE4 REQUIRED)
