@@ -1846,8 +1846,6 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_pressedIndex = QModelIndex();
         m_buttonDownPos = pos;
 
-        const Plasma::Containment *parent = qobject_cast<Plasma::Containment*>(parentWidget());
-
         if (event->modifiers() & Qt::ControlModifier) {
             // Make the current selection persistent
             m_selectionModel->select(m_selectionModel->selection(), QItemSelectionModel::Select);
@@ -1982,7 +1980,10 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void IconView::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
-    if ((event->modifiers() & Qt::CTRL) || (event->orientation() == Qt::Horizontal)) {
+    Plasma::Containment *containment = qobject_cast<Plasma::Containment*>(parentWidget());
+    if ((containment && containment->isContainment() && !m_scrollBar->isVisible()) ||
+        (event->modifiers() & Qt::CTRL) ||
+        (event->orientation() == Qt::Horizontal)) {
         // Let the event propagate to the parent widget
         event->ignore();
         return;
