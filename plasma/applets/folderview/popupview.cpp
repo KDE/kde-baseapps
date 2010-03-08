@@ -57,11 +57,7 @@
 #include <Plasma/BusyWidget>
 #include <Plasma/FrameSvg>
 #include <Plasma/Theme>
-
-#ifdef Q_WS_X11
-#  include <QX11Info>
-#  include <X11/Xlib.h>
-#endif
+#include <Plasma/WindowEffects>
 
 
 QTime PopupView::s_lastOpenClose;
@@ -85,6 +81,11 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
       m_previewPlugins(previewPlugins)
 {
     setAttribute(Qt::WA_TranslucentBackground);
+#ifdef Q_WS_X11
+    if (KWindowSystem::compositingActive()) {
+        setAttribute(Qt::WA_NoSystemBackground, false);
+    }
+#endif
 
 #ifdef Q_WS_WIN
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
@@ -128,10 +129,7 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
         pt.ry() = available.top();
     }
 
-#ifdef Q_WS_X11
-    Atom atom = XInternAtom(QX11Info::display(), "_KDE_SHADOW_OVERRIDE", False);
-    XChangeProperty(QX11Info::display(), winId(), atom, atom, 32, PropModeReplace, 0, 0);
-#endif
+    Plasma::WindowEffects::overrideShadow(winId(), true);
 
     move(pt);
     show();
@@ -477,11 +475,12 @@ void PopupView::resizeEvent(QResizeEvent *event)
     if (m_view) {
         m_view->setGeometry(contentsRect());
     }
-#ifdef Q_WS_X11
-    if (!QX11Info::isCompositingManagerRunning()) {
+
+    if (KWindowSystem::compositingActive()) {
+        Plasma::WindowEffects::enableBlurBehind(winId(), true, m_background->mask());
+    } else {
         setMask(m_background->mask());
     }
-#endif
 }
 
 void PopupView::paintEvent(QPaintEvent *event)
