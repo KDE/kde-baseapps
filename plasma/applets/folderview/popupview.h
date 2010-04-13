@@ -84,6 +84,7 @@ private slots:
     void init();
     void activated(const QModelIndex &index);
     void setBusy(bool);
+    void createBusyWidgetIfNeeded();
     void contextMenuRequest(QWidget *widget, const QPoint &screenPos);
     void maybeClose();
     void closeThisAndParentPopup();
@@ -120,6 +121,7 @@ private:
     QBasicTimer m_hideTimer;
     bool m_showingMenu;
     bool m_showPreview;
+    bool m_busy;
     QStringList m_previewPlugins;
     static QTime s_lastOpenClose;
 };
