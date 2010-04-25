@@ -252,6 +252,7 @@ private:
     QBasicTimer m_delayedRelayoutTimer;
     QBasicTimer m_delayedCacheClearTimer;
     QBasicTimer m_toolTipShowTimer;
+    QBasicTimer m_searchQueryTimer;
     ToolTipWidget *m_toolTipWidget;
     QPointer<PopupView> m_popupView;
     QPointer<QWidget> m_popupCausedWidget;
@@ -263,6 +264,7 @@ private:
     Animator *m_animator;
     ActionOverlay *m_actionOverlay;
     QStringList m_popupPreviewPlugins;
+    QString m_searchQuery;
 };
 
 #endif

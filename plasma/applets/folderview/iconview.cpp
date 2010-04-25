@@ -1669,6 +1669,30 @@ void IconView::keyPressEvent(QKeyEvent *event)
 
     QModelIndex currentIndex = m_selectionModel->currentIndex();
 
+    bool sameKeyWasPressed = m_searchQuery.endsWith(event->text());
+    m_searchQuery.append(event->text());
+    m_searchQueryTimer.start(2000, this);   //clears search query when the user doesn't press any key
+
+    // First try to match the exact icon string
+    QModelIndexList matches = m_model->match(currentIndex, Qt::DisplayRole, m_searchQuery,
+                                                 1, Qt::MatchFixedString | Qt::MatchWrap);
+
+    if (matches.count()<=0) {
+        // Exact match failed, try matching the beginning of the icon string
+        matches = m_model->match(currentIndex, Qt::DisplayRole, m_searchQuery,
+                                             1, Qt::MatchStartsWith | Qt::MatchWrap);
+
+        if (matches.count()<=0 && sameKeyWasPressed) {
+            // Didn't even match beginning, try next icon string starting with the same letter
+            matches = m_model->match(currentIndex.sibling(currentIndex.row()+1, currentIndex.column()),
+                                 Qt::DisplayRole, event->text(), 1, Qt::MatchStartsWith | Qt::MatchWrap);
+        }
+    }
+
+    if (matches.count()>0) {
+            selectIcon(matches.at(0));
+    }
+
     switch (event->key()) {
     case Qt::Key_Home:
         selectFirstIcon();
@@ -2456,6 +2480,9 @@ QStyleOptionViewItemV4 IconView::viewOptions() const
 
 void IconView::selectIcon(QModelIndex index)
 {
+    if (!index.isValid()) {
+        return;
+    }
     repaintSelectedIcons();
     m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
     m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
@@ -2466,8 +2493,8 @@ void IconView::selectIcon(QModelIndex index)
 
 void IconView::selectFirstOrLastIcon(bool firstIcon)
 {
-    int minVertical;
-    int minHorizontal;
+    int minVertical=0;
+    int minHorizontal=0;
     int dirn=1;    //Useful in calculations as it stores whether view is LeftToRight or RightToLeft
     int isFirst = firstIcon ? 1 : -1;    //Useful in calculations to decide whether to select First or Last icon
     QModelIndex toSelect;
@@ -2651,6 +2678,9 @@ void IconView::timerEvent(QTimerEvent *event)
             connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
             m_popupIndex = m_hoveredIndex;
         }
+    } else if (event->timerId() == m_searchQueryTimer.timerId()) {
+        m_searchQuery.clear();
+        m_searchQueryTimer.stop();
     }
 }
 
