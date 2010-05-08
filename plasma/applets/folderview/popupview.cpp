@@ -62,7 +62,7 @@
 
 QTime PopupView::s_lastOpenClose;
 
-PopupView::PopupView(const KUrl &url, const QPoint &pos,
+PopupView::PopupView(const QModelIndex &index, const QPoint &pos,
                      const bool &showPreview, const QStringList &previewPlugins,
                      const IconView *parentView)
     : QWidget(0, Qt::X11BypassWindowManagerHint),
@@ -72,7 +72,6 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
       m_iconView(0),
       m_dirModel(0),
       m_model(0),
-      m_url(url),
       m_actionCollection(this),
       m_newMenu(0),
       m_itemActions(0),
@@ -99,6 +98,14 @@ PopupView::PopupView(const KUrl &url, const QPoint &pos,
     pal.setColor(backgroundRole(), Qt::transparent);
     pal.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     setPalette(pal);
+
+    KFileItem item = static_cast<const ProxyModel*>(index.model())->itemForIndex(index);
+    if (item.isDesktopFile()) {
+        KDesktopFile file(item.localPath());
+        m_url = file.readUrl();
+    } else {
+        m_url = item.targetUrl();
+    }
 
     m_background = new Plasma::FrameSvg(this);
     m_background->setImagePath("widgets/tooltip");

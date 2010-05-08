@@ -187,9 +187,9 @@ private slots:
     void popupCloseRequested();
     void dropActionTriggered(QAction *action);
     void dropCompleted();
-    void statResult(KJob *job);
     void repositionWidgetsManually();
     void closeEditor(QGraphicsWidget *editor, QAbstractItemDelegate::EndEditHint hint);
+    void checkIfFolderResult(const QModelIndex &index, bool isFolder);
 
 private:
     void paintMessage(QPainter *painter, const QRect &rect, const QString &message,
@@ -256,7 +256,6 @@ private:
     ToolTipWidget *m_toolTipWidget;
     QPointer<PopupView> m_popupView;
     QPointer<QWidget> m_popupCausedWidget;
-    KUrl m_popupUrl;
     KonqOperations *m_dropOperation;
     QActionGroup *m_dropActions;
     QPersistentModelIndex m_popupIndex;

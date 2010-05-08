@@ -39,7 +39,6 @@
 #include <QStyleOptionGraphicsItem>
 
 #include <KDirModel>
-#include <KDesktopFile>
 #include <KFileItemDelegate>
 #include <KGlobalSettings>
 #include <KIcon>
@@ -57,6 +56,7 @@
 #include "previewpluginsmodel.h"
 #include "tooltipwidget.h"
 #include "animator.h"
+#include "asyncfiletester.h"
 
 #include <Plasma/Containment>
 #include <Plasma/Corona>
@@ -1544,7 +1544,6 @@ void IconView::triggerToolTip(ToolTipType type)
         // Close the popup view if one is open
         m_toolTipShowTimer.stop();
         m_popupCausedWidget = 0;
-        m_popupUrl = KUrl();
         if (m_popupView) {
             m_popupView->delayedHide();
         }
@@ -1566,54 +1565,18 @@ void IconView::updateToolTip(QWidget *causedWidget)
         return;
     }
 
-    if (m_popupView && m_hoveredIndex == m_popupIndex) {
-        // If we're already showing a popup view for this index
+    if (!m_popupView || m_hoveredIndex != m_popupIndex) {
+        // If we're not already showing a popup view for this index
+        m_popupCausedWidget = causedWidget;
+        AsyncFileTester::checkIfFolder(m_hoveredIndex, this, "checkIfFolderResult");
         return;
-    }
-
-    // Decide if we're going to show a popup view or a regular tooltip
-    IconView::ToolTipType type = IconView::FileTip;
-    bool delayedResult = false;
-
-    KFileItem item = m_model->itemForIndex(m_hoveredIndex);
-    KUrl url = item.targetUrl();
-
-    if (item.isDir()) {
-        type = IconView::FolderTip;
-    } else if (item.isDesktopFile()) {
-        // Check if the desktop file is a link to a local folder
-        KDesktopFile file(url.path());
-        if (file.readType() == "Link") {
-            url = file.readUrl();
-            if (url.isLocalFile()) {
-                KFileItem destItem(KFileItem::Unknown, KFileItem::Unknown, url);
-                type = destItem.isDir() ? IconView::FolderTip : IconView::FileTip;
-            } else if (KProtocolInfo::protocolClass(url.protocol()) == QString(":local")) {
-                KIO::StatJob *job = KIO::stat(url, KIO::HideProgressInfo);
-                job->setSide(KIO::StatJob::SourceSide); // We will only read the file
-                connect(job, SIGNAL(result(KJob*)), SLOT(statResult(KJob*)));
-                delayedResult = true;
-            }
-        }
-    } 
-
-    m_popupUrl = url;
-    m_popupCausedWidget = causedWidget;
-
-    if (!delayedResult) {
-        triggerToolTip(type);
     }
 }
 
-void IconView::statResult(KJob *job)
+void IconView::checkIfFolderResult(const QModelIndex &index, bool isFolder)
 {
-    if (!job->error()) {
-        KIO::StatJob *statJob = static_cast<KIO::StatJob*>(job);
-        if (statJob->statResult().isDir()) {
-            triggerToolTip(IconView::FolderTip);
-        } else {
-            triggerToolTip(IconView::FileTip);
-        }
+    if (index == m_hoveredIndex) {
+        triggerToolTip(isFolder ? FolderTip : FileTip);
     }
 }
 
@@ -2655,29 +2618,27 @@ void IconView::timerEvent(QTimerEvent *event)
             return;
         }
 
-        if (!m_popupUrl.isEmpty()) {
-            const QPointF viewPos = mapFromViewport(visualRect(m_hoveredIndex)).center();
-            const QPoint scenePos = mapToScene(viewPos).toPoint();
-            QGraphicsView *gv = 0;
+        const QPointF viewPos = mapFromViewport(visualRect(m_hoveredIndex)).center();
+        const QPoint scenePos = mapToScene(viewPos).toPoint();
+        QGraphicsView *gv = 0;
 
-            if (m_popupCausedWidget) {
-                gv = qobject_cast<QGraphicsView*>(m_popupCausedWidget->parentWidget());
-            } else {
-                // We position the popup relative to the view under the mouse cursor
-                foreach (QGraphicsView *view, scene()->views()) {
-                    if (view->underMouse()) {
-                        gv = view;
-                        break;
-                    }
+        if (m_popupCausedWidget) {
+            gv = qobject_cast<QGraphicsView*>(m_popupCausedWidget->parentWidget());
+        } else {
+            // We position the popup relative to the view under the mouse cursor
+            foreach (QGraphicsView *view, scene()->views()) {
+                if (view->underMouse()) {
+                    gv = view;
+                    break;
                 }
             }
-
-            const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
-            m_popupView = new PopupView(m_popupUrl, pos, m_popupShowPreview, m_popupPreviewPlugins, this);
-            connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
-            connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
-            m_popupIndex = m_hoveredIndex;
         }
+
+        const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
+        m_popupIndex = m_hoveredIndex;
+        m_popupView = new PopupView(m_popupIndex, pos, m_popupShowPreview, m_popupPreviewPlugins, this);
+        connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
+        connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
     } else if (event->timerId() == m_searchQueryTimer.timerId()) {
         m_searchQuery.clear();
         m_searchQueryTimer.stop();

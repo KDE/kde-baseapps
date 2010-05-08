@@ -52,7 +52,7 @@ class PopupView : public QWidget
     Q_OBJECT
 
 public:
-    PopupView(const KUrl &url, const QPoint &pos,
+    PopupView(const QModelIndex &index, const QPoint &pos,
               const bool &showPreview, const QStringList &previewPlugins,
               const IconView *parentView);
     ~PopupView();
