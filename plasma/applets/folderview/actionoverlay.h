@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2009 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2009, 2010 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2009 Bruno Bigras <bigras.bruno@gmail.com>
  *
  *   This library is free software; you can redistribute it and/or
@@ -45,6 +45,7 @@ public:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+    void setElement(const QString &element);
 
 signals:
     void clicked();
@@ -53,6 +54,7 @@ signals:
 
 private:
     Plasma::Svg *m_icon;
+    QString m_element;
     bool m_pressed;
     bool m_sunken;
 };
@@ -73,15 +75,18 @@ public:
     void forceHide(HideHint hint);
 
 private slots:
-    void selected();
+    void toggleSelection();
+    void openPopup();
     void entered(const QModelIndex &index);
     void left(const QModelIndex &index);
     void timeout();
     void modelChanged();
     void rowsRemoved(const QModelIndex& indexes, int start, int end);
+    void checkIfFolderResult(const QModelIndex &index, bool isFolder);
 
 private:
-    ActionIcon *m_iconToggleSelection;
+    ActionIcon *m_toggleButton;
+    ActionIcon *m_openButton;
     QPersistentModelIndex m_hoverIndex;
     QTimer *m_hideActionOverlayIconTimer;
     Plasma::Animation *fadeIn;

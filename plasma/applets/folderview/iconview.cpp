@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009, 2010 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -1529,9 +1529,33 @@ void IconView::focusOutEvent(QFocusEvent *event)
     markAreaDirty(visibleArea());
 }
 
-void IconView::triggerToolTip(ToolTipType type)
+// Updates the tooltip for the hovered index
+void IconView::updateToolTip()
 {
-    if (type == FolderTip && m_hoveredIndex.isValid()) {
+    // Close the popup view if one is open
+    m_toolTipShowTimer.stop();
+    m_popupCausedWidget = 0;
+    if (m_popupView) {
+        m_popupView->delayedHide();
+    }
+
+    // Don't show file tips when the user is dragging something over the view
+    if (!m_hoverDrag) {
+        m_toolTipWidget->updateToolTip(m_hoveredIndex, mapFromViewport(visualRect(m_hoveredIndex)));
+    } else {
+        m_toolTipWidget->updateToolTip(QModelIndex(), QRect());
+    }
+}
+
+void IconView::checkIfFolderResult(const QModelIndex &index, bool isFolder)
+{
+    m_toolTipShowTimer.stop();
+    if (index != m_hoveredIndex) {
+        return;
+    }
+
+    // Start the timer if the index turned out to be a folder
+    if (isFolder && index.isValid()) {
         // Use a longer delay if we don't have any popup view open or if it's been
         // longer than 1.5 seconds since the last popup view was opened or closed.
         if ((m_popupView && m_hoveredIndex != m_popupIndex) ||
@@ -1540,43 +1564,8 @@ void IconView::triggerToolTip(ToolTipType type)
         } else {
             m_toolTipShowTimer.start(1000, this);
         }
-    } else {
-        // Close the popup view if one is open
-        m_toolTipShowTimer.stop();
-        m_popupCausedWidget = 0;
-        if (m_popupView) {
-            m_popupView->delayedHide();
-        }
-        // Don't show file tips when the user is dragging something over the view
-        if (!m_hoverDrag) {
-            m_toolTipWidget->updateToolTip(m_hoveredIndex, mapFromViewport(visualRect(m_hoveredIndex)));
-        } else {
-            m_toolTipWidget->updateToolTip(QModelIndex(), QRect());
-        }
-    }
-}
-
-// Updates the tooltip for the hovered index
-// causedWidget is the widget that received the mouse event that triggered the update
-void IconView::updateToolTip(QWidget *causedWidget)
-{
-    if (!m_hoveredIndex.isValid()) {
-        triggerToolTip(FileTip); // Will close any open tips
-        return;
-    }
-
-    if (!m_popupView || m_hoveredIndex != m_popupIndex) {
-        // If we're not already showing a popup view for this index
-        m_popupCausedWidget = causedWidget;
-        AsyncFileTester::checkIfFolder(m_hoveredIndex, this, "checkIfFolderResult");
-        return;
-    }
-}
-
-void IconView::checkIfFolderResult(const QModelIndex &index, bool isFolder)
-{
-    if (index == m_hoveredIndex) {
-        triggerToolTip(isFolder ? FolderTip : FileTip);
+    } else if (m_popupView) {
+        m_popupView->delayedHide();
     }
 }
 
@@ -1588,7 +1577,7 @@ void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
     }
-    updateToolTip(event->widget());
+    updateToolTip();
 }
 
 void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
@@ -1599,7 +1588,7 @@ void IconView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
         emit left(m_hoveredIndex);
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = QModelIndex();
-        updateToolTip(event->widget());
+        updateToolTip();
     }
 
     m_actionOverlay->forceHide(ActionOverlay::FadeOut);
@@ -1618,7 +1607,7 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(index));
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
-        updateToolTip(event->widget());
+        updateToolTip();
     }
 }
 
@@ -2051,7 +2040,13 @@ void IconView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
             dirtyRect |= visualRect(index);
         }
     }
-    updateToolTip(event->widget());
+
+    // Open a popup view for this index if it's a folder
+    if (!m_popupView || m_hoveredIndex != m_popupIndex) {
+        // If we're not already showing a popup view for this index
+        m_popupCausedWidget = event->widget();
+        AsyncFileTester::checkIfFolder(m_hoveredIndex, this, "checkIfFolderResult");
+    }
 
     markAreaDirty(dirtyRect);
     event->setAccepted(!event->mimeData()->hasFormat(appletMimeType));
@@ -2541,6 +2536,54 @@ void IconView::popupCloseRequested()
     }
 }
 
+void IconView::openPopup(const QModelIndex &index)
+{
+    if (m_popupView && m_popupIndex == index) {
+        // The popup is already showing the hovered index
+        return;
+    }
+
+    if (m_popupView && m_popupView->dragInProgress()) {
+        // Don't delete the popup view when a drag is in progress
+        return;
+    }
+
+    Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
+    delete m_popupView;
+
+    if (QApplication::activePopupWidget() || QApplication::activeModalWidget()) {
+        // Don't open a popup view when a menu or similar widget is being shown 
+        return;
+    }
+
+    // Make sure the index is valid
+    if (!index.isValid()) {
+        return;
+    }
+
+    const QPointF viewPos = mapFromViewport(visualRect(index)).center();
+    const QPoint scenePos = mapToScene(viewPos).toPoint();
+    QGraphicsView *gv = 0;
+
+    if (m_popupCausedWidget) {
+        gv = qobject_cast<QGraphicsView*>(m_popupCausedWidget->parentWidget());
+    } else {
+        // We position the popup relative to the view under the mouse cursor
+        foreach (QGraphicsView *view, scene()->views()) {
+            if (view->underMouse()) {
+                gv = view;
+                break;
+            }
+        }
+    }
+
+    const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
+    m_popupIndex = index;
+    m_popupView = new PopupView(m_popupIndex, pos, m_popupShowPreview, m_popupPreviewPlugins, this);
+    connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
+    connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
+}
+
 void IconView::timerEvent(QTimerEvent *event)
 {
     AbstractItemView::timerEvent(event);
@@ -2599,46 +2642,7 @@ void IconView::timerEvent(QTimerEvent *event)
         }
     } else if (event->timerId() == m_toolTipShowTimer.timerId()) {
         m_toolTipShowTimer.stop();
-
-        if (m_popupView && m_popupIndex == m_hoveredIndex) {
-            // The popup is already showing the hovered index
-            return;
-        }
-
-        if (m_popupView && m_popupView->dragInProgress()) {
-            // Don't delete the popup view when a drag is in progress
-            return;
-        }
-
-        Plasma::ToolTipManager::self()->hide(m_toolTipWidget);
-        delete m_popupView;
-
-        if (QApplication::activePopupWidget() || QApplication::activeModalWidget()) {
-            // Don't open a popup view when a menu or similar widget is being shown 
-            return;
-        }
-
-        const QPointF viewPos = mapFromViewport(visualRect(m_hoveredIndex)).center();
-        const QPoint scenePos = mapToScene(viewPos).toPoint();
-        QGraphicsView *gv = 0;
-
-        if (m_popupCausedWidget) {
-            gv = qobject_cast<QGraphicsView*>(m_popupCausedWidget->parentWidget());
-        } else {
-            // We position the popup relative to the view under the mouse cursor
-            foreach (QGraphicsView *view, scene()->views()) {
-                if (view->underMouse()) {
-                    gv = view;
-                    break;
-                }
-            }
-        }
-
-        const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
-        m_popupIndex = m_hoveredIndex;
-        m_popupView = new PopupView(m_popupIndex, pos, m_popupShowPreview, m_popupPreviewPlugins, this);
-        connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
-        connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
+        openPopup(m_hoveredIndex);
     } else if (event->timerId() == m_searchQueryTimer.timerId()) {
         m_searchQuery.clear();
         m_searchQueryTimer.stop();

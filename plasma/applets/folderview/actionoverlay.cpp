@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2009 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2009, 2010 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2009 Bruno Bigras <bigras.bruno@gmail.com>
  *
  *   This library is free software; you can redistribute it and/or
@@ -19,6 +19,8 @@
  */
 
 #include "actionoverlay.h"
+#include "asyncfiletester.h"
+#include "iconview.h"
 
 #include <Plasma/PaintUtils>
 #include <Plasma/Animator>
@@ -45,16 +47,18 @@ ActionIcon::ActionIcon(QGraphicsItem* parent)
     show();
 }
 
+void ActionIcon::setElement(const QString &element)
+{
+    m_element = element;
+}
+
 void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
     Q_UNUSED(option)
     Q_UNUSED(widget)
 
-    AbstractItemView *view = static_cast<AbstractItemView*>(parentWidget()->parentWidget());
-    QPersistentModelIndex index = static_cast<ActionOverlay*>(parentWidget())->hoverIndex();
-    QItemSelectionModel *m_selectionModel = view->selectionModel();
+    QString element = m_element;
 
-    QString element = m_selectionModel->isSelected(index) ? "remove" : "add";
     if (m_sunken) {
         element += "-pressed";
     } else if (isUnderMouse()) {
@@ -62,6 +66,7 @@ void ActionIcon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     } else {
         element += "-normal";
     }
+
     m_icon->paint(painter, rect(), element);
 }
 
@@ -119,22 +124,30 @@ void ActionIcon::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 ActionOverlay::ActionOverlay(AbstractItemView* parent)
         : QGraphicsWidget(parent)
 {
-    QGraphicsGridLayout *lay = new QGraphicsGridLayout(this);
+    m_toggleButton = new ActionIcon(this);
+    m_openButton = new ActionIcon(this);
+    m_openButton->setElement("open");
 
-    m_iconToggleSelection = new ActionIcon(this);
-    lay->setContentsMargins(4, 4, 4, 4);
-    lay->addItem(m_iconToggleSelection, 0, 0);
+    QGraphicsGridLayout *layout = new QGraphicsGridLayout(this);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(1);
+    layout->addItem(m_toggleButton, 0, 0);
+    layout->addItem(m_openButton, 1, 0);
 
     connect(parentWidget(), SIGNAL(entered(QModelIndex)), this, SLOT(entered(QModelIndex)));
     connect(parentWidget(), SIGNAL(left(QModelIndex)), this, SLOT(left(QModelIndex)));
     connect(parentWidget(), SIGNAL(modelChanged()), this, SLOT(modelChanged()));
 
-    connect(m_iconToggleSelection, SIGNAL(clicked()), this, SLOT(selected()));
+    connect(m_toggleButton, SIGNAL(clicked()), this, SLOT(toggleSelection()));
+    connect(m_openButton, SIGNAL(clicked()), this, SLOT(openPopup()));
 
     m_hideActionOverlayIconTimer = new QTimer(this);
     connect(m_hideActionOverlayIconTimer, SIGNAL(timeout()), this, SLOT(timeout()));
-    connect(m_iconToggleSelection, SIGNAL(iconHoverEnter()), m_hideActionOverlayIconTimer, SLOT(stop()));
-    connect(m_iconToggleSelection, SIGNAL(iconHoverLeave()), m_hideActionOverlayIconTimer, SLOT(start()));
+
+    connect(m_toggleButton, SIGNAL(iconHoverEnter()), m_hideActionOverlayIconTimer, SLOT(stop()));
+    connect(m_toggleButton, SIGNAL(iconHoverLeave()), m_hideActionOverlayIconTimer, SLOT(start()));
+    connect(m_openButton,   SIGNAL(iconHoverEnter()), m_hideActionOverlayIconTimer, SLOT(stop()));
+    connect(m_openButton,   SIGNAL(iconHoverLeave()), m_hideActionOverlayIconTimer, SLOT(start()));
 
     connect(parent->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(close()));
 
@@ -155,7 +168,7 @@ ActionOverlay::ActionOverlay(AbstractItemView* parent)
     hide();
 }
 
-void ActionOverlay::selected()
+void ActionOverlay::toggleSelection()
 {
     AbstractItemView *view = static_cast<AbstractItemView*>(parentWidget());
     QItemSelectionModel *m_selectionModel = view->selectionModel();
@@ -164,6 +177,7 @@ void ActionOverlay::selected()
         const QModelIndex oldCurrent = m_selectionModel->currentIndex();
         m_selectionModel->select(m_hoverIndex, QItemSelectionModel::Toggle);
         m_selectionModel->setCurrentIndex(m_hoverIndex, QItemSelectionModel::NoUpdate);
+        m_toggleButton->setElement(m_selectionModel->isSelected(m_hoverIndex) ? "remove" : "add");
         view->markAreaDirty(view->visualRect(m_hoverIndex));
         if (oldCurrent.isValid() && oldCurrent != m_hoverIndex) {
             view->markAreaDirty(view->visualRect(oldCurrent));
@@ -171,6 +185,13 @@ void ActionOverlay::selected()
     }
 }
 
+void ActionOverlay::openPopup()
+{
+    if (IconView *view = qobject_cast<IconView*>(parentWidget())) {
+        view->openPopup(m_hoverIndex);
+    }
+}
+    
 QPersistentModelIndex ActionOverlay::hoverIndex()
 {
     return m_hoverIndex;
@@ -182,14 +203,24 @@ void ActionOverlay::entered(const QModelIndex &index)
 
     if (index.isValid()) {
         AbstractItemView *view = static_cast<AbstractItemView*>(parentWidget());
+        QItemSelectionModel *m_selectionModel = view->selectionModel();
+        m_toggleButton->setElement(m_selectionModel->isSelected(index) ? "remove" : "add");
         setPos(view->mapFromViewport(view->visualRect(index)).topLeft());
         show();
         if (m_hoverIndex != index) {
-            m_iconToggleSelection->update();
+            m_toggleButton->update();
             fadeOut->stop();
             fadeIn->start();
         }
         m_hoverIndex = index;
+        AsyncFileTester::checkIfFolder(index, this, "checkIfFolderResult");
+    }
+}
+
+void ActionOverlay::checkIfFolderResult(const QModelIndex &index, bool isFolder)
+{
+    if (index == m_hoverIndex) {
+        m_openButton->setVisible(isFolder);
     }
 }
 

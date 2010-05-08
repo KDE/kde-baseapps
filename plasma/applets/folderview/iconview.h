@@ -1,5 +1,5 @@
 /*
- *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
+ *   Copyright © 2008, 2009, 2010 Fredrik Höglund <fredrik@kde.org>
  *   Copyright © 2008 Rafael Fernández López <ereslibre@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
@@ -67,7 +67,6 @@ class IconView : public AbstractItemView
 
 public:
     enum Flow { LeftToRight, TopToBottom, RightToLeft, TopToBottomRightToLeft };
-    enum ToolTipType { FolderTip, FileTip };
 
     Q_PROPERTY(QSize gridSize READ gridSize WRITE setGridSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
@@ -128,7 +127,7 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
-    void triggerToolTip(ToolTipType type);
+    void openPopup(const QModelIndex &index);
 
 signals:
     void indexesMoved(const QModelIndexList &indexes);
@@ -208,7 +207,7 @@ private:
     void updateScrollBar();
     void updateScrollBarGeometry();
     void updateEditorGeometry();
-    void updateToolTip(QWidget *causedWidget = 0);
+    void updateToolTip();
     void createDropActions(const KUrl::List &urls, QActionGroup *actions);
     QStyleOptionViewItemV4 viewOptions() const;
     void selectIcon(QModelIndex index);

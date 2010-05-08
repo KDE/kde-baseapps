@@ -35,6 +35,11 @@ AsyncFileTester::AsyncFileTester(const QModelIndex &index, QObject *object, cons
 
 void AsyncFileTester::checkIfFolder(const QModelIndex &index, QObject *object, const char *method)
 {
+    if (!index.isValid()) {
+        callResultMethod(object, method, index, false);
+        return;
+    }
+
     KFileItem item = static_cast<const ProxyModel*>(index.model())->itemForIndex(index);
     KUrl url = item.targetUrl();
     
