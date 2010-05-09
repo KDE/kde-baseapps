@@ -55,7 +55,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Custom Title:</string>
+      <string>Custom title:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
