@@ -59,6 +59,7 @@
 #include "asyncfiletester.h"
 
 #include <Plasma/Containment>
+#include <Plasma/ContainmentActions>
 #include <Plasma/Corona>
 #include <Plasma/PaintUtils>
 #include <Plasma/Theme>
@@ -1821,6 +1822,17 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // If empty space was pressed
         m_pressedIndex = QModelIndex();
         m_buttonDownPos = pos;
+
+        // If a containment action is assigned to the left mouse button,
+        // give it precedence over rubberband-selections
+        Plasma::Containment *containment = qobject_cast<Plasma::Containment*>(parentWidget());
+        if (containment && containment->isContainment()) {
+            const QString trigger = Plasma::ContainmentActions::eventToString(event);
+            if (!containment->containmentActions(trigger).isEmpty()) {
+                event->ignore();
+                return;
+            }
+        }
 
         if (event->modifiers() & Qt::ControlModifier) {
             // Make the current selection persistent
