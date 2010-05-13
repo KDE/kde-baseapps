@@ -360,6 +360,7 @@ void FolderView::init()
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
     m_model->setFilterFixedString(m_filterFiles);
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
+    m_model->setDynamicSortFilter(true);
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
     DirLister *lister = new DirLister(this);
