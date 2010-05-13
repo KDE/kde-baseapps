@@ -623,7 +623,7 @@ void FolderView::configAccepted()
         //save and restore the icons positions
 
         QStringList iconPositionsData;
-        if (!m_showPreviews) {
+        if (!m_showPreviews && m_iconView) {
             //Save the icon positions
             iconPositionsData = m_iconView->iconPositionsData();
         }
@@ -631,7 +631,7 @@ void FolderView::configAccepted()
         //Enable/disable the previews
         m_previewGenerator->setPreviewShown(m_showPreviews);
 
-        if (!m_showPreviews) {
+        if (!m_showPreviews && m_iconView) {
             //Restore the icon positions
             m_iconView->setIconPositionsData(iconPositionsData);
         }
