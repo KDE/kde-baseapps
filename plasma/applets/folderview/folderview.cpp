@@ -489,6 +489,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     if (isContainment()) {
         uiDisplay.lblCustomLabel->hide();
         uiDisplay.labelEdit->hide();
+        uiDisplay.headerTitle->hide();
     }
 
     uiDisplay.labelEdit->setText(m_titleText);
@@ -575,6 +576,27 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
             }
         }
     }
+
+    connect(uiDisplay.labelEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.flowCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.sizeSlider, SIGNAL(sliderMoved(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.lockInPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.alignToGrid, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.numLinesEdit, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.colorButton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.drawShadows, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+
+    connect(uiFilter.filterType, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiFilter.filterFilesPattern, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
+    connect(uiFilter.filterFilesList->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), parent, SLOT(settingsModified()));
+
+    connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiLocation.placesCombo, SIGNAL(currentIndexChagned(int)), parent, SLOT(settingsModified()));
+    connect(uiLocation.lineEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
 }
 
 void FolderView::configAccepted()
