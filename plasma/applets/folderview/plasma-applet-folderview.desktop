@@ -81,6 +81,7 @@ Name[zh_TW]=資料夾檢視
 Comment=Display the contents of folders (User's home folder as default)
 Comment[ar]=اعرض محتوى المجلدات (افتراضيات مجلد بيت المستخدم)
 Comment[bg]=Показва съсдържанието на директория
+Comment[bn]=ফোল্ডার-এর বিষয়বস্তু দেখায় (ডিফল্ট ব্যবহারকারীর ব্যক্তিগত ফোল্ডার)
 Comment[ca]=Mostra el contingut de les carpetes (per defecte la carpeta inicial de l'usuari)
 Comment[ca@valencia]=Mostra el contingut de les carpetes (per defecte la carpeta inicial de l'usuari)
 Comment[cs]=Zobrazuje obsah složek (implicitně domovskou složku)
