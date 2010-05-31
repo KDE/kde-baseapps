@@ -746,13 +746,13 @@ void FolderView::configAccepted()
     if (needReload) {
         //Manually save and restore the icon positions if we need it
         QStringList iconPositionsData;
-        if (preserveIconPositions) {
+        if (preserveIconPositions && m_iconView) {
             iconPositionsData = m_iconView->iconPositionsData();
         }
-        
+
         m_dirModel->dirLister()->openUrl(m_url);
 
-        if (preserveIconPositions) {
+        if (preserveIconPositions && m_iconView) {
              m_iconView->setIconPositionsData(iconPositionsData);
         }
         // So the KFileItemActions will be recreated for the new URL.
