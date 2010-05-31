@@ -22,6 +22,8 @@
 
 #include <QSortFilterProxyModel>
 #include <QStringList>
+#include <QSet>
+#include <QRegExp>
 
 class KDirModel;
 class KFileItem;
@@ -43,7 +45,10 @@ public:
     FilterMode filterMode() const;
 
     void setMimeTypeFilterList(const QStringList &mimeList);
-    const QStringList &mimeTypeFilterList() const;
+    QStringList mimeTypeFilterList() const;
+
+    void setFileNameFilter(const QString &pattern);
+    QString fileNameFilter() const;
 
     void setSortDirectoriesFirst(bool enable);
     bool sortDirectoriesFirst() const;
@@ -60,12 +65,17 @@ public:
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
+    bool matchMimeType(const KFileItem &item) const;
+    bool matchPattern(const KFileItem &item) const;
 
 private:
     FilterMode m_filterMode;
-    QStringList m_mimeList;
+    QSet<QString> m_mimeSet;
+    QList<QRegExp> m_regExps;
+    QString m_pattern;
     bool m_sortDirsFirst;
     bool m_parseDesktopFiles;
+    bool m_patternMatchAll;
 };
 
 #endif

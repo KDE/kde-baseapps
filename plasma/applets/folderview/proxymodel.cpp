@@ -30,12 +30,14 @@
 
 #include <kde_file.h>
 
+#include <QDebug>
 
 ProxyModel::ProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent),
       m_filterMode(NoFilter),
       m_sortDirsFirst(true),
-      m_parseDesktopFiles(false)
+      m_parseDesktopFiles(false),
+      m_patternMatchAll(true)
 {
     setSupportedDragActions(Qt::CopyAction | Qt::MoveAction | Qt::LinkAction);
 }
@@ -57,13 +59,34 @@ ProxyModel::FilterMode ProxyModel::filterMode() const
 
 void ProxyModel::setMimeTypeFilterList(const QStringList &mimeList)
 {
-    m_mimeList = mimeList;
+    m_mimeSet = QSet<QString>::fromList(mimeList);
     invalidateFilter();
 }
 
-const QStringList &ProxyModel::mimeTypeFilterList() const
+QStringList ProxyModel::mimeTypeFilterList() const
 {
-    return m_mimeList;
+    return m_mimeSet.toList();
+}
+
+void ProxyModel::setFileNameFilter(const QString &pattern)
+{
+    m_pattern = pattern;
+    m_patternMatchAll = (pattern == "*");
+
+    const QStringList patterns = pattern.split(' ');
+    m_regExps.clear();
+
+    foreach (const QString &pattern, patterns) {
+        QRegExp rx(pattern);
+        rx.setPatternSyntax(QRegExp::Wildcard);
+        rx.setCaseSensitivity(Qt::CaseInsensitive);
+        m_regExps.append(rx);
+    }
+}
+
+QString ProxyModel::fileNameFilter() const
+{
+    return m_pattern;
 }
 
 void ProxyModel::setSortDirectoriesFirst(bool enable)
@@ -157,39 +180,46 @@ ProxyModel::FilterMode ProxyModel::filterModeFromInt(int filterMode)
     }
 }
 
-bool ProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+inline bool ProxyModel::matchMimeType(const KFileItem &item) const
 {
-    const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
-    const KFileItem item = dirModel->itemForIndex(dirModel->index(sourceRow, KDirModel::Name, sourceParent));
+    if (m_mimeSet.isEmpty()) {
+        return false;
+    }
 
-    bool invertResult = false;
-    switch (m_filterMode) {
-        case NoFilter:
+    const QString mimeType = item.determineMimeType()->name();
+    return m_mimeSet.contains(mimeType);
+}
+
+inline bool ProxyModel::matchPattern(const KFileItem &item) const
+{
+    if (m_patternMatchAll) {
+        return true;
+    }
+
+    const QString name = item.name();
+    QListIterator<QRegExp> i(m_regExps);
+    while (i.hasNext()) {
+        if (i.next().exactMatch(name)) {
             return true;
-        case FilterHideMatches:
-            invertResult = true; // fall through
-        case FilterShowMatches: {
-            // Mime type check
-            bool ret = m_mimeList.contains(item.determineMimeType()->name());
-            if (!ret) {
-                return invertResult ? true : false;
-            }
-            // Pattern check
-            const QString regExpOrig = filterRegExp().pattern();
-            const QStringList regExps = regExpOrig.split(' ');
-            foreach (const QString &regExpStr, regExps) {
-                QRegExp regExp(regExpStr);
-                regExp.setPatternSyntax(QRegExp::Wildcard);
-                regExp.setCaseSensitivity(Qt::CaseInsensitive);
-
-                if (regExp.indexIn(item.name()) != -1) {
-                    return invertResult ? false : true;
-                }
-            }
-            break;
         }
     }
 
-    return invertResult ? true : false;
+    return false;
+}
+
+bool ProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+{
+    if (m_filterMode == NoFilter) {
+        return true;
+    }
+
+    const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
+    const KFileItem item = dirModel->itemForIndex(dirModel->index(sourceRow, KDirModel::Name, sourceParent));
+
+    if (m_filterMode == FilterShowMatches) {
+        return (matchPattern(item) && matchMimeType(item));
+    } else {
+        return !(matchPattern(item) && matchMimeType(item));
+    }
 }
 

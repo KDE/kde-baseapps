@@ -358,7 +358,7 @@ void FolderView::init()
 
     m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
-    m_model->setFilterFixedString(m_filterFiles);
+    m_model->setFileNameFilter(m_filterFiles);
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
     m_model->setDynamicSortFilter(true);
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
@@ -741,7 +741,7 @@ void FolderView::configAccepted()
     if (m_url != url || m_filterFiles != uiFilter.filterFilesPattern->text() ||
         m_filterFilesMimeList != selectedItems || m_filterType != filterType)
     {
-        m_model->setFilterFixedString(uiFilter.filterFilesPattern->text());
+        m_model->setFileNameFilter(uiFilter.filterFilesPattern->text());
         m_filterFiles = uiFilter.filterFilesPattern->text();
         m_filterFilesMimeList = selectedItems;
         m_filterType = filterType;
