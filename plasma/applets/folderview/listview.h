@@ -38,7 +38,11 @@ class QItemSelectionModel;
 class ProxyModel;
 class QStyleOptionViewItemV4;
 class QScrollBar;
+class Animator;
 
+namespace Plasma {
+    class FrameSvg;
+}
 
 class ListView : public AbstractItemView
 {
@@ -50,21 +54,26 @@ public:
 
     void setModel(QAbstractItemModel *model);
 
-    void setIconSize(const QSize &gridSize);
+    void setIconSize(const QSize &iconSize);
 
     void setWordWrap(bool on);
     bool wordWrap() const;
+
+    void setTextLineCount(int rows);
+    int textLineCount() const;
 
     QModelIndex indexAt(const QPointF &point) const;
     QRect visualRect(const QModelIndex &index) const;
 
 protected:
     void startDrag(const QPointF &pos, QWidget *widget);
-    void updateTextShadows(const QColor &textColor);
     void updateScrollBar();
     void updateSizeHint();
     QStyleOptionViewItemV4 viewOptions() const;
 
+    QSize itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const;
+    void paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index) const;
+    
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
@@ -85,7 +94,10 @@ protected:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
 private:
+    Plasma::FrameSvg *m_itemFrame;
+    Animator *m_animator;
     int m_rowHeight;
+    int m_numTextLines;
     QPersistentModelIndex m_pressedIndex;
     bool m_dragInProgress;
     bool m_wordWrap;

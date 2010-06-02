@@ -33,7 +33,9 @@
 #include <KDirModel>
 #include <KFileItemDelegate>
 #include <KGlobalSettings>
+#include <KStringHandler>
 
+#include "animator.h"
 #include "proxymodel.h"
 
 #include "plasma/containment.h"
@@ -44,13 +46,22 @@
 
 ListView::ListView(QGraphicsWidget *parent)
     : AbstractItemView(parent),
+      m_itemFrame(0),
       m_rowHeight(-1),
+      m_numTextLines(2),
       m_dragInProgress(false),
       m_wordWrap(true)
 {
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
     setCacheMode(NoCache);
+
+    m_itemFrame = new Plasma::FrameSvg(this);
+    m_itemFrame->setImagePath("widgets/viewitem");
+    m_itemFrame->setCacheAllRenderedFrames(true);
+    m_itemFrame->setElementPrefix("normal");
+
+    m_animator = new Animator(this);
 }
 
 ListView::~ListView()
@@ -84,6 +95,20 @@ void ListView::setWordWrap(bool on)
 bool ListView::wordWrap() const
 {
     return m_wordWrap;
+}
+
+void ListView::setTextLineCount(int count)
+{
+    if (count != m_numTextLines) {
+        m_numTextLines = count;
+        m_rowHeight = -1;
+        markAreaDirty(visibleArea());
+    }
+}
+
+int ListView::textLineCount() const
+{
+    return m_numTextLines;
 }
 
 void ListView::rowsInserted(const QModelIndex &parent, int first, int last)
@@ -135,7 +160,7 @@ void ListView::updateScrollBar()
 
     if (m_rowHeight == -1 && m_model->rowCount() > 0) {
         // Use the height of the first item for all items
-        const QSize size = m_delegate->sizeHint(viewOptions(), m_model->index(0, 0));
+        const QSize size = itemSize(viewOptions(), m_model->index(0, 0));
         m_rowHeight = size.height();
     }
 
@@ -161,11 +186,33 @@ void ListView::updateScrollBar()
     }
 }
 
+QSize ListView::itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
+{
+    qreal left, top, right, bottom;
+    m_itemFrame->getMargins(left, top, right, bottom);
+
+    QFont font = option.font;
+
+    KFileItem item = qvariant_cast<KFileItem>(index.data(KDirModel::FileItemRole));
+    if (item.isLink()) {
+        font.setItalic(true);
+    }
+
+    QFontMetrics fm(font);
+
+    QSize size;
+    size.rwidth() += contentsRect().width();
+    size.rheight() = qMax(option.decorationSize.height(), m_numTextLines * fm.height());
+    size.rheight() += top + bottom;
+
+    return size;
+}
+
 void ListView::updateSizeHint()
 {
     if (m_rowHeight == -1 && m_model->rowCount() > 0) {
         // Use the height of the first item for all items
-        const QSize size = m_delegate->sizeHint(viewOptions(), m_model->index(0, 0));
+        const QSize size = itemSize(viewOptions(), m_model->index(0, 0));
         m_rowHeight = size.height();
     }
 
@@ -183,32 +230,107 @@ QRect ListView::visualRect(const QModelIndex &index) const
     return QRect(cr.left(), cr.top() + index.row() * m_rowHeight, cr.width(), m_rowHeight);
 }
 
-void ListView::updateTextShadows(const QColor &textColor)
+void ListView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
 {
-    if (!drawShadows()) {
-        m_delegate->setShadowColor(Qt::transparent);
-        return;
+    // Draw the item background
+    // ========================
+    const bool selected = (option.state & QStyle::State_Selected);
+    const qreal hoverProgress = m_animator->hoverProgress(index);
+
+    QPixmap from(option.rect.size());
+    QPixmap to(option.rect.size());
+    from.fill(Qt::transparent);
+    to.fill(Qt::transparent);
+
+    if (selected) {
+        QPainter p(&from);
+        m_itemFrame->setElementPrefix("selected");
+        m_itemFrame->resizeFrame(option.rect.size());
+        m_itemFrame->paintFrame(&p, QPoint());
     }
 
-    QColor shadowColor;
+    if (hoverProgress > 0.0) {
+        QPainter p(&to);
+        m_itemFrame->setElementPrefix(selected ? "selected+hover" : "hover");
+        m_itemFrame->resizeFrame(option.rect.size());
+        m_itemFrame->paintFrame(&p, QPoint());
+        p.end();
 
-    // Use black shadows with bright text, and white shadows with dark text.
-    if (qGray(textColor.rgb()) > 192) {
-        shadowColor = Qt::black;
-    } else {
-        shadowColor = Qt::white;
+        QPixmap result = Plasma::PaintUtils::transition(from, to, hoverProgress);
+        painter->drawPixmap(option.rect.topLeft(), result);
+    } else if (selected) {
+        painter->drawPixmap(option.rect.topLeft(), from);
     }
 
-    if (m_delegate->shadowColor() != shadowColor)
-    {
-        m_delegate->setShadowColor(shadowColor);
+    qreal left, top, right, bottom;
+    m_itemFrame->getMargins(left, top, right, bottom);
+    const QRect r = option.rect.adjusted(left, top, -right, -bottom);
 
-        // Center white shadows to create a halo effect, and offset dark shadows slightly.
-        if (shadowColor == Qt::white) {
-            m_delegate->setShadowOffset(QPoint(0, 0));
-        } else {
-            m_delegate->setShadowOffset(QPoint(layoutDirection() == Qt::RightToLeft ? -1 : 1, 1));
-        }
+
+    const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignLeft | Qt::AlignVCenter,
+                                         option.decorationSize, r);
+
+    const QRect tr = QStyle::alignedRect(option.direction, Qt::AlignRight | Qt::AlignVCenter,
+                                         QSize(r.width() - ir.width() - 4, r.height()), r);
+ 
+
+    // Draw the text label
+    // ===================
+    QFont font = option.font;
+
+    KFileItem item = qvariant_cast<KFileItem>(index.data(KDirModel::FileItemRole));
+    if (item.isLink()) {
+        font.setItalic(true);
+    }
+
+    const QString text = index.data(Qt::DisplayRole).toString();
+
+    QTextLayout layout;
+    layout.setText(KStringHandler::preProcessWrap(text));
+    layout.setFont(font);
+    const QSize size = doTextLayout(layout, tr.size(), Qt::AlignLeft | Qt::AlignVCenter,
+                                    QTextOption::WrapAtWordBoundaryOrAnywhere);
+
+    painter->setPen(option.palette.color(QPalette::Text));
+    drawTextLayout(painter, layout, tr);
+
+
+    // Draw the icon
+    // =============
+    const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+    icon.paint(painter, ir);
+
+
+    // Draw the focus rect
+    // ===================
+    if (option.state & QStyle::State_HasFocus) {
+        QRect fr = QStyle::alignedRect(layoutDirection(), Qt::AlignCenter, size, tr);
+        fr.adjust(-2, -2, 2, 2);
+
+        QColor color = Qt::white;
+        color.setAlphaF(.33);
+
+        QColor transparent = color;
+        transparent.setAlphaF(0);
+
+        QLinearGradient g1(0, fr.top(), 0, fr.bottom());
+        g1.setColorAt(0, color);
+        g1.setColorAt(1, transparent);
+
+        QLinearGradient g2(fr.left(), 0, fr.right(), 0);
+        g2.setColorAt(0, transparent);
+        g2.setColorAt(.5, color);
+        g2.setColorAt(1, transparent);
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->setPen(QPen(g1, 0));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRoundedRect(QRectF(fr).adjusted(.5, .5, -.5, -.5), 2, 2);
+        painter->setPen(QPen(g2, 0));
+        painter->drawLine(QLineF(fr.left() + 2, fr.bottom() + .5,
+                                 fr.right() - 2, fr.bottom() + .5));
+        painter->restore();
     }
 }
 
@@ -241,7 +363,7 @@ void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
         if (m_rowHeight == -1 && m_model->rowCount() > 0) {
             // Use the height of the first item for all items
-            const QSize size = m_delegate->sizeHint(opt, m_model->index(0, 0));
+            const QSize size = itemSize(opt, m_model->index(0, 0));
             m_rowHeight = size.height();
         }
 
@@ -268,17 +390,14 @@ void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
                 if (m_dragInProgress) {
                     continue;
                 }
-                updateTextShadows(palette().color(QPalette::HighlightedText));
                 opt.state |= QStyle::State_Selected | QStyle::State_MouseOver;
-            } else {
-                updateTextShadows(palette().color(QPalette::Text));
             }
-
+ 
             if (hasFocus() && index == m_selectionModel->currentIndex()) {
                 opt.state |= QStyle::State_HasFocus;
             }
 
-            m_delegate->paint(&p, opt, index);
+            paintItem(&p, opt, index);
         }
 
         m_dirtyRegion = QRegion();
@@ -303,6 +422,7 @@ void ListView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
     }
 
     if (index.isValid()) {
+        emit entered(index);
         m_selectionModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
         markAreaDirty(visualRect(index));
     }
@@ -314,6 +434,12 @@ void ListView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     const QModelIndex index = indexAt(pos);
 
     if (index != m_selectionModel->currentIndex()) {
+        if (m_selectionModel->currentIndex().isValid()) {
+            emit left(m_selectionModel->currentIndex());
+        }
+        if (index.isValid()) {
+            emit entered(index);
+        }
         markAreaDirty(visualRect(index));
         markAreaDirty(visualRect(m_selectionModel->currentIndex()));
         m_selectionModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
@@ -325,6 +451,7 @@ void ListView::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     Q_UNUSED(event)
 
     if (!m_pressedIndex.isValid() && m_selectionModel->currentIndex().isValid()) {
+        emit left(m_selectionModel->currentIndex());
         markAreaDirty(visualRect(m_selectionModel->currentIndex()));
         m_selectionModel->clear();
     }
@@ -473,13 +600,11 @@ void ListView::startDrag(const QPointF &pos, QWidget *widget)
     //option.state |= QStyle::State_Selected | QStyle::State_MouseOver;
     option.state &= ~(QStyle::State_Selected | QStyle::State_MouseOver);
 
-    updateTextShadows(palette().color(QPalette::HighlightedText));
-
     QPainter p(&pixmap);
     foreach (const QModelIndex &index, indexes)
     {
         option.rect = visualRect(index).translated(-boundingRect.topLeft());
-        m_delegate->paint(&p, option, index);
+        paintItem(&p, option, index);
     }
     p.end();
 

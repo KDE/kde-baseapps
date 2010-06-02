@@ -404,6 +404,15 @@ void AbstractItemView::drawTextLayout(QPainter *painter, const QTextLayout &layo
     QPainter p(&pixmap);
     p.setPen(painter->pen());
 
+    int y = 0;
+    if (layout.textOption().alignment() & Qt::AlignVCenter) {
+        const int h = fm.height() * layout.lineCount();
+        if (h < pixmap.height()) {
+            y = (pixmap.height() - h) / 2;
+        }
+    }
+    p.translate(0, y);
+
     // Draw each line in the layout
     for (int i = 0; i < layout.lineCount(); i++)
     {
@@ -434,9 +443,11 @@ void AbstractItemView::drawTextLayout(QPainter *painter, const QTextLayout &layo
         const QColor color = painter->pen().color();
         if (qGray(color.rgb()) < 192) {
             // Draw halos
+            painter->translate(0, y);
             foreach (const QRect &haloRect, haloRects) {
                 Plasma::PaintUtils::drawHalo(painter, haloRect.translated(rect.topLeft()));
             }
+            painter->translate(0, -y);
         } else {
             // Draw shadow
             QImage shadow = pixmap.toImage();
