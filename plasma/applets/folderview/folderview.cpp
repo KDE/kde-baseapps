@@ -883,7 +883,9 @@ void FolderView::updateListViewState()
     m_listView->setDrawShadows(m_drawShadows);
     m_listView->setIconSize(iconSize());
     m_listView->setWordWrap(m_numTextLines > 1);
-    m_iconView->setTextLineCount(m_numTextLines);
+    if ( m_iconView ) {
+        m_iconView->setTextLineCount(m_numTextLines);
+    }
 }
 
 void FolderView::updateIconViewState()
