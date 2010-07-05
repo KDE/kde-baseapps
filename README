@@ -13,7 +13,10 @@ documents before reporting issues:
 * http://websvn.kde.org/*checkout*/trunk/extragear/base/kwebkitpart/TODO
 
 Please report any issues to: https://bugs.kde.org
-IMPORTANT: Do not select "konqueror" as product, but "kwebkitpart"!
+IMPORTANT NOTE: Do not select "konqueror" as product, but "kwebkitpart"!
+
+There is also a public mailing list available for support:
+  webkit-devel @ kde.org
 
 KDE 4.4 or greater is required for building and running KWebKitPart.
 
@@ -22,9 +25,11 @@ How to use KWebKitPart in Konqueror
 ===================================
 
 You can switch between the different rendering engines:
-View -> View Mode -> {KHTML, WebKit} (Website needs to be open)
+View -> View Mode -> {KHTML, WebKit} (website needs to be open)
 If WebKit does not show up in Konqueror, run 'kbuildsycoca4' and
-restart Konqueror.
+restart Konqueror. Note that this change does not persist. If you
+press the reload button or open a new website, it will fall back
+to the default rendering engine. 
 
 If you want to set KWebKitPart as default for any website, run:
 'keditfiletype text/html'
