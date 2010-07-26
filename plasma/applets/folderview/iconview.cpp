@@ -83,6 +83,7 @@ IconView::IconView(QGraphicsWidget *parent)
       m_alignToGrid(false),
       m_wordWrap(false),
       m_popupShowPreview(true),
+      m_folderIsEmpty(false),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
       m_dropOperation(0),
@@ -90,9 +91,6 @@ IconView::IconView(QGraphicsWidget *parent)
       m_editor(0)
 {
     m_actionOverlay = new ActionOverlay(this);
-
-    // Added for later use
-    Q_UNUSED(I18N_NOOP("This folder is empty."))
 
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
@@ -483,8 +481,9 @@ void IconView::listingStarted(const KUrl &url)
     Q_UNUSED(url)
 
     // Reset any error message that may have resulted from an earlier listing
-    if (!m_errorMessage.isEmpty()) {
+    if (!m_errorMessage.isEmpty() || m_folderIsEmpty) {
         m_errorMessage.clear();
+        m_folderIsEmpty = false;
         update();
     }
 
@@ -504,6 +503,14 @@ void IconView::listingCompleted()
 
     if (m_validRows == m_model->rowCount()) {
         emit busy(false);
+    }
+
+    if (!m_model->rowCount() && !m_folderIsEmpty) {
+        m_folderIsEmpty = true;
+        update();
+    } else if (m_model->rowCount() && m_folderIsEmpty) {
+        m_folderIsEmpty = false;
+        update();
     }
 }
 
@@ -533,6 +540,10 @@ void IconView::itemsDeleted(const KFileItemList &items)
     if (items.contains(m_dirModel->dirLister()->rootItem())) {
         const QString path = m_dirModel->dirLister()->url().toLocalFile();
         listingError(KIO::buildErrorString(KIO::ERR_DOES_NOT_EXIST, path));
+    }
+
+    if (!m_model->rowCount()) {
+        m_folderIsEmpty = true;
     }
 }
 
@@ -1227,6 +1238,11 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
     if (!m_errorMessage.isEmpty()) {
         paintMessage(painter, cr, m_errorMessage, KIcon("dialog-error"));
+    } else if (m_folderIsEmpty) {
+        Plasma::Containment *containment = qobject_cast<Plasma::Containment*>(parentWidget());
+        if (!containment || !containment->isContainment()) {
+            paintMessage(painter, cr, i18n( "This folder is empty." ), KIcon() );
+        }
     }
 }
 
@@ -1614,36 +1630,40 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
 void IconView::keyPressEvent(QKeyEvent *event)
 {
-    if (m_columns == 0)        //The layout isn't done until items are actually inserted into the model, so until that happens, m_columns will be 0
+    if (m_columns == 0)  {
+        //The layout isn't done until items are actually inserted into the model, so until that happens, m_columns will be 0
         return;
+    }
 
     int hdirection = 0;
     int vdirection = 0;
 
     QModelIndex currentIndex = m_selectionModel->currentIndex();
 
-    bool sameKeyWasPressed = m_searchQuery.endsWith(event->text());
-    m_searchQuery.append(event->text());
-    m_searchQueryTimer.start(2000, this);   //clears search query when the user doesn't press any key
+    if (!event->text().isEmpty()) {
+        bool sameKeyWasPressed = m_searchQuery.endsWith(event->text());
+        m_searchQuery.append(event->text());
+        m_searchQueryTimer.start(1500, this);   //clears search query when the user doesn't press any key
 
-    // First try to match the exact icon string
-    QModelIndexList matches = m_model->match(currentIndex, Qt::DisplayRole, m_searchQuery,
-                                                 1, Qt::MatchFixedString | Qt::MatchWrap);
+        // First try to match the exact icon string
+        QModelIndexList matches = m_model->match(currentIndex, Qt::DisplayRole, m_searchQuery, 1,
+                                                 Qt::MatchFixedString | Qt::MatchWrap);
 
-    if (matches.count()<=0) {
-        // Exact match failed, try matching the beginning of the icon string
-        matches = m_model->match(currentIndex, Qt::DisplayRole, m_searchQuery,
-                                             1, Qt::MatchStartsWith | Qt::MatchWrap);
+        if (matches.count() <= 0) {
+            // Exact match failed, try matching the beginning of the icon string
+            matches = m_model->match(currentIndex, Qt::DisplayRole, m_searchQuery, 1,
+                                     Qt::MatchStartsWith | Qt::MatchWrap);
 
-        if (matches.count()<=0 && sameKeyWasPressed) {
-            // Didn't even match beginning, try next icon string starting with the same letter
-            matches = m_model->match(currentIndex.sibling(currentIndex.row()+1, currentIndex.column()),
-                                 Qt::DisplayRole, event->text(), 1, Qt::MatchStartsWith | Qt::MatchWrap);
+            if (matches.count() <= 0 && sameKeyWasPressed) {
+                // Didn't even match beginning, try next icon string starting with the same letter
+                matches = m_model->match(currentIndex.sibling(currentIndex.row()+1, currentIndex.column()),
+                        Qt::DisplayRole, event->text(), 1, Qt::MatchStartsWith | Qt::MatchWrap);
+            }
         }
-    }
 
-    if (matches.count()>0) {
+        if (matches.count() > 0) {
             selectIcon(matches.at(0));
+        }
     }
 
     switch (event->key()) {
