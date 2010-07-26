@@ -236,6 +236,7 @@ private:
     bool m_alignToGrid;
     bool m_wordWrap;
     bool m_popupShowPreview;
+    bool m_folderIsEmpty;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
