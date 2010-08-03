@@ -418,6 +418,13 @@ void FolderView::init()
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardDataChanged()));
 }
 
+void FolderView::configChanged()
+{
+    //TODO: reload all other config values there
+    KConfigGroup cg = config();
+    setUrl(cg.readEntry("url", m_url));
+}
+
 FolderView::~FolderView()
 {
     delete m_newMenu;
