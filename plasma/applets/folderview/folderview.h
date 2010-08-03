@@ -99,6 +99,8 @@ public:
     void setPath(const QString&);
     void setWallpaper(const KUrl &url);
 
+    void configChanged();
+
 protected:
     void createConfigurationInterface(KConfigDialog *parent);
     QList<QAction*> contextualActions();
