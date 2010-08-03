@@ -423,6 +423,7 @@ void FolderView::configChanged()
     //TODO: reload all other config values there
     KConfigGroup cg = config();
     setUrl(cg.readEntry("url", m_url));
+    m_dirModel->dirLister()->openUrl(m_url);
 }
 
 FolderView::~FolderView()
