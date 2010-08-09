@@ -49,7 +49,6 @@ class KFileItemDelegate;
 class KFilePlacesModel;
 class KFilePreviewGenerator;
 class KNewFileMenu;
-class KWindowListMenu;
 class KFileItemActions;
 class KJob;
 class QItemSelectionModel;

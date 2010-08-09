@@ -34,17 +34,10 @@
 
 
 class KUrl;
-class KDirModel;
-class KFileItemDelegate;
 class KFileItemList;
-class KFilePreviewGenerator;
-class KJob;
 class KonqOperations;
-class QItemSelectionModel;
-class ProxyModel;
 class QActionGroup;
 class QStyleOptionViewItemV4;
-class QScrollBar;
 class ToolTipWidget;
 class Animator;
 

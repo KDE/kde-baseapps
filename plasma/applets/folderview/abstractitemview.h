@@ -32,13 +32,10 @@
 #include <plasma/widgets/scrollbar.h>
 
 
-class KUrl;
 class KDirModel;
 class KFileItemDelegate;
-class KFilePreviewGenerator;
 class QItemSelectionModel;
 class ProxyModel;
-class QStyleOptionViewItemV4;
 class QScrollBar;
 
 

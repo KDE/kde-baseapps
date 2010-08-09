@@ -28,17 +28,14 @@
 #include <KUrl>
 
 namespace Plasma {
-    class Applet;
     class FrameSvg;
     class BusyWidget;
 }
 
 class QGraphicsView;
-class QGraphicsWidget;
 class QGraphicsScene;
 class KDirModel;
 class KFileItemDelegate;
-class KFilePlacesModel;
 class KFilePreviewGenerator;
 class KNewFileMenu;
 class KFileItemActions;
