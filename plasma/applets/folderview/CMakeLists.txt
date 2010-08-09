@@ -1,9 +1,5 @@
 project(plasma-folderview)
 
-include (ConfigureChecks.cmake)
-configure_file(config-folderview.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-folderview.h)
-
-
 set(folderview_SRCS
     folderview.cpp
     abstractitemview.cpp

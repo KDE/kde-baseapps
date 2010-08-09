@@ -41,8 +41,6 @@
 #include "ui_folderviewLocationConfig.h"
 #include "ui_folderviewPreviewConfig.h"
 
-#include <config-folderview.h>
-
 class KDirModel;
 class KFileItemDelegate;
 class KFilePlacesModel;
