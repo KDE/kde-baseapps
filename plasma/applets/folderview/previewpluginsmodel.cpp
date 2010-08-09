@@ -21,6 +21,8 @@
 
 #include <QStringList>
 
+#include <KServiceTypeTrader>
+
 static bool lessThan(const KService::Ptr &a, const KService::Ptr &b)
 {
     return QString::localeAwareCompare(a->name(), b->name()) < 0;

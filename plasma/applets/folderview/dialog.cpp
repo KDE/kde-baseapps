@@ -20,7 +20,6 @@
 #include "dialog.h"
 
 #include <QApplication>
-#include <QBitmap>
 #include <QDesktopWidget>
 #include <QGraphicsView>
 #include <QGraphicsWidget>

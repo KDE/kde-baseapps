@@ -20,7 +20,6 @@
 #include "itemeditor.h"
 
 #include <KTextEdit>
-#include <QAbstractItemView>
 #include <QAbstractItemModel>
 #include <QAbstractItemDelegate>
 

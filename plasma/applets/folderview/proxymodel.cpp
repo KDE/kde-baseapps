@@ -30,7 +30,6 @@
 
 #include <kde_file.h>
 
-#include <QDebug>
 
 ProxyModel::ProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent),

@@ -21,18 +21,14 @@
 #include "listview.h"
 
 #include <QApplication>
-#include <QDebug>
 #include <QGraphicsView>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QItemSelectionModel>
 #include <QPainter>
-#include <QScrollBar>
 #include <QStyleOptionGraphicsItem>
 
 #include <KDirModel>
-#include <KFileItemDelegate>
-#include <KGlobalSettings>
 #include <KStringHandler>
 
 #include "animator.h"

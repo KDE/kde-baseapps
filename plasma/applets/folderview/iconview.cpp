@@ -24,8 +24,6 @@
 #endif
 #include <QActionGroup>
 #include <QApplication>
-#include <QDebug>
-#include <QDesktopWidget>
 #include <QDrag>
 #include <QGraphicsView>
 #include <QGraphicsSceneHoverEvent>
@@ -34,16 +32,13 @@
 #include <QImageReader>
 #include <QItemSelectionModel>
 #include <QPainter>
-#include <QPaintEngine>
-#include <QScrollBar>
 #include <QStyleOptionGraphicsItem>
 
 #include <KDirModel>
-#include <KFileItemDelegate>
 #include <KGlobalSettings>
 #include <KIcon>
-#include <KProtocolInfo>
 #include <KStringHandler>
+#include <KFileItemDelegate>
 
 #include <KIO/NetAccess>
 

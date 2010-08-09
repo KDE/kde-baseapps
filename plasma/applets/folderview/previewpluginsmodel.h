@@ -21,7 +21,6 @@
 #define PREVIEWPLUGINSMODEL_H
 
 #include <QAbstractListModel>
-#include <KServiceTypeTrader>
 #include <KService>
 #include <QList>
 

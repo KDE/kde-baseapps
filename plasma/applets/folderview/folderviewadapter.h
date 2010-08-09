@@ -23,7 +23,6 @@
 #include "kabstractviewadapter_p.h"
 #include "abstractitemview.h"
 
-#include <QScrollBar>
 
 class FolderViewAdapter : public KAbstractViewAdapter
 {

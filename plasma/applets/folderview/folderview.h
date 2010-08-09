@@ -22,7 +22,6 @@
 #define FOLDERVIEW_H
 
 #include <QCache>
-#include <QPersistentModelIndex>
 #include <QSortFilterProxyModel>
 #include <QStyleOption>
 #include <QPointer>

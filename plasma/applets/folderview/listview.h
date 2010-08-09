@@ -23,11 +23,7 @@
 
 #include "abstractitemview.h"
 
-#include <QAbstractItemDelegate>
-#include <QPointer>
 #include <QCache>
-#include <QTime>
-#include <QBasicTimer>
 
 
 class QStyleOptionViewItemV4;

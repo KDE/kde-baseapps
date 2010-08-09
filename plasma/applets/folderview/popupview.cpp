@@ -20,7 +20,6 @@
 #include "popupview.h"
 
 #include <QApplication>
-#include <QBitmap>
 #include <QClipboard>
 #include <QDesktopWidget>
 #include <QGraphicsScene>
@@ -37,9 +36,9 @@
 #include <KFileItemDelegate>
 #include <kfileitemlistproperties.h>
 #include <kfilepreviewgenerator.h>
-#include <KMenu>
 #include <knewmenu.h>
 #include <KWindowSystem>
+#include <KMenu>
 
 #include <kio/fileundomanager.h>
 #include <kio/paste.h>

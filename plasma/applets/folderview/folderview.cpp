@@ -21,10 +21,7 @@
 #include "folderview.h"
 
 #include <QClipboard>
-#include <QDebug>
-#include <QDesktopServices>
 #include <QDesktopWidget>
-#include <QDrag>
 #include <QGraphicsLinearLayout>
 #include <QGraphicsView>
 #include <QGraphicsSceneDragDropEvent>
@@ -41,16 +38,15 @@
 #include <kfileplacesmodel.h>
 #include <kfilepreviewgenerator.h>
 #include <KGlobalSettings>
-#include <KMenu>
-#include <KStandardDirs>
 #include <KStandardShortcut>
 #include <KStringHandler>
 #include <KTemporaryFile>
+#include <KStandardDirs>
+#include <KMenu>
 
 #include <kio/copyjob.h>
 #include <kio/fileundomanager.h>
 #include <kio/paste.h>
-#include <KParts/BrowserExtension>
 
 #include <kfileitemactions.h>
 #include <kfileitemlistproperties.h>
