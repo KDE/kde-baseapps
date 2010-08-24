@@ -995,19 +995,20 @@ void FolderView::fontSettingsChanged()
 
 void FolderView::iconSettingsChanged(int group)
 {
-    if (group == KIconLoader::Desktop && m_iconView)
-    {
+    if (group == KIconLoader::Desktop && m_iconView) {
         const int size = (m_customIconSize != 0) ?
                 m_customIconSize : KIconLoader::global()->currentSize(KIconLoader::Desktop);
 
         m_iconView->setIconSize(QSize(size, size));
-    }
-    else if (group == KIconLoader::Panel && m_listView)
-    {
+        m_iconView->markAreaDirty(m_iconView->visibleArea());
+        m_iconView->update();
+    } else if (group == KIconLoader::Panel && m_listView) {
         const int size = (m_customIconSize != 0) ?
                 m_customIconSize : KIconLoader::global()->currentSize(KIconLoader::Panel);
 
         m_listView->setIconSize(QSize(size, size));
+        m_listView->markAreaDirty(m_listView->visibleArea());
+        m_listView->update();
     }
 }
 

@@ -729,11 +729,4 @@ void AbstractItemView::scrollTick() {
     m_smoothScrollStopwatch.start();
 }
 
-void AbstractItemView::iconSettingsChanged()
-{
-    markAreaDirty(visibleArea());
-    update();
-}
-
-
 #include "abstractitemview.moc"
