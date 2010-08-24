@@ -123,6 +123,7 @@ private slots:
     void scrollBarValueChanged(int value);
     void scrollBarActionTriggered(int action);
     void scrollBarSliderReleased();
+    void iconSettingsChanged();
 
 protected:
     KFileItemDelegate *m_delegate;

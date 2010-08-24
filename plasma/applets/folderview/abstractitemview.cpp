@@ -27,8 +27,10 @@
 
 #include <QItemSelectionModel>
 #include <QPaintEngine>
+
 #include <KDirModel>
 #include <KFileItemDelegate>
+#include <KGlobalSettings>
 
 #include <Plasma/PaintUtils>
 
@@ -75,6 +77,8 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
 
     const int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
+
+    connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)), this, SLOT(iconSettingsChanged()));
 }
 
 AbstractItemView::~AbstractItemView()
@@ -724,5 +728,12 @@ void AbstractItemView::scrollTick() {
     }
     m_smoothScrollStopwatch.start();
 }
+
+void AbstractItemView::iconSettingsChanged()
+{
+    markAreaDirty(visibleArea());
+    update();
+}
+
 
 #include "abstractitemview.moc"
