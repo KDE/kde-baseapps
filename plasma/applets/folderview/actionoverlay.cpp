@@ -191,7 +191,7 @@ void ActionOverlay::openPopup()
         view->openPopup(m_hoverIndex);
     }
 }
-    
+
 QPersistentModelIndex ActionOverlay::hoverIndex()
 {
     return m_hoverIndex;
@@ -213,7 +213,12 @@ void ActionOverlay::entered(const QModelIndex &index)
             fadeIn->start();
         }
         m_hoverIndex = index;
-        AsyncFileTester::checkIfFolder(index, this, "checkIfFolderResult");
+        IconView *iview = qobject_cast<IconView*>(view);
+        if (iview && iview->clickToViewFolders()) {
+            AsyncFileTester::checkIfFolder(index, this, "checkIfFolderResult");
+        } else {
+            m_openButton->hide();
+        }
     }
 }
 

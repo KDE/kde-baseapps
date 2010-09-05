@@ -84,6 +84,7 @@ IconView::IconView(QGraphicsWidget *parent)
       m_wordWrap(false),
       m_popupShowPreview(true),
       m_folderIsEmpty(false),
+      m_clickToViewFolders(true),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
       m_dropOperation(0),
@@ -1593,6 +1594,9 @@ void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         emit entered(index);
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
+        if (!m_clickToViewFolders) {
+            AsyncFileTester::checkIfFolder(m_hoveredIndex, this, "checkIfFolderResult");
+        }
     }
     updateToolTip();
 }
@@ -1625,6 +1629,10 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         markAreaDirty(visualRect(m_hoveredIndex));
         m_hoveredIndex = index;
         updateToolTip();
+
+        if (!m_clickToViewFolders) {
+            AsyncFileTester::checkIfFolder(m_hoveredIndex, this, "checkIfFolderResult");
+        }
     }
 }
 
@@ -2566,6 +2574,16 @@ void IconView::popupCloseRequested()
         m_popupView->hide();
         m_popupView->deleteLater();
     }
+}
+
+void IconView::setClickToViewFolders(bool click)
+{
+    m_clickToViewFolders = click;
+}
+
+bool IconView::clickToViewFolders() const
+{
+    return m_clickToViewFolders;
 }
 
 void IconView::openPopup(const QModelIndex &index)
