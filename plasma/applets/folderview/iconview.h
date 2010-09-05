@@ -120,6 +120,8 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
+    void setClickToViewFolders(bool click);
+    bool clickToViewFolders() const;
     void openPopup(const QModelIndex &index);
 
 signals:
@@ -230,6 +232,7 @@ private:
     bool m_wordWrap;
     bool m_popupShowPreview;
     bool m_folderIsEmpty;
+    bool m_clickToViewFolders;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
