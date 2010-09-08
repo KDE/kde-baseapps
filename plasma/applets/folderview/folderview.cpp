@@ -1406,6 +1406,8 @@ void FolderView::createActions()
 
         // Create the new menu
         m_newMenu = new KNewFileMenu(&m_actionCollection, "new_menu", QApplication::desktop());
+	m_newMenu->setModal(false);
+	
         connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
 
         m_actionCollection.addAction("lock_icons", lockIcons);
