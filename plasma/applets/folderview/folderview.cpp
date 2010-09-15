@@ -416,10 +416,118 @@ void FolderView::init()
 
 void FolderView::configChanged()
 {
-    //TODO: reload all other config values there
     KConfigGroup cg = config();
-    setUrl(cg.readEntry("url", m_url));
-    m_dirModel->dirLister()->openUrl(m_url);
+
+    //Declare some variables that are used afterwards
+    bool needReload = false;
+    bool preserveIconPositions = false;
+
+    //Reload m_customLabel values
+    QString label = m_customLabel;
+    m_customLabel = cg.readEntry("customLabel", m_customLabel);
+    if (label != m_customLabel) {
+        needReload = true;
+    }
+
+    //Reload m_customIconSize values
+    const int size = m_customIconSize;
+    m_customIconSize = cg.readEntry("customIconSize", m_customIconSize);
+      if (size != iconSize().width()) {
+              needReload = true;
+
+      }
+
+    m_showPreviews = cg.readEntry("showPreviews", m_showPreviews);
+    m_drawShadows  = cg.readEntry("drawShadows", m_drawShadows);
+    m_iconsLocked  = cg.readEntry("iconsLocked", m_iconsLocked);
+    m_alignToGrid  = cg.readEntry("alignToGrid", m_alignToGrid);
+    m_numTextLines = cg.readEntry("numTextLines", m_numTextLines);
+
+    const int filterType = m_filterType;
+    m_filterType   = cg.readEntry("filter", m_filterType);
+    if (filterType != m_filterType) {
+        needReload = true;
+    }
+
+    QColor color = m_textColor;
+    m_textColor = cg.readEntry("textColor", m_textColor);
+    if (color != m_textColor) {
+        needReload = true;
+    }
+
+    m_previewPlugins = cg.readEntry("previewPlugins", m_previewPlugins);
+
+    if (m_previewGenerator && m_previewPlugins != m_previewGenerator->enabledPlugins()) {
+        m_previewGenerator->setEnabledPlugins(m_previewPlugins);
+
+        //Changing the preview plugins will also need a reload to work, so we need to preserve
+        //the icons position
+        needReload = true;
+        preserveIconPositions = true;
+    }
+
+    m_sortDirsFirst = cg.readEntry("sortDirsFirst", m_sortDirsFirst);
+    toggleDirectoriesFirst(m_sortDirsFirst);
+
+    const int sortColumn = m_sortColumn;
+    m_sortColumn = cg.readEntry("sortColumn", m_sortColumn);
+    if (m_sortColumn != sortColumn) {
+        if (m_sortColumn != -1) {
+            m_model->invalidate();
+            m_model->sort(m_sortColumn, Qt::AscendingOrder);
+        } else if (m_iconView) {
+            m_iconView->setCustomLayout(true);
+        }
+        updateSortActionsState();
+    }
+
+    const QString filterFiles = m_filterFiles;
+    m_filterFiles         = cg.readEntry("filterFiles", m_filterFiles);
+
+    if (filterFiles != m_filterFiles) {
+        needReload = true;
+    }
+
+    const QStringList mimeFilter = m_filterFilesMimeList;
+    m_filterFilesMimeList = cg.readEntry("mimeFilter", m_filterFilesMimeList);
+
+    if (mimeFilter != m_filterFilesMimeList) {
+        needReload = true;
+    }
+
+    const KUrl url = m_url;
+    m_url = cg.readEntry("url", m_url);
+    if (url != m_url) {
+        setUrl(m_url);
+        needReload = true;
+    }
+
+
+    if (m_iconView) {
+        updateIconViewState();
+    }
+
+    if (m_listView) {
+        updateListViewState();
+    }
+
+    if (needReload) {
+        //Manually save and restore the icon positions if we need it
+        QStringList iconPositionsData;
+        if (preserveIconPositions && m_iconView) {
+            iconPositionsData = m_iconView->iconPositionsData();
+
+        }
+
+
+        if (preserveIconPositions && m_iconView) {
+             m_iconView->setIconPositionsData(iconPositionsData);
+        }
+        // So the KFileItemActions will be recreated for the new URL.
+        delete m_itemActions;
+        m_itemActions = 0;
+        m_dirModel->dirLister()->openUrl(m_url);
+    }
 }
 
 FolderView::~FolderView()
