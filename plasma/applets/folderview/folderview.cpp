@@ -1815,8 +1815,10 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
     foreach (const QModelIndex &index, indexes) {
         KFileItem item = m_model->itemForIndex(index);
-        hasRemoteFiles |= item.localPath().isEmpty();
-        items.append(item);
+        if (!item.isNull()) {
+            hasRemoteFiles |= item.localPath().isEmpty();
+            items.append(item);
+        }
     }
 
     // Check if we're showing the menu for the trash link
