@@ -307,8 +307,10 @@ void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
 
     foreach (const QModelIndex &index, m_selectionModel->selectedIndexes()) {
         KFileItem item = m_model->itemForIndex(index);
-        hasRemoteFiles |= item.localPath().isEmpty();
-        items.append(item);
+        if (!item.isNull()) {
+            hasRemoteFiles |= item.localPath().isEmpty();
+            items.append(item);
+        }
     }
 
     // Check if we're showing the menu for the trash link
