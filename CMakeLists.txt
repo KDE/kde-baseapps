@@ -1,7 +1,7 @@
 project(kwebkitpart)
 
 # search packages used by KDE
-find_package(KDE4 REQUIRED)
+find_package(KDE4 4.5.69 REQUIRED)
 include(KDE4Defaults)
 include(MacroLibrary)
 
