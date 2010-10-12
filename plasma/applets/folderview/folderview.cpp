@@ -356,7 +356,7 @@ void FolderView::init()
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
     m_model->setFileNameFilter(m_filterFiles);
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
-    m_model->setDynamicSortFilter(true);
+    m_model->setDynamicSortFilter(m_sortColumn != -1);
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
     DirLister *lister = new DirLister(this);
@@ -475,8 +475,10 @@ void FolderView::configChanged()
         if (m_sortColumn != -1) {
             m_model->invalidate();
             m_model->sort(m_sortColumn, Qt::AscendingOrder);
+            m_model->setDynamicSortFilter(true);
         } else if (m_iconView) {
             m_iconView->setCustomLayout(true);
+            m_model->setDynamicSortFilter(false);
         }
         updateSortActionsState();
     }
@@ -816,8 +818,10 @@ void FolderView::configAccepted()
         if (m_sortColumn != -1) {
             m_model->invalidate();
             m_model->sort(m_sortColumn, Qt::AscendingOrder);
+            m_model->setDynamicSortFilter(true);
         } else if (m_iconView) {
             m_iconView->setCustomLayout(true);
+            m_model->setDynamicSortFilter(false);
         }
         updateSortActionsState();
         cg.writeEntry("sortColumn", m_sortColumn);
@@ -1690,6 +1694,7 @@ void FolderView::sortingChanged(QAction *action)
     if (column != m_sortColumn) {
         m_model->invalidate();
         m_model->sort(column, Qt::AscendingOrder);
+        m_model->setDynamicSortFilter(true);
         m_sortColumn = column;
         config().writeEntry("sortColumn", m_sortColumn);
         emit configNeedsSaving();
@@ -1790,6 +1795,7 @@ void FolderView::indexesMoved(const QModelIndexList &indexes)
     // If the user has rearranged the icons, the view is no longer sorted
     if (m_sortColumn != -1) {
         m_sortColumn = -1;
+        m_model->setDynamicSortFilter(false);
         updateSortActionsState();
         config().writeEntry("sortColumn", m_sortColumn);
         emit configNeedsSaving();
