@@ -2,6 +2,7 @@
 Name=Folder View
 Name[ar]=مشهد المجلد
 Name[as]=ফোল্ডাৰৰ প্ৰদৰ্শন
+Name[ast]=Vista de carpeta
 Name[be@latin]=Prahlad kataloha
 Name[bg]=Директория
 Name[bn]=ফোল্ডার ভিউ
@@ -80,6 +81,7 @@ Name[zh_CN]=文件夹视图
 Name[zh_TW]=資料夾檢視
 Comment=Display the contents of folders (User's home folder as default)
 Comment[ar]=اعرض محتوى المجلدات (المجلد المبدئي هو مجلد بيت المستخدم)
+Comment[ast]=Amosar el conteníu de les carpetes (carpeta personal como predetermináu)
 Comment[bg]=Показва съсдържанието на директория
 Comment[bn]=ফোল্ডার-এর বিষয়বস্তু দেখায় (ডিফল্ট ব্যবহারকারীর ব্যক্তিগত ফোল্ডার)
 Comment[ca]=Mostra el contingut de les carpetes (per defecte la carpeta inicial de l'usuari)
