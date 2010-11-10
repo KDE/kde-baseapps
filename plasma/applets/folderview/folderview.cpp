@@ -32,6 +32,7 @@
 #include <KAuthorized>
 #include <KBookmarkManager>
 #include <KConfigDialog>
+#include <KDebug>
 #include <KDesktopFile>
 #include <KDirModel>
 #include <KFileItemDelegate>
