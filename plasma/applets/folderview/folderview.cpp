@@ -709,7 +709,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
-    connect(uiLocation.placesCombo, SIGNAL(currentIndexChagned(int)), parent, SLOT(settingsModified()));
+    connect(uiLocation.placesCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiLocation.lineEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
 }
 
