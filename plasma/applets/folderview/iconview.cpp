@@ -1837,7 +1837,12 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
             else {
                 markAreaDirty(visualRect(index));
             }
-            m_pressedIndex = index;
+
+            if (!(event->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) &&
+                KGlobalSettings::singleClick()) {
+                m_pressedIndex = index;
+            }
+
             m_buttonDownPos = pos;
             return;
         }
@@ -1931,6 +1936,8 @@ void IconView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     if (!index.isValid()) {
         return;
     }
+
+    m_pressedIndex = index;
 
     // Activate the item
     emit activated(index);
