@@ -35,5 +35,8 @@ If you want to set KWebKitPart as default for any website, run:
 'keditfiletype text/html'
 and move "WebKit (kwebkitpart)" in the "Embedding" tab to the top.
 
+In KDE 4.6 and higher you can choose the default rendering engine
+in Konqueror's configuration dialog under the "General" section.
+
 For more information about this project please see also:
 http://techbase.kde.org/Projects/WebKit
