@@ -2022,6 +2022,10 @@ void IconView::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         // Let the event propagate to the parent widget
         event->ignore();
     }
+    if (m_rubberBand.isValid()) {
+        markAreaDirty(m_rubberBand);
+        m_rubberBand = QRect();
+    }
 }
 
 void IconView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
