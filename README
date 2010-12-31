@@ -16,10 +16,12 @@ Please report any issues to: https://bugs.kde.org
 IMPORTANT NOTE: Do not select "konqueror" as product, but "kwebkitpart"!
 
 There is also a public mailing list available for support:
-  webkit-devel @ kde.org
+    webkit-devel @ kde.org
 
-KDE 4.4 or greater is required for building and running KWebKitPart.
-
+Versions:
+---------
+** KDE 4.4 or higher is required for building and running KWebKitPart.
+** For KDE 4.5.x or older you MUST use the 0.9 branch of kwebkitpart.
 
 How to use KWebKitPart in Konqueror
 ===================================
@@ -40,3 +42,4 @@ in Konqueror's configuration dialog under the "General" section.
 
 For more information about this project please see also:
 http://techbase.kde.org/Projects/WebKit
+
