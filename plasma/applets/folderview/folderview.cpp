@@ -433,10 +433,9 @@ void FolderView::configChanged()
     //Reload m_customIconSize values
     const int size = m_customIconSize;
     m_customIconSize = cg.readEntry("customIconSize", m_customIconSize);
-      if (size != iconSize().width()) {
-              needReload = true;
-
-      }
+    if (size != iconSize().width()) {
+        needReload = true;
+    }
 
     m_showPreviews = cg.readEntry("showPreviews", m_showPreviews);
     m_drawShadows  = cg.readEntry("drawShadows", m_drawShadows);
@@ -485,7 +484,7 @@ void FolderView::configChanged()
     }
 
     const QString filterFiles = m_filterFiles;
-    m_filterFiles         = cg.readEntry("filterFiles", m_filterFiles);
+    m_filterFiles = cg.readEntry("filterFiles", m_filterFiles);
 
     if (filterFiles != m_filterFiles) {
         needReload = true;
@@ -1018,6 +1017,7 @@ void FolderView::updateIconViewState()
     m_iconView->setWordWrap(m_numTextLines > 1);
     m_iconView->setAlignToGrid(m_alignToGrid);
     m_iconView->setIconsMoveable(!m_iconsLocked);
+    m_iconView->setClickToViewFolders(config().readEntry("clickForFolderPreviews", true));
 
     if (m_label) {
         m_label->setPalette(palette);
