@@ -661,7 +661,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     parent->addPage(widgetLocation, i18nc("Title of the page that lets the user choose which location should the folderview show", "Location"), "folder");
     parent->addPage(widgetDisplay, i18nc("Title of the page that lets the user choose how the folderview should be shown", "Display"), "preferences-desktop-display");
     parent->addPage(widgetFilter, i18nc("Title of the page that lets the user choose how to filter the folderview contents", "Filter"), "view-filter");
-    parent->setButtons(KDialog::Ok | KDialog::Cancel | KDialog::Apply);
 
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
@@ -694,7 +693,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiDisplay.labelEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
     connect(uiDisplay.flowCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
-    connect(uiDisplay.sizeSlider, SIGNAL(sliderMoved(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.sizeSlider, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.lockInPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.alignToGrid, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
