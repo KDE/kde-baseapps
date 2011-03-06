@@ -141,7 +141,10 @@ protected slots:
     void clipboardDataChanged();
     void updateScreenRegion();
     void showPreviewConfigDialog();
- 
+
+private slots:
+    void setTitleText();
+
 private:
     void addActions(AbstractItemView *view);
     QColor textColor() const;
@@ -156,6 +159,7 @@ private:
     KUrl::List selectedUrls(bool forTrash) const;
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     void timerEvent(QTimerEvent *event);
+    void recreateLayout();
 
 private:
     KFileItemDelegate *m_delegate;
@@ -174,6 +178,7 @@ private:
     KUrl m_url;
     QColor m_textColor;
     QString m_titleText;
+    QString m_configTitleText;
     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
@@ -191,6 +196,7 @@ private:
     bool m_iconsLocked;
     bool m_alignToGrid;
     bool m_userSelectedShowAllFiles;
+    bool m_blankLabel;
     QString m_customLabel;
     QStringList m_previewPlugins;
     int m_customIconSize;
