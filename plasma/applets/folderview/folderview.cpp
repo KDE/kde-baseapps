@@ -611,7 +611,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         uiDisplay.headerTitle->hide();
     }
 
-    KLineEdit ledit = new KLineEdit(widgetDisplay);
+    KLineEdit *ledit = new KLineEdit(widgetDisplay);
     ledit->setClearButtonShown(false);
     ledit->setClickMessage(i18n("Title"));
     uiDisplay.labelEdit->setLineEdit(ledit);
