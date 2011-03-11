@@ -615,7 +615,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     ledit->setClearButtonShown(false);
     ledit->setClickMessage(i18n("Title"));
     uiDisplay.labelEdit->setLineEdit(ledit);
-    if (m_configTitleText != "None" && m_configTitleText != "Default" && m_configTitleText != "Full path")
+    if (m_configTitleText != i18n("None") && m_configTitleText != i18n("Default") && m_configTitleText != i18n("Full path"))
         uiDisplay.labelEdit->addItem(m_configTitleText);
     uiDisplay.labelEdit->addItem(i18n("None"));
     uiDisplay.labelEdit->addItem(i18n("Default"));
@@ -2021,14 +2021,14 @@ void FolderView::setTitleText()
 {
     QString text = uiDisplay.labelEdit->currentText();
     m_configTitleText = text;
-    if (text == "None" || text.isEmpty()) {
+    if (text == i18n("None") || text.isEmpty()) {
 	m_customLabel.clear();
-	m_configTitleText = "None";
+	m_configTitleText = i18n("None");
 	m_blankLabel = true;
-    } else if (text == "Default") {
+    } else if (text == i18n("Default")) {
 	m_customLabel = "___DEFAULT___";
 	m_blankLabel = false;
-    } else if (text == "Full path") {
+    } else if (text == i18n("Full path")) {
 	m_customLabel = "___FULL___";
 	m_blankLabel = false;
     } else {
