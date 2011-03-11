@@ -611,14 +611,19 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         uiDisplay.headerTitle->hide();
     }
 
-    uiDisplay.labelEdit->setText(m_configTitleText);
-    uiDisplay.labelEdit->completionBox()->addItem(i18n("None"));
-    uiDisplay.labelEdit->completionBox()->addItem(i18n("Default"));
-    uiDisplay.labelEdit->completionBox()->addItem(i18n("Full path"));
+    KLineEdit ledit = new KLineEdit(widgetDisplay);
+    ledit->setClearButtonShown(false);
+    ledit->setClickMessage(i18n("Title"));
+    uiDisplay.labelEdit->setLineEdit(ledit);
+    if (m_configTitleText != "None" && m_configTitleText != "Default" && m_configTitleText != "Full path")
+        uiDisplay.labelEdit->addItem(m_configTitleText);
+    uiDisplay.labelEdit->addItem(i18n("None"));
+    uiDisplay.labelEdit->addItem(i18n("Default"));
+    uiDisplay.labelEdit->addItem(i18n("Full path"));
+    uiDisplay.labelEdit->setCurrentItem(m_configTitleText);
     uiDisplay.labelEdit->completionBox()->setActivateOnSelect(true);
     uiDisplay.labelEdit->setCompletionMode(KGlobalSettings::CompletionPopupAuto);
-    connect(uiDisplay.labelEdit, SIGNAL(cursorPositionChanged(int,int)), uiDisplay.labelEdit->completionBox(), SLOT(show()));
-    connect(uiDisplay.labelEdit, SIGNAL(editingFinished()), this, SLOT(setTitleText()));
+    connect(uiDisplay.labelEdit->lineEdit(), SIGNAL(editingFinished()), this, SLOT(setTitleText()));
 
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
     uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
@@ -2014,7 +2019,7 @@ QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 
 void FolderView::setTitleText()
 {
-    QString text = uiDisplay.labelEdit->text();
+    QString text = uiDisplay.labelEdit->currentText();
     m_configTitleText = text;
     if (text == "None" || text.isEmpty()) {
 	m_customLabel.clear();
