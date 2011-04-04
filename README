@@ -9,13 +9,15 @@ be in production quality yet.
 
 There are known limitations / issues; please see the following two
 documents before reporting issues:
-* http://websvn.kde.org/*checkout*/trunk/KDE/kdelibs/kdewebkit/ISSUES
-* http://websvn.kde.org/*checkout*/trunk/extragear/base/kwebkitpart/TODO
+
+* https://projects.kde.org/projects/kde/kdelibs/repository/revisions/master/entry/kdewebkit/ISSUES
+* https://projects.kde.org/projects/extragear/base/kwebkitpart/repository/revisions/master/entry/TODO
 
 Please report any issues to: https://bugs.kde.org
 IMPORTANT NOTE: Do not select "konqueror" as product, but "kwebkitpart"!
 
 There is also a public mailing list available for support:
+
     webkit-devel @ kde.org
 
 Versions:
