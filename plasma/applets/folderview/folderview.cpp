@@ -417,6 +417,7 @@ void FolderView::init()
 
 void FolderView::configChanged()
 {
+    Containment::configChanged();
     KConfigGroup cg = config();
 
     //Declare some variables that are used afterwards
