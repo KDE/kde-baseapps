@@ -140,7 +140,7 @@ QString ToolTipWidget::metaInfo() const
             // Add the megapixel count for photos
             if (type == "http://www.semanticdesktop.org/ontologies/2007/05/10/nexif#Photo") {
                 const qreal pixels = qreal(width * height) / 1e6;
-                size += QString(" (") +  ki18np("1 MPixel", "%1 MPixels").subs(pixels, 0, 'f', 1).toString() + QString(")");
+                size += QString(" (") + ki18n("%1 MPixels").subs(pixels, 0, 'f', 1).toString() + QString(")");
             }
             text += QString("<tr><td>") + i18n("Size:") + QString(" </td><td>") + size + QString("</td></tr>");
         }
