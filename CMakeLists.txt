@@ -4,6 +4,8 @@ project(kwebkitpart)
 find_package(KDE4 4.5.69 REQUIRED)
 include(KDE4Defaults)
 include(MacroLibrary)
+add_definitions(-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
+
 
 add_subdirectory(cmake)
 add_subdirectory(icons)
