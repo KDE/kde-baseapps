@@ -78,7 +78,7 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
     const int size = style()->pixelMetric(QStyle::PM_LargeIconSize);
     m_iconSize = QSize(size, size);
 
-    connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)), this, SLOT(iconSettingsChanged()));
+    connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)), this, SLOT(iconSettingsChanged(int)));
 }
 
 AbstractItemView::~AbstractItemView()
