@@ -179,7 +179,6 @@ private:
     KUrl m_url;
     QColor m_textColor;
     QString m_titleText;
-    QString m_configTitleText;
     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
