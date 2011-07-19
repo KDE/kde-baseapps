@@ -160,6 +160,7 @@ private:
     void showContextMenu(QWidget *widget, const QPoint &pos, const QModelIndexList &indexes);
     void timerEvent(QTimerEvent *event);
     void recreateLayout();
+    void setAppletTitle();
 
 private:
     KFileItemDelegate *m_delegate;

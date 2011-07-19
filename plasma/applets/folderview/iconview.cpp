@@ -2027,7 +2027,8 @@ void IconView::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 void IconView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
-    bool accepted = KUrl::List::canDecode(event->mimeData());
+    const bool accepted = KUrl::List::canDecode(event->mimeData()) ||
+                          event->mimeData()->hasFormat(QLatin1String("application/x-kde-dndextract"));
     event->setAccepted(accepted);
     m_hoverDrag = accepted;
 }
@@ -2193,10 +2194,25 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 
     if (!item.isNull()) {
-        QDropEvent ev(event->screenPos(), event->possibleActions(), event->mimeData(),
+        const QMimeData *mimeData = event->mimeData();
+
+        QDropEvent ev(event->screenPos(), event->possibleActions(), mimeData,
                       event->buttons(), event->modifiers());
         ev.setDropAction(event->dropAction());
         //kDebug() << "dropping to" << m_url << "with" << view() << event->modifiers();
+
+        if (mimeData->hasFormat(QLatin1String("application/x-kde-dndextract"))) {
+            const QString remoteDBusClient = mimeData->data(QLatin1String("application/x-kde-dndextract"));
+
+            QDBusMessage message =
+                QDBusMessage::createMethodCall(remoteDBusClient, QLatin1String("/DndExtract"),
+                                               QLatin1String("org.kde.DndExtract"),
+                                               QLatin1String("extractSelectedFilesTo"));
+            message.setArguments(QVariantList() << m_dirModel->dirLister()->url().pathOrUrl());
+
+            QDBusConnection::sessionBus().call(message);
+            return;
+        }
 
         // If we're dropping on the view itself
         QList<QAction *> userActions;

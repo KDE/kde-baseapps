@@ -345,8 +345,8 @@ void FolderView::init()
     m_filterFiles         = cg.readEntry("filterFiles", "*");
     m_filterType          = cg.readEntry("filter", 0);
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
-    m_blankLabel 	  = cg.readEntry("blankLabel", false);
-    m_configTitleText 	  = cg.readEntry("configTitleText", "Default title");
+    m_blankLabel          = cg.readEntry("blankLabel", false);
+    m_configTitleText     = cg.readEntry("configTitleText", "Default");
     m_userSelectedShowAllFiles = m_filterType;
     if (isContainment()) {
         m_flow = layoutDirection() == Qt::LeftToRight ? IconView::TopToBottom : IconView::TopToBottomRightToLeft;
@@ -433,7 +433,7 @@ void FolderView::configChanged()
     }
     bool blank = cg.readEntry("blankLabel", m_blankLabel);
     if (blank != m_blankLabel) {
-	needReload = true;
+        needReload = true;
     }
     //Reload m_customIconSize values
     const int size = m_customIconSize;
@@ -864,8 +864,8 @@ void FolderView::configAccepted()
     cg.writeEntry("blankLabel" , m_blankLabel);
     cg.writeEntry("customLabel", m_customLabel);
     cg.writeEntry("configTitleText", m_configTitleText);
-    setUrl(url);
-
+    
+    
     if (m_url != url || m_filterFiles != uiFilter.filterFilesPattern->text() ||
         m_filterFilesMimeList != selectedItems || m_filterType != filterType)
     {
@@ -878,12 +878,14 @@ void FolderView::configAccepted()
         cg.writeEntry("url", m_url);
         cg.writeEntry("filterFiles", m_filterFiles);
         cg.writeEntry("filter", m_filterType);
-	m_userSelectedShowAllFiles = m_filterType;
+        m_userSelectedShowAllFiles = m_filterType;
         cg.writeEntry("mimeFilter", m_filterFilesMimeList);
 
         m_model->setMimeTypeFilterList(m_filterFilesMimeList);
         m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
         needReload = true;
+    } else {
+        setAppletTitle();
     }
 
     if (m_iconView) {
@@ -1067,7 +1069,7 @@ void FolderView::setupIconView()
     // Add widget specific actions with shortcuts to the view
     addActions(m_iconView);
 
-    if (!isContainment() && !m_blankLabel) {
+    if (!isContainment() ) {
         m_label = new Label(this);
         m_label->setText(m_titleText);
 
@@ -1359,11 +1361,15 @@ void FolderView::setUrl(const KUrl &url)
 
     // Only parse desktop files when sorting if we're showing the desktop folder
     m_model->setParseDesktopFiles(m_url.protocol() == "desktop");
+    
+    setAppletTitle();
+}
 
+void FolderView::setAppletTitle() {
     if (m_customLabel != "___EMPTY___" && m_customLabel != "___DEFAULT___" && m_customLabel != "___FULL___") {
         m_titleText = m_customLabel;
     } else if (m_customLabel == "___FULL___") {
-	m_titleText = m_url.path();
+        m_titleText = m_url.path();
     } else if (m_url == KUrl("desktop:/")) {
         m_titleText = i18n("Desktop Folder");
     } else if (m_customLabel == "___DEFAULT___") {
@@ -1372,7 +1378,7 @@ void FolderView::setUrl(const KUrl &url)
         if (!m_placesModel) {
             m_placesModel = new KFilePlacesModel(this);
         }
-        const QModelIndex index = m_placesModel->closestItem(url);
+        const QModelIndex index = m_placesModel->closestItem(m_url);
         if (index.isValid()) {
             m_titleText = m_titleText.right(m_titleText.length() - m_placesModel->url(index).pathOrUrl().length());
 
@@ -1393,16 +1399,16 @@ void FolderView::setUrl(const KUrl &url)
     }
 
     if (m_blankLabel) {
-	if (m_label) {
-	    m_label->hide();
-	}
-	recreateLayout();
+        if (m_label) {
+            m_label->hide();
+        }
+        recreateLayout();
     } else {
-	if (m_label) {
-	    m_label->setText(m_titleText);
-	    m_label->show();
-	}
-	recreateLayout();
+        if (m_label) {
+            m_label->setText(m_titleText);
+            m_label->show();
+        }
+        recreateLayout();
     }
     updateIconWidget();
 }
@@ -1413,7 +1419,7 @@ void FolderView::recreateLayout()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     if (!m_blankLabel) {
-	layout->addItem(m_label);
+        layout->addItem(m_label);
     }
     layout->addItem(m_iconView);
 
@@ -1554,8 +1560,8 @@ void FolderView::createActions()
 
         // Create the new menu
         m_newMenu = new KNewFileMenu(&m_actionCollection, "new_menu", QApplication::desktop());
-	m_newMenu->setModal(false);
-	
+        m_newMenu->setModal(false);
+        
         connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
 
         m_actionCollection.addAction("lock_icons", lockIcons);
@@ -2022,18 +2028,18 @@ void FolderView::setTitleText()
     QString text = uiDisplay.labelEdit->currentText();
     m_configTitleText = text;
     if (text == i18n("None") || text.isEmpty()) {
-	m_customLabel.clear();
-	m_configTitleText = i18n("None");
-	m_blankLabel = true;
+        m_customLabel.clear();
+        m_configTitleText = i18n("None");
+        m_blankLabel = true;
     } else if (text == i18n("Default")) {
-	m_customLabel = "___DEFAULT___";
-	m_blankLabel = false;
+        m_customLabel = "___DEFAULT___";
+        m_blankLabel = false;
     } else if (text == i18n("Full path")) {
-	m_customLabel = "___FULL___";
-	m_blankLabel = false;
+        m_customLabel = "___FULL___";
+        m_blankLabel = false;
     } else {
-	m_customLabel = text;
-	m_blankLabel = false;
+        m_customLabel = text;
+        m_blankLabel = false;
     }
 }
 
