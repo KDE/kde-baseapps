@@ -93,6 +93,7 @@ Comment[ro]=Afișează conținutul dosarelor
 Comment[sv]=Visa innehåll i kataloger
 Comment[uk]=Показ вмісту тек
 Comment[x-test]=xxDisplay the contents of foldersxx
+Comment[zh_TW]=顯示資料夾內容
 Type=Service
 Icon=folder
 X-KDE-ServiceTypes=Plasma/Applet,Plasma/Containment
