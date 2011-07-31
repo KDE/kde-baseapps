@@ -1493,8 +1493,8 @@ void FolderView::createActions()
     KAction *trash = new KAction(KIcon("user-trash"), i18n("&Move to Trash"), this);
     trash->setShortcut(Qt::Key_Delete);
     trash->setShortcutContext(Qt::WidgetShortcut);
-    connect(trash, SIGNAL(triggered(Qt::MouseButtons, Qt::KeyboardModifiers)),
-            SLOT(moveToTrash(Qt::MouseButtons, Qt::KeyboardModifiers)));
+    connect(trash, SIGNAL(triggered(Qt::MouseButtons,Qt::KeyboardModifiers)),
+            SLOT(moveToTrash(Qt::MouseButtons,Qt::KeyboardModifiers)));
 
     KAction *emptyTrash = new KAction(KIcon("trash-empty"), i18n("&Empty Trash Bin"), this);
     KConfig trashConfig("trashrc", KConfig::SimpleConfig);

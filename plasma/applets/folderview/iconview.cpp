@@ -1395,8 +1395,8 @@ void IconView::renameSelectedIcon()
     m_editorIndex = index;
 
     m_editor = new ItemEditor(this, option, index);
-    connect(m_editor, SIGNAL(closeEditor(QGraphicsWidget*, QAbstractItemDelegate::EndEditHint)),
-                      SLOT(closeEditor(QGraphicsWidget*, QAbstractItemDelegate::EndEditHint)));
+    connect(m_editor, SIGNAL(closeEditor(QGraphicsWidget*,QAbstractItemDelegate::EndEditHint)),
+                      SLOT(closeEditor(QGraphicsWidget*,QAbstractItemDelegate::EndEditHint)));
 
     updateEditorGeometry();
 

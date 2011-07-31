@@ -275,6 +275,6 @@ void ActionOverlay::modelChanged()
     AbstractItemView *view = static_cast<AbstractItemView*>(parentWidget());
 
     QAbstractItemModel *mod = view->model();
-    connect(mod, SIGNAL(rowsRemoved(QModelIndex, int, int)), SLOT(rowsRemoved(QModelIndex, int, int)));
+    connect(mod, SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(rowsRemoved(QModelIndex,int,int)));
 }
 
