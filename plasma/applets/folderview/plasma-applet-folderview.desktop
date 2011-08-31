@@ -83,6 +83,7 @@ Name[zh_CN]=文件夹视图
 Name[zh_TW]=資料夾檢視
 Comment=Display the contents of folders
 Comment[bg]=Показва съдържанието на папки
+Comment[cs]=Zobrazit obsah složek
 Comment[de]=Ordnerinhalte anzeigen
 Comment[el]=Εμφάνιση περιεχομένων των φακέλων
 Comment[et]=Kataloogide sisu näitamine
