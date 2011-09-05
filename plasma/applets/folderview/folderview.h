@@ -121,6 +121,7 @@ protected slots:
     void undoTextChanged(const QString &text);
     void toggleIconsLocked(bool locked);
     void toggleAlignToGrid(bool align);
+    void toggleClickToViewFolders(bool enable);
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
     void aboutToShowCreateNew();
@@ -195,6 +196,7 @@ private:
     bool m_drawShadows;
     bool m_iconsLocked;
     bool m_alignToGrid;
+    bool m_clickToView;
     bool m_userSelectedShowAllFiles;
     bool m_blankLabel;
     QString m_customLabel;

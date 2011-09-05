@@ -64,6 +64,7 @@ public:
     Q_PROPERTY(QSize gridSize READ gridSize WRITE setGridSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
     Q_PROPERTY(bool alignToGrid READ alignToGrid WRITE setAlignToGrid)
+    Q_PROPERTY(bool clickToViewFolders READ clickToViewFolders WRITE setClickToViewFolders)
     Q_PROPERTY(bool iconsMoveable READ iconsMoveable WRITE setIconsMoveable)
     Q_PROPERTY(bool customLayout READ customLayout WRITE setCustomLayout)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)

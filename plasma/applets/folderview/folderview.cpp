@@ -339,6 +339,7 @@ void FolderView::init()
     m_textColor           = cg.readEntry("textColor", QColor(Qt::transparent));
     m_iconsLocked         = cg.readEntry("iconsLocked", false);
     m_alignToGrid         = cg.readEntry("alignToGrid", false);
+    m_clickToView         = cg.readEntry("clickForFolderPreviews", true);
     m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail" << "jpegthumbnail");
     m_sortDirsFirst       = cg.readEntry("sortDirsFirst", true);
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
@@ -446,6 +447,7 @@ void FolderView::configChanged()
     m_drawShadows  = cg.readEntry("drawShadows", m_drawShadows);
     m_iconsLocked  = cg.readEntry("iconsLocked", m_iconsLocked);
     m_alignToGrid  = cg.readEntry("alignToGrid", m_alignToGrid);
+    m_clickToView  = cg.readEntry("clickForFolderPreviews", m_clickToView);
     m_numTextLines = cg.readEntry("numTextLines", m_numTextLines);
 
     const int filterType = m_filterType;
@@ -655,6 +657,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), IconView::RightToLeft);
 
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
+    uiDisplay.setClicktoView->setChecked(m_clickToView);
     uiDisplay.lockInPlace->setChecked(m_iconsLocked);
     uiDisplay.drawShadows->setChecked(m_drawShadows);
     uiDisplay.showPreviews->setChecked(m_showPreviews);
@@ -724,6 +727,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.lockInPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.alignToGrid, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.setClicktoView, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.numLinesEdit, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.colorButton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
     connect(uiDisplay.drawShadows, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
@@ -863,6 +867,11 @@ void FolderView::configAccepted()
         m_alignToGrid = uiDisplay.alignToGrid->isChecked();
         cg.writeEntry("alignToGrid", m_alignToGrid);
         m_actionCollection.action("auto_align")->setChecked(m_alignToGrid);
+    }
+
+    if (m_clickToView != uiDisplay.setClicktoView->isChecked()) {
+        m_clickToView = uiDisplay.setClicktoView->isChecked();
+        cg.writeEntry("clickForFolderPreviews", m_clickToView);
     }
 
     if (m_iconsLocked != uiDisplay.lockInPlace->isChecked()) {
@@ -1039,7 +1048,7 @@ void FolderView::updateIconViewState()
     m_iconView->setWordWrap(m_numTextLines > 1);
     m_iconView->setAlignToGrid(m_alignToGrid);
     m_iconView->setIconsMoveable(!m_iconsLocked);
-    m_iconView->setClickToViewFolders(config().readEntry("clickForFolderPreviews", true));
+    m_iconView->setClickToViewFolders(m_clickToView);
 
     if (m_label) {
         m_label->setPalette(palette);
@@ -1724,6 +1733,20 @@ void FolderView::toggleAlignToGrid(bool align)
     }
 
     config().writeEntry("alignToGrid", align);
+    emit configNeedsSaving();
+
+    m_delayedSaveTimer.start(5000, this);
+}
+
+void FolderView::toggleClickToViewFolders(bool enable)
+{
+   m_clickToView = enable;
+  
+    if (m_iconView) {
+        m_iconView->setClickToViewFolders(enable);
+    }
+
+    config().writeEntry("clickForFolderPreviews", enable);
     emit configNeedsSaving();
 
     m_delayedSaveTimer.start(5000, this);
