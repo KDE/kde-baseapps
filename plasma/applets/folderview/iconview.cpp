@@ -1380,8 +1380,9 @@ void IconView::updateEditorGeometry()
 void IconView::renameSelectedIcon()
 {
     QModelIndex index = m_selectionModel->currentIndex();
-    if (!index.isValid())
+    if (!index.isValid()) {
         return;
+    }
 
     // Don't allow renaming of files the aren't visible in the view
     const QRect rect = visualRect(index);
@@ -1476,7 +1477,6 @@ void IconView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint h
     editor->hide();
     editor->deleteLater();
     m_editorIndex = QModelIndex();
-
     markAreaDirty(visibleArea());
 }
 
@@ -1494,7 +1494,6 @@ void IconView::closeEditor(QGraphicsWidget *editor, QAbstractItemDelegate::EndEd
     }
 
     m_editorIndex = QModelIndex();
-
     markAreaDirty(visibleArea());
 }
 
