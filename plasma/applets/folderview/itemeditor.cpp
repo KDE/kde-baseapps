@@ -29,7 +29,8 @@
 ItemEditor::ItemEditor(QGraphicsWidget *parent, const QStyleOptionViewItemV4 &option,
                        const QModelIndex &index)
     : QGraphicsProxyWidget(parent),
-      m_index(index)
+      m_index(index),
+      m_uncommitted(true)
 {
     // Create the editor
     m_editor = new KTextEdit();
@@ -66,14 +67,18 @@ ItemEditor::~ItemEditor()
 
 void ItemEditor::commitData()
 {
-    const_cast<QAbstractItemModel*>(m_index.model())->setData(m_index, m_editor->toPlainText(), Qt::EditRole);
+    if (m_uncommitted) {
+        const_cast<QAbstractItemModel*>(m_index.model())->setData(m_index, m_editor->toPlainText(), Qt::EditRole);
+        m_uncommitted = false;
+    }
 }
 
 bool ItemEditor::eventFilter(QObject *watched, QEvent *event)
 {
     KTextEdit *editor = qobject_cast<KTextEdit*>(watched);
-    if (!editor)
+    if (!editor) {
         return false;
+    }
 
     switch (event->type())
     {
@@ -107,8 +112,10 @@ bool ItemEditor::eventFilter(QObject *watched, QEvent *event)
 
     case QEvent::FocusOut:
     {
-        commitData();
-        emit closeEditor(this, QAbstractItemDelegate::NoHint);
+        if (m_uncommitted) {
+            commitData();
+            emit closeEditor(this, QAbstractItemDelegate::NoHint);
+        }
         return true;
     }
 
