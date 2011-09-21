@@ -49,7 +49,6 @@ protected:
 private:
     KTextEdit *m_editor;
     QModelIndex m_index;
-    bool m_uncommitted;
 };
 
 #endif
