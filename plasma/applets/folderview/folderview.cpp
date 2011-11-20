@@ -414,7 +414,10 @@ void FolderView::init()
         }
     }
 
+    /*
+    TODO Mark the cut icons as cut
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardDataChanged()));
+    */
 }
 
 void FolderView::configChanged()
@@ -1187,28 +1190,17 @@ void FolderView::networkStatusChanged(Solid::Networking::Status status)
     }
 }
 
+/*
+// TODO Mark the cut icons as cut, but test performance!
 void FolderView::clipboardDataChanged()
 {
     const QMimeData *mimeData = QApplication::clipboard()->mimeData();
     if (KonqMimeData::decodeIsCutSelection(mimeData)) {
         KUrl::List urls = KUrl::List::fromMimeData(mimeData);
-
-        // TODO Mark the cut icons as cut
-    }
-
-    // Update the paste action
-    if (QAction *action = m_actionCollection.action("paste"))
-    {
-        const QString actionText = KIO::pasteActionText();
-        if (!actionText.isEmpty()) {
-            action->setText(actionText);
-            action->setEnabled(true);
-        } else {
-            action->setText(i18n("&Paste"));
-            action->setEnabled(false);
-        }
+        .. marking items as cut code would go here ..
     }
 }
+*/
 
 void FolderView::saveIconPositions() const
 {
@@ -1584,7 +1576,7 @@ void FolderView::createActions()
         // Create the new menu
         m_newMenu = new KNewFileMenu(&m_actionCollection, "new_menu", QApplication::desktop());
         m_newMenu->setModal(false);
-        
+
         connect(m_newMenu->menu(), SIGNAL(aboutToShow()), this, SLOT(aboutToShowCreateNew()));
 
         m_actionCollection.addAction("lock_icons", lockIcons);
@@ -1596,6 +1588,20 @@ void FolderView::createActions()
         m_actionCollection.addAction("sort_date", sortByDate);
 
         updateSortActionsState();
+    }
+}
+
+void FolderView::updatePasteAction()
+{
+    if (QAction *paste = m_actionCollection.action("paste")) {
+        const QString pasteText = KIO::pasteActionText();
+        if (pasteText.isEmpty()) {
+            paste->setText(i18n("&Paste"));
+            paste->setEnabled(false);
+        } else {
+            paste->setText(pasteText);
+            paste->setEnabled(true);
+        }
     }
 }
 
@@ -1614,7 +1620,10 @@ QList<QAction*> FolderView::contextualActions()
         }
 
         actions.append(m_actionCollection.action("undo"));
-        actions.append(m_actionCollection.action("paste"));
+        if (QAction *paste = m_actionCollection.action("paste")) {
+            updatePasteAction();
+            actions.append(paste);
+        }
 
         QAction *separator = new QAction(this);
         separator->setSeparator(true);
@@ -1916,8 +1925,11 @@ void FolderView::showContextMenu(QWidget *widget, const QPoint &pos, const QMode
 
     QAction* pasteTo = m_actionCollection.action("pasteto");
     if (pasteTo) {
-        pasteTo->setEnabled(m_actionCollection.action("paste")->isEnabled());
-        pasteTo->setText(m_actionCollection.action("paste")->text());
+        if (QAction *paste = m_actionCollection.action("paste")) {
+            updatePasteAction();
+            pasteTo->setEnabled(paste->isEnabled());
+            pasteTo->setText(paste->text());
+        }
     }
 
     QList<QAction*> editActions;

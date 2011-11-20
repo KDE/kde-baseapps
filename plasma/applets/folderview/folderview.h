@@ -139,7 +139,7 @@ protected slots:
     void iconSettingsChanged(int group);
     void themeChanged();
     void networkStatusChanged(Solid::Networking::Status status);
-    void clipboardDataChanged();
+    //void clipboardDataChanged();
     void updateScreenRegion();
     void showPreviewConfigDialog();
 
@@ -147,6 +147,7 @@ private slots:
     void setTitleText();
 
 private:
+    void updatePasteAction();
     void addActions(AbstractItemView *view);
     QColor textColor() const;
     void setupIconView();
