@@ -96,7 +96,13 @@ QVariant MimeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid()) {
         return QVariant();
     }
+
     KMimeType *mime = static_cast<KMimeType*>(index.internalPointer());
+
+    if (!mime) {
+        return QVariant();
+    }
+
     switch (role) {
         case Qt::DisplayRole: {
             if (!mime->comment().isEmpty()) {
@@ -190,6 +196,12 @@ bool ProxyMimeModel::lessThan(const QModelIndex &left, const QModelIndex &right)
     KMimeType *leftPtr = static_cast<KMimeType*>(left.internalPointer());
     KMimeType *rightPtr = static_cast<KMimeType*>(right.internalPointer());
 
+    if (!leftPtr) {
+        return true;
+    } else if (!rightPtr) {
+        return false;
+    }
+
     return KStringHandler::naturalCompare(leftPtr->comment(), rightPtr->comment()) < 0;
 }
 
@@ -197,6 +209,10 @@ bool ProxyMimeModel::filterAcceptsRow(int source_row, const QModelIndex &source_
 {
     QModelIndex sourceIndex = sourceModel()->index(source_row, 0, source_parent);
     KMimeType *mime = static_cast<KMimeType*>(sourceIndex.internalPointer());
+    if (!mime) {
+        return false;
+    }
+
     if (m_filter.isEmpty()) {
         return true;
     }
@@ -716,7 +732,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         for (int i = 0; i < pMimeModel->rowCount(); i++) {
             const QModelIndex index = pMimeModel->index(i, 0);
             const KMimeType *mime = static_cast<KMimeType*>(pMimeModel->mapToSource(index).internalPointer());
-            if (selectedItems.contains(mime->name())) {
+            if (mime && selectedItems.contains(mime->name())) {
                 selectedItems.removeAll(mime->name());
                 uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
             }
@@ -771,7 +787,10 @@ void FolderView::configAccepted()
     for (int i = 0; i < proxyModel->sourceModel()->rowCount(); i++) {
         const QModelIndex index = proxyModel->sourceModel()->index(i, 0);
         if (index.model()->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) {
-            selectedItems << static_cast<KMimeType*>(index.internalPointer())->name();
+            KMimeType *mime = static_cast<KMimeType*>(index.internalPointer());
+            if (mime) {
+                selectedItems << mime->name();
+            }
         }
     }
 
