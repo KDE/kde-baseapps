@@ -1669,6 +1669,9 @@ QList<QAction*> FolderView::contextualActions()
         }
         actions.append(m_itemActions->preferredOpenWithAction(QString()));
         if (m_url.protocol() == "trash") {
+            KConfig trashConfig("trashrc", KConfig::SimpleConfig);
+            m_actionCollection.action("empty_trash")->setEnabled(!trashConfig.group("Status")
+                                      .readEntry("Empty", true));
             actions.append(m_actionCollection.action("empty_trash"));
         }
 
