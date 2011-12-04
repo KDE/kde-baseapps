@@ -1362,21 +1362,26 @@ void FolderView::updateScreenRegion()
 
 void FolderView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
-    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
-    event->setAccepted(isContainment() && immutability() == Plasma::Mutable &&
-                       event->mimeData()->hasFormat(appletMimeType));
+    if (isContainment()) {
+        Containment::dragEnterEvent(event);
+    }
 }
 
 void FolderView::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
-    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
-    event->setAccepted(isContainment() && event->mimeData()->hasFormat(appletMimeType));
+    if (isContainment()) {
+        QGraphicsItem *item = scene()->itemAt(event->scenePos());
+        if (item == m_iconView) {
+            event->setAccepted(true);
+        } else {
+            Containment::dragMoveEvent(event);
+        }
+    }
 }
 
 void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
-    const QString appletMimeType = static_cast<Plasma::Corona*>(scene())->appletMimeType();
-    if (isContainment() && event->mimeData()->hasFormat(appletMimeType)) {
+    if (isContainment()) {
         Containment::dropEvent(event);
     }
 }
