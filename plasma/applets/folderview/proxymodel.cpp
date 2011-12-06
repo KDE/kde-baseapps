@@ -145,6 +145,7 @@ bool ProxyModel::isDir(const QModelIndex &index, const KDirModel *dirModel) cons
     return false;
 }
 
+#include <KDebug>
 bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
@@ -159,6 +160,11 @@ bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) con
         if (!leftIsDir && rightIsDir) {
             return false;
         }
+    }
+
+    if (left.column() == KDirModel::ModifiedTime) {
+        return dirModel->data(left, KDirModel::FileItemRole).value<KFileItem>().time(KFileItem::ModificationTime) <
+               dirModel->data(right, KDirModel::FileItemRole).value<KFileItem>().time(KFileItem::ModificationTime);
     }
 
     const QString name1 = dirModel->data(left).toString();
