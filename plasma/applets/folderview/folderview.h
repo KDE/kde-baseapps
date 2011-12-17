@@ -35,6 +35,7 @@
 #include <plasma/containment.h>
 
 #include "iconview.h"
+#include "dirlister.h"
 
 #include "ui_folderviewFilterConfig.h"
 #include "ui_folderviewDisplayConfig.h"
@@ -145,6 +146,7 @@ protected slots:
 
 private slots:
     void setTitleText();
+    void networkAvailable();
 
 private:
     void updatePasteAction();
@@ -206,6 +208,7 @@ private:
     int m_numTextLines;
     IconView::Flow m_flow;
     QBasicTimer m_delayedSaveTimer;
+    DirLister *m_dirLister;
 };
 
 

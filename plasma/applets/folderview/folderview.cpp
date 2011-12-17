@@ -71,8 +71,8 @@
 #include <Plasma/ToolTipManager>
 #include <Plasma/Wallpaper>
 #include <Plasma/WindowEffects>
+#include <Plasma/Applet>
 
-#include "dirlister.h"
 #include "dialog.h"
 #include "folderviewadapter.h"
 #include "iconwidget.h"
@@ -378,11 +378,11 @@ void FolderView::init()
     m_model->setDynamicSortFilter(m_sortColumn != -1);
     m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
 
-    DirLister *lister = new DirLister(this);
-    lister->setDelayedMimeTypes(true);
-    lister->setAutoErrorHandlingEnabled(false, 0);
+    m_dirLister = new DirLister(this);
+    m_dirLister->setDelayedMimeTypes(true);
+    m_dirLister->setAutoErrorHandlingEnabled(false, 0);
 
-    m_dirModel->setDirLister(lister);
+    m_dirModel->setDirLister(m_dirLister);
 
     if (!m_url.isValid()) {
 
@@ -403,10 +403,21 @@ void FolderView::init()
         cg.writeEntry("url", m_url);
     }
 
-    // TODO: 4.3 Check if the URL is a remote URL, and if it is check the network status
-    //       and display a message saying it's not available, instead of trying to open
-    //       the URL and waiting for the job to time out.
-    lister->openUrl(m_url);
+    if (!m_url.isLocalFile()) {
+        //If host is connected to the network and url is remote, list the remote files
+        connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), this,
+                SLOT(networkAvailable()), Qt::UniqueConnection);
+        //Check if network is not in the "Connected" state
+        if (Solid::Networking::status() != Solid::Networking::Connected) {
+             //FIXME: Remove the comment when KDE 4.9 development starts
+            //QString networkStatus(i18n("Network is not reachable"));
+            //showMessage(KIcon("dialog-warning"), networkStatus, Plasma::ButtonOk);
+            return;
+        }
+    } else {
+        disconnect(Solid::Networking::notifier(), 0, this, 0);
+        m_dirLister->openUrl(m_url);
+    }
 
     createActions();
     
@@ -434,6 +445,13 @@ void FolderView::init()
     TODO Mark the cut icons as cut
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(clipboardDataChanged()));
     */
+}
+
+void FolderView::networkAvailable()
+{
+    if (!m_url.isLocalFile()) {
+        m_dirLister->openUrl(m_url);
+    }
 }
 
 void FolderView::configChanged()
