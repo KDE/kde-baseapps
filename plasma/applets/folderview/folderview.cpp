@@ -39,6 +39,7 @@
 #include <kfileplacesmodel.h>
 #include <kfilepreviewgenerator.h>
 #include <KGlobalSettings>
+#include <KProtocolInfo>
 #include <KStandardShortcut>
 #include <KStringHandler>
 #include <KTemporaryFile>
@@ -432,7 +433,7 @@ void FolderView::init()
 
 void FolderView::networkAvailable()
 {
-    if (!m_url.isLocalFile()) {
+    if (KProtocolInfo::protocolClass(m_url.protocol()) == ":local") {
         m_dirLister->openUrl(m_url);
     }
 }
@@ -1305,7 +1306,10 @@ void FolderView::setUrl(const KUrl &url)
     m_url = url;
     setAssociatedApplicationUrls(KUrl::List() << m_url);
 
-    if (!m_url.isLocalFile() && m_url.protocol() != "desktop") {
+    if (KProtocolInfo::protocolClass(m_url.protocol()) == ":local") {
+        disconnect(Solid::Networking::notifier(), 0, this, 0);
+        m_dirLister->openUrl(m_url);
+    } else {
         //If host is connected to the network and url is remote, list the remote files
         connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), this,
                 SLOT(networkAvailable()), Qt::UniqueConnection);
@@ -1316,9 +1320,6 @@ void FolderView::setUrl(const KUrl &url)
             //showMessage(KIcon("dialog-warning"), networkStatus, Plasma::ButtonOk);
             m_dirLister->openUrl(m_url);
         }
-    } else {
-        disconnect(Solid::Networking::notifier(), 0, this, 0);
-        m_dirLister->openUrl(m_url);
     }
 
     // Only parse desktop files when sorting if we're showing the desktop folder
