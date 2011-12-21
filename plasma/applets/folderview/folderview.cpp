@@ -385,8 +385,6 @@ void FolderView::init()
     m_dirModel->setDirLister(m_dirLister);
 
     if (!m_url.isValid()) {
-
-        //FIXME: 4.3 Need to update folderview's description
         QString path = QDir::homePath();
         if (isContainment()) {
             const QString desktopPath = KGlobalSettings::desktopPath();
