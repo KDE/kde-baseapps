@@ -403,7 +403,7 @@ void FolderView::init()
         cg.writeEntry("url", m_url);
     }
 
-    if (!m_url.isLocalFile()) {
+    if (!m_url.isLocalFile() && m_url.protocol() != "desktop") {
         //If host is connected to the network and url is remote, list the remote files
         connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), this,
                 SLOT(networkAvailable()), Qt::UniqueConnection);
