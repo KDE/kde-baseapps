@@ -408,11 +408,11 @@ void FolderView::init()
         connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), this,
                 SLOT(networkAvailable()), Qt::UniqueConnection);
         //Check if network is not in the "Connected" state
-        if (Solid::Networking::status() != Solid::Networking::Connected) {
+        if (Solid::Networking::status() == Solid::Networking::Connected) {
              //FIXME: Remove the comment when KDE 4.9 development starts
             //QString networkStatus(i18n("Network is not reachable"));
             //showMessage(KIcon("dialog-warning"), networkStatus, Plasma::ButtonOk);
-            return;
+            m_dirLister->openUrl(m_url);
         }
     } else {
         disconnect(Solid::Networking::notifier(), 0, this, 0);
@@ -420,7 +420,7 @@ void FolderView::init()
     }
 
     createActions();
-    
+
     if (isContainment()) {
         setupIconView();
 
