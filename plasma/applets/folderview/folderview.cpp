@@ -384,7 +384,12 @@ void FolderView::init()
 
     m_dirModel->setDirLister(m_dirLister);
 
-    if (!m_url.isValid()) {
+    if (m_url.isValid()) {
+        // this means that we were passed a URL via the args list in the constructor
+        // setUrl has already been called, we just need to save it in the config file
+        KConfigGroup cg = config();
+        cg.writeEntry("url", m_url);
+    } else {
         QString path = QDir::homePath();
         if (isContainment()) {
             const QString desktopPath = KGlobalSettings::desktopPath();
