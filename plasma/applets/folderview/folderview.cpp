@@ -446,14 +446,16 @@ void FolderView::configChanged()
     bool preserveIconPositions = false;
 
     //Reload m_customLabel values
-    QString label = m_customLabel;
-    m_customLabel = cg.readEntry("customLabel", m_customLabel);
+    const QString label = cg.readEntry("customLabel", m_customLabel);
     if (label != m_customLabel) {
+        m_customLabel = label;
         setAppletTitle();
         needReload = true;
     }
-    bool blank = cg.readEntry("blankLabel", m_blankLabel);
+
+    const bool blank = cg.readEntry("blankLabel", m_blankLabel);
     if (blank != m_blankLabel) {
+        m_blankLabel = blank;
         needReload = true;
     }
     //Reload m_customIconSize values
@@ -465,20 +467,21 @@ void FolderView::configChanged()
 
     m_showPreviews = cg.readEntry("showPreviews", m_showPreviews);
     m_drawShadows  = cg.readEntry("drawShadows", m_drawShadows);
-    m_iconsLocked  = cg.readEntry("iconsLocked", m_iconsLocked);
-    m_alignToGrid  = cg.readEntry("alignToGrid", m_alignToGrid);
     m_clickToView  = cg.readEntry("clickForFolderPreviews", m_clickToView);
     m_numTextLines = cg.readEntry("numTextLines", m_numTextLines);
-
-    const int filterType = m_filterType;
-    m_filterType   = cg.readEntry("filter", m_filterType);
-    if (filterType != m_filterType) {
-        needReload = true;
+    m_alignToGrid  = cg.readEntry("alignToGrid", m_alignToGrid);
+    if (QAction *action = m_actionCollection.action("auto_align")) {
+        action->setChecked(m_alignToGrid);
     }
 
-    QColor color = m_textColor;
-    m_textColor = cg.readEntry("textColor", m_textColor);
+    m_iconsLocked  = cg.readEntry("iconsLocked", m_iconsLocked);
+    if (QAction *action = m_actionCollection.action("lock_icons")) {
+        action->setChecked(m_iconsLocked);
+    }
+
+    const QColor color = cg.readEntry("textColor", m_textColor);
     if (color != m_textColor) {
+        m_textColor = color;
         needReload = true;
     }
 
@@ -496,9 +499,9 @@ void FolderView::configChanged()
     m_sortDirsFirst = cg.readEntry("sortDirsFirst", m_sortDirsFirst);
     toggleDirectoriesFirst(m_sortDirsFirst);
 
-    const int sortColumn = m_sortColumn;
-    m_sortColumn = cg.readEntry("sortColumn", m_sortColumn);
+    const int sortColumn = cg.readEntry("sortColumn", m_sortColumn);
     if (m_sortColumn != sortColumn) {
+        m_sortColumn = sortColumn;
         if (m_sortColumn != -1) {
             m_model->invalidate();
             m_model->sort(m_sortColumn, Qt::AscendingOrder);
@@ -510,23 +513,32 @@ void FolderView::configChanged()
         updateSortActionsState();
     }
 
-    const QString filterFiles = m_filterFiles;
-    m_filterFiles = cg.readEntry("filterFiles", m_filterFiles);
+    const int filterType = cg.readEntry("filter", m_filterType);
+    if (filterType != m_filterType) {
+        m_filterType = filterType;
+        m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
+        needReload = true;
+    }
 
+    m_userSelectedShowAllFiles = m_filterType;
+
+    const QString filterFiles = cg.readEntry("filterFiles", m_filterFiles);
     if (filterFiles != m_filterFiles) {
+        m_filterFiles = filterFiles;
+        m_model->setFileNameFilter(m_filterFiles);
         needReload = true;
     }
 
-    const QStringList mimeFilter = m_filterFilesMimeList;
-    m_filterFilesMimeList = cg.readEntry("mimeFilter", m_filterFilesMimeList);
-
+    const QStringList mimeFilter = cg.readEntry("mimeFilter", m_filterFilesMimeList);
     if (mimeFilter != m_filterFilesMimeList) {
+        m_filterFilesMimeList = mimeFilter;
+        m_model->setMimeTypeFilterList(m_filterFilesMimeList);
         needReload = true;
     }
 
-    const KUrl url = m_url;
-    m_url = cg.readEntry("url", m_url);
+    const KUrl url = cg.readEntry("url", m_url);
     if (url != m_url) {
+        m_url = url;
         needReload = true;
     }
 
@@ -543,12 +555,12 @@ void FolderView::configChanged()
         QStringList iconPositionsData;
         if (preserveIconPositions && m_iconView) {
             iconPositionsData = m_iconView->iconPositionsData();
-
         }
 
         if (preserveIconPositions && m_iconView) {
              m_iconView->setIconPositionsData(iconPositionsData);
         }
+
         // So the KFileItemActions will be recreated for the new URL.
         delete m_itemActions;
         m_itemActions = 0;
@@ -779,34 +791,12 @@ void FolderView::configAccepted()
         url = KUrl(QDir::homePath());
     }
 
-    // Now, we have to iterate over all items (not only the filtered ones). For that reason we have
-    // to ask the source model, not the proxy model.
-    QStringList selectedItems;
-    ProxyMimeModel *proxyModel = static_cast<ProxyMimeModel*>(uiFilter.filterFilesList->model());
-    for (int i = 0; i < proxyModel->sourceModel()->rowCount(); i++) {
-        const QModelIndex index = proxyModel->sourceModel()->index(i, 0);
-        if (index.model()->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) {
-            KMimeType *mime = static_cast<KMimeType*>(index.internalPointer());
-            if (mime) {
-                selectedItems << mime->name();
-            }
-        }
-    }
-
-    const int filterType = uiFilter.filterType->currentIndex();
     KConfigGroup cg = config();
-    bool needReload = false;
-    bool preserveIconPositions = false;
 
-    if (m_drawShadows != uiDisplay.drawShadows->isChecked()) {
-        m_drawShadows = uiDisplay.drawShadows->isChecked();
-        cg.writeEntry("drawShadows", m_drawShadows);
-    }
+    cg.writeEntry("drawShadows", uiDisplay.drawShadows->isChecked());
 
     if (m_showPreviews != uiDisplay.showPreviews->isChecked()) {
-        m_showPreviews = uiDisplay.showPreviews->isChecked();
-        cg.writeEntry("showPreviews", m_showPreviews);
-
+        cg.writeEntry("showPreviews", uiDisplay.showPreviews->isChecked());
         //As disabling the previews will force a rearrangement, we need to manually
         //save and restore the icons positions
 
@@ -827,129 +817,54 @@ void FolderView::configAccepted()
 
     if (m_previewGenerator && m_previewPlugins != m_previewGenerator->enabledPlugins()) {
         cg.writeEntry("previewPlugins", m_previewPlugins);
-        m_previewGenerator->setEnabledPlugins(m_previewPlugins);
-
-        //Changing the preview plugins will also need a reload to work, so we need to preserve
-        //the icons position
-        needReload = true;
-        preserveIconPositions = true;
     }
 
-    const QColor defaultColor = isContainment() ? Qt::white :
-            Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
+    const QColor defaultColor = isContainment() ? Qt::white
+                                                : Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
     const QColor color = uiDisplay.colorButton->color();
     if ((m_textColor != Qt::transparent && color != m_textColor) ||
         (m_textColor == Qt::transparent && color != defaultColor))
     {
-        m_textColor = color;
-        cg.writeEntry("textColor", m_textColor);
+        cg.writeEntry("textColor", color);
     }
 
-    if (m_numTextLines != uiDisplay.numLinesEdit->value()) {
-        m_numTextLines = uiDisplay.numLinesEdit->value();
-        cg.writeEntry("numTextLines", m_numTextLines);
-    }
+    cg.writeEntry("numTextLines", uiDisplay.numLinesEdit->value());
 
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
     const int size = iconSizes.at(uiDisplay.sizeSlider->value());
-    if (size != iconSize().width())
-    {
-        m_customIconSize = size;
-        cg.writeEntry("customIconSize", m_customIconSize);
-
-        // This is to force the preview images to be regenerated with the new size
-        if (m_showPreviews) {
-            needReload = true;
-        }
-    }
+    cg.writeEntry("customIconSize", size);
 
     const int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
-    if (m_sortColumn != sortColumn) {
-        m_sortColumn = sortColumn;
-        if (m_sortColumn != -1) {
-            m_model->invalidate();
-            m_model->sort(m_sortColumn, Qt::AscendingOrder);
-            m_model->setDynamicSortFilter(true);
-        } else if (m_iconView) {
-            m_iconView->setCustomLayout(true);
-            m_model->setDynamicSortFilter(false);
-        }
-        updateSortActionsState();
-        cg.writeEntry("sortColumn", m_sortColumn);
-    }
+    cg.writeEntry("sortColumn", sortColumn);
 
     const int flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).toInt();
-    if (m_flow != flow) {
-        m_flow = static_cast<IconView::Flow>(flow);
-        cg.writeEntry("flow", flow);
-    }
+    cg.writeEntry("flow", flow);
 
-    if (m_alignToGrid != uiDisplay.alignToGrid->isChecked()) {
-        m_alignToGrid = uiDisplay.alignToGrid->isChecked();
-        cg.writeEntry("alignToGrid", m_alignToGrid);
-        m_actionCollection.action("auto_align")->setChecked(m_alignToGrid);
-    }
-
-    if (m_clickToView != uiDisplay.setClicktoView->isChecked()) {
-        m_clickToView = uiDisplay.setClicktoView->isChecked();
-        cg.writeEntry("clickForFolderPreviews", m_clickToView);
-    }
-
-    if (m_iconsLocked != uiDisplay.lockInPlace->isChecked()) {
-        m_iconsLocked = uiDisplay.lockInPlace->isChecked();
-        cg.writeEntry("iconsLocked", m_iconsLocked);
-        m_actionCollection.action("lock_icons")->setChecked(m_iconsLocked);
-    }
+    cg.writeEntry("alignToGrid", uiDisplay.alignToGrid->isChecked());
+    cg.writeEntry("clickForFolderPreviews", uiDisplay.setClicktoView->isChecked());
+    cg.writeEntry("iconsLocked", uiDisplay.lockInPlace->isChecked());
 
     cg.writeEntry("blankLabel" , m_blankLabel);
     cg.writeEntry("customLabel", m_customLabel);
 
-    if (m_url != url || m_filterFiles != uiFilter.filterFilesPattern->text() ||
-        m_filterFilesMimeList != selectedItems || m_filterType != filterType)
-    {
-        m_model->setFileNameFilter(uiFilter.filterFilesPattern->text());
-        m_filterFiles = uiFilter.filterFilesPattern->text();
-        m_filterFilesMimeList = selectedItems;
-        m_filterType = filterType;
-        setUrl(url);
+    cg.writeEntry("url", url);
+    cg.writeEntry("filterFiles", uiFilter.filterFilesPattern->text());
+    cg.writeEntry("filter", uiFilter.filterType->currentIndex());
 
-        cg.writeEntry("url", m_url);
-        cg.writeEntry("filterFiles", m_filterFiles);
-        cg.writeEntry("filter", m_filterType);
-        m_userSelectedShowAllFiles = m_filterType;
-        cg.writeEntry("mimeFilter", m_filterFilesMimeList);
-
-        m_model->setMimeTypeFilterList(m_filterFilesMimeList);
-        m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
-        needReload = true;
-    } else {
-        setAppletTitle();
-    }
-
-    if (m_iconView) {
-        updateIconViewState();
-    }
-
-    if (m_listView) {
-        updateListViewState();
-    }
-
-    if (needReload) {
-        //Manually save and restore the icon positions if we need it
-        QStringList iconPositionsData;
-        if (preserveIconPositions && m_iconView) {
-            iconPositionsData = m_iconView->iconPositionsData();
+    // Now, we have to iterate over all items (not only the filtered ones). For that reason we have
+    // to ask the source model, not the proxy model.
+    QStringList selectedItems;
+    ProxyMimeModel *proxyModel = static_cast<ProxyMimeModel*>(uiFilter.filterFilesList->model());
+    for (int i = 0; i < proxyModel->sourceModel()->rowCount(); i++) {
+        const QModelIndex index = proxyModel->sourceModel()->index(i, 0);
+        if (index.model()->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) {
+            KMimeType *mime = static_cast<KMimeType*>(index.internalPointer());
+            if (mime) {
+                selectedItems << mime->name();
+            }
         }
-
-        m_dirModel->dirLister()->openUrl(m_url);
-
-        if (preserveIconPositions && m_iconView) {
-             m_iconView->setIconPositionsData(iconPositionsData);
-        }
-        // So the KFileItemActions will be recreated for the new URL.
-        delete m_itemActions;
-        m_itemActions = 0;
     }
+    cg.writeEntry("mimeFilter", selectedItems);
 
     m_delayedSaveTimer.start(5000, this);
     emit configNeedsSaving();
