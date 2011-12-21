@@ -400,26 +400,6 @@ void FolderView::init()
             }
         }
         setUrl(cg.readEntry("url", KUrl(path)));
-
-    } else {
-        KConfigGroup cg = config();
-        cg.writeEntry("url", m_url);
-    }
-
-    if (!m_url.isLocalFile() && m_url.protocol() != "desktop") {
-        //If host is connected to the network and url is remote, list the remote files
-        connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), this,
-                SLOT(networkAvailable()), Qt::UniqueConnection);
-        //Check if network is not in the "Connected" state
-        if (Solid::Networking::status() == Solid::Networking::Connected) {
-             //FIXME: Remove the comment when KDE 4.9 development starts
-            //QString networkStatus(i18n("Network is not reachable"));
-            //showMessage(KIcon("dialog-warning"), networkStatus, Plasma::ButtonOk);
-            m_dirLister->openUrl(m_url);
-        }
-    } else {
-        disconnect(Solid::Networking::notifier(), 0, this, 0);
-        m_dirLister->openUrl(m_url);
     }
 
     createActions();
@@ -547,10 +527,8 @@ void FolderView::configChanged()
     const KUrl url = m_url;
     m_url = cg.readEntry("url", m_url);
     if (url != m_url) {
-        setUrl(m_url);
         needReload = true;
     }
-
 
     if (m_iconView) {
         updateIconViewState();
@@ -568,14 +546,14 @@ void FolderView::configChanged()
 
         }
 
-
         if (preserveIconPositions && m_iconView) {
              m_iconView->setIconPositionsData(iconPositionsData);
         }
         // So the KFileItemActions will be recreated for the new URL.
         delete m_itemActions;
         m_itemActions = 0;
-        m_dirModel->dirLister()->openUrl(m_url);
+
+        setUrl(m_url);
     }
 }
 
@@ -856,7 +834,7 @@ void FolderView::configAccepted()
         needReload = true;
         preserveIconPositions = true;
     }
-    
+
     const QColor defaultColor = isContainment() ? Qt::white :
             Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
     const QColor color = uiDisplay.colorButton->color();
@@ -1410,12 +1388,26 @@ void FolderView::dropEvent(QGraphicsSceneDragDropEvent *event)
 void FolderView::setUrl(const KUrl &url)
 {
     m_url = url;
-
     setAssociatedApplicationUrls(KUrl::List() << m_url);
+
+    if (!m_url.isLocalFile() && m_url.protocol() != "desktop") {
+        //If host is connected to the network and url is remote, list the remote files
+        connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), this,
+                SLOT(networkAvailable()), Qt::UniqueConnection);
+        //Check if network is not in the "Connected" state
+        if (Solid::Networking::status() == Solid::Networking::Connected) {
+             //FIXME: Remove the comment when KDE 4.9 development starts
+            //QString networkStatus(i18n("Network is not reachable"));
+            //showMessage(KIcon("dialog-warning"), networkStatus, Plasma::ButtonOk);
+            m_dirLister->openUrl(m_url);
+        }
+    } else {
+        disconnect(Solid::Networking::notifier(), 0, this, 0);
+        m_dirLister->openUrl(m_url);
+    }
 
     // Only parse desktop files when sorting if we're showing the desktop folder
     m_model->setParseDesktopFiles(m_url.protocol() == "desktop");
-
     setAppletTitle();
 }
 
