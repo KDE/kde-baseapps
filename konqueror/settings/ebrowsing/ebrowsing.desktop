@@ -98,8 +98,8 @@ Name[uz]=Veb-qisqartmalari
 Name[uz@cyrillic]=Веб-қисқартмалари
 Name[vi]=Lối tắt Mạng
 Name[wa]=Rascourtis waibe
-Name[x-test]=xxWeb Shortcutsxx
 Name[xh]=Ezimfutshane ze Web
+Name[x-test]=xxWeb Shortcutsxx
 Name[zh_CN]=网页快捷方式
 Name[zh_TW]=網頁捷徑
 
@@ -158,6 +158,7 @@ Comment[mk]=Конфигурирајте го напредното прелис�
 Comment[ml]=മെച്ചപ്പെട്ട ബ്രൌസിങ്ങ് ക്രമീകരിയ്ക്കുക
 Comment[mr]=प्रगत ब्राउजिंग संयोजीत करा
 Comment[ms]=Konfigur pelayaran lanjutan
+Comment[nb]=Sett opp utvidet surfing
 Comment[nds]=Söökafkörten för't gaue Söken in't Nett inrichten
 Comment[ne]=बढाइएको ब्राउजिङ कन्फिगर गर्नुहोस्
 Comment[nl]=Hier kunt u het geavanceerd browsen instellen
@@ -189,8 +190,8 @@ Comment[uz]=Tezlashtirilgan veb-koʻrishni moslash
 Comment[uz@cyrillic]=Тезлаштирилган веб-кўришни мослаш
 Comment[vi]=Cấu hình khả năng duyệt tăng cường
 Comment[wa]=Apontyî li naiviaedje waibe avancî
-Comment[x-test]=xxConfigure enhanced browsingxx
 Comment[xh]=Qwalasela ukhangelo lwencwadi olongezelelweyo
+Comment[x-test]=xxConfigure enhanced browsingxx
 Comment[zh_CN]=配置增强浏览特性
 Comment[zh_TW]=設定增強式瀏覽
 
