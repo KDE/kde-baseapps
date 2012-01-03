@@ -28,6 +28,7 @@
 #include <QTimer>
 #include <QGraphicsWidget>
 #include <QPersistentModelIndex>
+#include <QGraphicsGridLayout>
 
 namespace Plasma {
     class Svg;
@@ -74,6 +75,11 @@ public:
     QPersistentModelIndex hoverIndex();
     void forceHide(HideHint hint);
 
+    void setShowFolderButton(bool show);
+    void setShowSelectionButton(bool show);
+    bool showFolderButton() const;
+    bool showSelectionButton() const;
+
 private slots:
     void toggleSelection();
     void openPopup();
@@ -83,6 +89,7 @@ private slots:
     void modelChanged();
     void rowsRemoved(const QModelIndex& indexes, int start, int end);
     void checkIfFolderResult(const QModelIndex &index, bool isFolder);
+    void toggleShowActionButton(bool show, ActionIcon *button, unsigned int pos);
 
 private:
     ActionIcon *m_toggleButton;
@@ -91,6 +98,9 @@ private:
     QTimer *m_hideActionOverlayIconTimer;
     Plasma::Animation *fadeIn;
     Plasma::Animation *fadeOut;
+    bool m_showFolderButton;
+    bool m_showSelectionButton;
+    QGraphicsGridLayout * m_layout;
 };
 
 #endif // ACTIONOVERLAY_H

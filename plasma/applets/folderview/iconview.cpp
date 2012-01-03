@@ -80,6 +80,7 @@ IconView::IconView(QGraphicsWidget *parent)
       m_popupShowPreview(true),
       m_folderIsEmpty(false),
       m_clickToViewFolders(true),
+      m_showSelectionMarker(true),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
       m_dropOperation(0),
@@ -2597,6 +2598,7 @@ void IconView::popupCloseRequested()
 void IconView::setClickToViewFolders(bool click)
 {
     m_clickToViewFolders = click;
+    m_actionOverlay->setShowFolderButton(click);
 }
 
 bool IconView::clickToViewFolders() const
@@ -2650,6 +2652,17 @@ void IconView::openPopup(const QModelIndex &index)
     m_popupView = new PopupView(m_popupIndex, pos, m_popupShowPreview, m_popupPreviewPlugins, this);
     connect(m_popupView, SIGNAL(destroyed(QObject*)), SIGNAL(popupViewClosed()));
     connect(m_popupView, SIGNAL(requestClose()), SLOT(popupCloseRequested()));
+}
+
+void IconView::setShowSelectionMarker(bool show)
+{
+    m_showSelectionMarker = show;
+    m_actionOverlay->setShowSelectionButton(show);
+}
+
+bool IconView::showSelectionMarker() const
+{
+    return m_showSelectionMarker;
 }
 
 void IconView::timerEvent(QTimerEvent *event)

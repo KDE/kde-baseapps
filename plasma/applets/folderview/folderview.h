@@ -138,6 +138,7 @@ protected slots:
     void selectUnselectAll();
     void fontSettingsChanged();
     void iconSettingsChanged(int group);
+    void clickSettingsChanged(int category);
     void themeChanged();
     void networkStatusChanged(Solid::Networking::Status status);
     //void clipboardDataChanged();
@@ -200,6 +201,7 @@ private:
     bool m_iconsLocked;
     bool m_alignToGrid;
     bool m_clickToView;
+    bool m_showSelectionMarker;
     bool m_userSelectedShowAllFiles;
     bool m_blankLabel;
     QString m_customLabel;
