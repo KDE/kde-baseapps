@@ -655,7 +655,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
 
     QString configTitleText = m_customLabel;
     if (m_customLabel.isEmpty() || m_customLabel == "___EMPTY___") {
-        configTitleText == i18n("None");
+        configTitleText = i18n("None");
     } else if (m_customLabel == "___DEFAULT___") {
         configTitleText = i18n("Default");
     } else if (m_customLabel == "___FULL___") {
