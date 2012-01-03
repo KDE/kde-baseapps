@@ -128,11 +128,14 @@ ActionOverlay::ActionOverlay(AbstractItemView* parent)
     m_openButton = new ActionIcon(this);
     m_openButton->setElement("open");
 
-    QGraphicsGridLayout *layout = new QGraphicsGridLayout(this);
-    layout->setContentsMargins(4, 4, 4, 4);
-    layout->setSpacing(1);
-    layout->addItem(m_toggleButton, 0, 0);
-    layout->addItem(m_openButton, 1, 0);
+    m_showFolderButton = true;
+    m_showSelectionButton = true;
+
+    m_layout = new QGraphicsGridLayout(this);
+    m_layout->setContentsMargins(4, 4, 4, 4);
+    m_layout->setSpacing(1);
+    m_layout->addItem(m_toggleButton, 0, 0);
+    m_layout->addItem(m_openButton, 1, 0);
 
     connect(parentWidget(), SIGNAL(entered(QModelIndex)), this, SLOT(entered(QModelIndex)));
     connect(parentWidget(), SIGNAL(left(QModelIndex)), this, SLOT(left(QModelIndex)));
@@ -216,8 +219,6 @@ void ActionOverlay::entered(const QModelIndex &index)
         IconView *iview = qobject_cast<IconView*>(view);
         if (iview && iview->clickToViewFolders()) {
             AsyncFileTester::checkIfFolder(index, this, "checkIfFolderResult");
-        } else {
-            m_openButton->hide();
         }
     }
 }
@@ -278,3 +279,38 @@ void ActionOverlay::modelChanged()
     connect(mod, SIGNAL(rowsRemoved(QModelIndex,int,int)), SLOT(rowsRemoved(QModelIndex,int,int)));
 }
 
+void ActionOverlay::setShowFolderButton(bool show)
+{
+  if (m_showFolderButton != show) {
+    m_showFolderButton = show;
+    toggleShowActionButton(show, m_openButton, 1);
+  }
+}
+
+void ActionOverlay::setShowSelectionButton(bool show)
+{
+  if (m_showSelectionButton!= show) {
+    m_showSelectionButton = show;
+    toggleShowActionButton(show, m_toggleButton, 0);
+  }
+}
+
+bool ActionOverlay::showFolderButton() const
+{
+  return m_showFolderButton;
+}
+bool ActionOverlay::showSelectionButton() const
+{
+  return m_showSelectionButton;
+}
+
+void ActionOverlay::toggleShowActionButton(bool show, ActionIcon* button, unsigned int pos)
+{
+  if (show && m_layout->itemAt(pos, 0) != button) {
+    m_layout->addItem(button, pos, 0);
+    button->show();
+  } else if (m_layout->itemAt(pos, 0) == button) {
+    button->hide();
+    m_layout->removeItem(button);
+  }
+}

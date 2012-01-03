@@ -339,6 +339,7 @@ void FolderView::init()
     // Find out about icon and font settings changes
     connect(KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()), SLOT(fontSettingsChanged()));
     connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)), SLOT(iconSettingsChanged(int)));
+    connect(KGlobalSettings::self(), SIGNAL(settingsChanged(int)), SLOT(clickSettingsChanged(int)));
 
     // Find out about theme changes
     connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), SLOT(themeChanged()));
@@ -365,6 +366,8 @@ void FolderView::init()
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
     m_blankLabel          = cg.readEntry("blankLabel", false);
     m_userSelectedShowAllFiles = m_filterType;
+    m_showSelectionMarker = KGlobalSettings::singleClick();
+
     if (isContainment()) {
         m_flow = layoutDirection() == Qt::LeftToRight ? IconView::TopToBottom : IconView::TopToBottomRightToLeft;
     } else {
@@ -471,6 +474,7 @@ void FolderView::configChanged()
     m_clickToView  = cg.readEntry("clickForFolderPreviews", m_clickToView);
     m_numTextLines = cg.readEntry("numTextLines", m_numTextLines);
     m_alignToGrid  = cg.readEntry("alignToGrid", m_alignToGrid);
+
     if (QAction *action = m_actionCollection.action("auto_align")) {
         action->setChecked(m_alignToGrid);
     }
@@ -986,6 +990,7 @@ void FolderView::updateIconViewState()
     m_iconView->setAlignToGrid(m_alignToGrid);
     m_iconView->setIconsMoveable(!m_iconsLocked);
     m_iconView->setClickToViewFolders(m_clickToView);
+    m_iconView->setShowSelectionMarker(m_showSelectionMarker);
 
     if (m_label) {
         m_label->setPalette(palette);
@@ -1091,6 +1096,13 @@ void FolderView::iconSettingsChanged(int group)
         m_listView->markAreaDirty(m_listView->visibleArea());
         m_listView->update();
     }
+}
+
+void FolderView::clickSettingsChanged(int category)
+{
+  if (category == KGlobalSettings::SETTINGS_MOUSE) {
+    m_iconView->setShowSelectionMarker(KGlobalSettings::singleClick());
+  }
 }
 
 void FolderView::themeChanged()

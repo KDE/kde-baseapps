@@ -65,6 +65,7 @@ public:
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
     Q_PROPERTY(bool alignToGrid READ alignToGrid WRITE setAlignToGrid)
     Q_PROPERTY(bool clickToViewFolders READ clickToViewFolders WRITE setClickToViewFolders)
+    Q_PROPERTY(bool showSelectionMarker READ showSelectionMarker WRITE setShowSelectionMarker)
     Q_PROPERTY(bool iconsMoveable READ iconsMoveable WRITE setIconsMoveable)
     Q_PROPERTY(bool customLayout READ customLayout WRITE setCustomLayout)
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)
@@ -124,6 +125,9 @@ public:
     void setClickToViewFolders(bool click);
     bool clickToViewFolders() const;
     void openPopup(const QModelIndex &index);
+
+    void setShowSelectionMarker(bool show);
+    bool showSelectionMarker() const;
 
 signals:
     void indexesMoved(const QModelIndexList &indexes);
@@ -234,6 +238,7 @@ private:
     bool m_popupShowPreview;
     bool m_folderIsEmpty;
     bool m_clickToViewFolders;
+    bool m_showSelectionMarker;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
