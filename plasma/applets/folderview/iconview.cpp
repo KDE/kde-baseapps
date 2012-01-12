@@ -1053,7 +1053,7 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
     // Draw the icon
     // =============
     const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
-    const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignTop | Qt::AlignHCenter,
+    const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignVCenter | Qt::AlignHCenter,
                                          option.decorationSize, r);
     icon.paint(painter, ir);
 
