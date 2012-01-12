@@ -81,6 +81,7 @@ IconView::IconView(QGraphicsWidget *parent)
       m_folderIsEmpty(false),
       m_clickToViewFolders(true),
       m_showSelectionMarker(true),
+      m_drawIconShrinked(false),
       m_flow(layoutDirection() == Qt::LeftToRight ? LeftToRight : RightToLeft),
       m_popupCausedWidget(0),
       m_dropOperation(0),
@@ -1204,7 +1205,7 @@ void IconView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
                 opt.rect = m_items[i].rect;
             }
 
-            if (m_pressedIndex == index) {
+            if (m_pressedIndex == index && m_drawIconShrinked) {
                 opt.state |= QStyle::State_Sunken;
                 oldDecorationSize = opt.decorationSize;
                 opt.decorationSize *= 0.9;
@@ -1837,6 +1838,9 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
             m_pressedIndex = index;
             m_buttonDownPos = pos;
+            if (KGlobalSettings::singleClick()) {
+              m_drawIconShrinked = true;
+            }
             return;
         }
 
@@ -1912,6 +1916,7 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
     m_doubleClick = false;
     m_pressedIndex = QModelIndex();
+    m_drawIconShrinked = false;
 }
 
 void IconView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
@@ -1935,6 +1940,7 @@ void IconView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 
     m_pressedIndex = index;
+    m_drawIconShrinked = true;
 
     // Activate the item
     emit activated(index);
