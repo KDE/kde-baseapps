@@ -239,6 +239,7 @@ private:
     bool m_folderIsEmpty;
     bool m_clickToViewFolders;
     bool m_showSelectionMarker;
+    bool m_drawIconShrinked;
     QPersistentModelIndex m_hoveredIndex;
     QPersistentModelIndex m_pressedIndex;
     QPersistentModelIndex m_editorIndex;
