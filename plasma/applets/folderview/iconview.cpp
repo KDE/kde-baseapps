@@ -1894,13 +1894,18 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             if (ctrlOrShiftPressed) {
                 markAreaDirty(visibleArea());
             } else {
-                if (!m_doubleClick) {
-                    if (KGlobalSettings::singleClick()) {
+                if (KGlobalSettings::singleClick()) {
+                    // we ignore double clicks when in single click mode
+                    if (!m_doubleClick) {
                         emit activated(index);
                         m_selectionModel->clearSelection();
+                        markAreaDirty(visibleArea());
                     }
+                } else {
+                    // since icon shrinking is delayed, we always repaint after mouse release
                     markAreaDirty(visibleArea());
                 }
+
                 // We don't clear and update the selection and current index in
                 // mousePressEvent() if the item is already selected when it's pressed,
                 // so we need to do that here.
