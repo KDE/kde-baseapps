@@ -1053,7 +1053,7 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
     // Draw the icon
     // =============
     const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
-    const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignVCenter | Qt::AlignHCenter,
+    const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignTop | Qt::AlignHCenter,
                                          option.decorationSize, r);
     icon.paint(painter, ir);
 
@@ -1083,7 +1083,7 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
     // Draw the focus rect
     // ===================
     if (option.state & QStyle::State_HasFocus) {
-        QRect fr = QStyle::alignedRect(layoutDirection(), Qt::AlignCenter, size, tr);
+        QRect fr = QStyle::alignedRect(layoutDirection(), Qt::AlignTop | Qt::AlignHCenter, size, tr.translated(0,2));
         fr.adjust(-2, -2, 2, 2);
 
         QColor color = Qt::white;
