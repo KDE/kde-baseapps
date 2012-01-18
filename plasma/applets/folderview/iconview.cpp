@@ -1083,7 +1083,7 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
     // Draw the focus rect
     // ===================
     if (option.state & QStyle::State_HasFocus) {
-        QRect fr = QStyle::alignedRect(layoutDirection(), Qt::AlignCenter, size, tr);
+        QRect fr = QStyle::alignedRect(layoutDirection(), Qt::AlignTop | Qt::AlignHCenter, size, tr.translated(0,2));
         fr.adjust(-2, -2, 2, 2);
 
         QColor color = Qt::white;
