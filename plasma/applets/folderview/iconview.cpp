@@ -1008,7 +1008,8 @@ QSize IconView::itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex
     const QSize ts = doTextLayout(layout, QSize(grid.width() - left - right, grid.height() - size.height()),
                                   Qt::AlignHCenter, QTextOption::WrapAtWordBoundaryOrAnywhere);
 
-    size.rwidth() = qMax(size.width(), ts.width());
+    const int hm = left+right;
+    size.rwidth() = qMax(size.width(), ts.width() + hm);
     size.rheight() += ts.height();
     return size;
 }
