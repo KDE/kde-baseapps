@@ -139,7 +139,7 @@ protected slots:
     void fontSettingsChanged();
     void iconSettingsChanged(int group);
     void clickSettingsChanged(int category);
-    void themeChanged();
+    void plasmaThemeChanged();
     void networkStatusChanged(Solid::Networking::Status status);
     //void clipboardDataChanged();
     void updateScreenRegion();
