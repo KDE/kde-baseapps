@@ -86,6 +86,8 @@
 
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 
+Q_DECLARE_METATYPE(Qt::SortOrder)
+
 MimeModel::MimeModel(QObject *parent)
     : QStringListModel(parent)
 {
@@ -331,6 +333,24 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     KGlobal::locale()->insertCatalog("libkonq");
 }
 
+static QString sortOrderEnumToString(Qt::SortOrder order)
+{
+    if (order == Qt::AscendingOrder) {
+        return "ascending";
+    } else {
+        return "descending";
+    }
+}
+
+static Qt::SortOrder sortOrderStringToEnum(const QString& order)
+{
+    if (order == "ascending") {
+       return Qt::AscendingOrder;
+    } else {
+       return Qt::DescendingOrder;
+    }
+}
+
 void FolderView::init()
 {
     Containment::init();
@@ -361,6 +381,7 @@ void FolderView::init()
     m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail" << "jpegthumbnail");
     m_sortDirsFirst       = cg.readEntry("sortDirsFirst", true);
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
+    m_sortOrder           = sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
     m_filterFiles         = cg.readEntry("filterFiles", "*");
     m_filterType          = cg.readEntry("filter", 0);
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
@@ -380,7 +401,7 @@ void FolderView::init()
     m_model->setFileNameFilter(m_filterFiles);
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
     m_model->setDynamicSortFilter(m_sortColumn != -1);
-    m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, Qt::AscendingOrder);
+    m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, m_sortOrder);
 
     m_dirLister = new DirLister(this);
     m_dirLister->setDelayedMimeTypes(true);
@@ -505,11 +526,13 @@ void FolderView::configChanged()
     toggleDirectoriesFirst(m_sortDirsFirst);
 
     const int sortColumn = cg.readEntry("sortColumn", m_sortColumn);
-    if (m_sortColumn != sortColumn) {
+    const Qt::SortOrder sortOrder = sortOrderStringToEnum(cg.readEntry("sortOrder", sortOrderEnumToString(m_sortOrder)));
+    if ((m_sortColumn != sortColumn) || (m_sortOrder != m_sortOrder)) {
         m_sortColumn = sortColumn;
+        m_sortOrder = sortOrder;
         if (m_sortColumn != -1) {
             m_model->invalidate();
-            m_model->sort(m_sortColumn, Qt::AscendingOrder);
+            m_model->sort(m_sortColumn, m_sortOrder);
             m_model->setDynamicSortFilter(true);
         } else if (m_iconView) {
             m_iconView->setCustomLayout(true);
@@ -1515,6 +1538,17 @@ void FolderView::createActions()
         sortByDate->setCheckable(true);
         sortByDate->setData(int(KDirModel::ModifiedTime));
 
+        m_sortingOrderGroup = new QActionGroup(this);
+        connect(m_sortingOrderGroup, SIGNAL(triggered(QAction*)), SLOT(sortingOrderChanged(QAction*)));
+        QAction *sortAscending = m_sortingOrderGroup->addAction(i18nc("Sort icons", "Ascending"));
+        QAction *sortDescending = m_sortingOrderGroup->addAction(i18nc("Sort icons", "Descending"));
+
+        sortAscending->setCheckable(true);
+        sortAscending->setData(QVariant::fromValue(Qt::AscendingOrder));
+
+        sortDescending->setCheckable(true);
+        sortDescending->setData(QVariant::fromValue(Qt::DescendingOrder));
+
         KAction *dirsFirst = new KAction(i18nc("Sort icons", "Folders First"), this);
         dirsFirst->setCheckable(true);
         dirsFirst->setChecked(m_sortDirsFirst);
@@ -1525,6 +1559,9 @@ void FolderView::createActions()
         sortMenu->addAction(sortBySize);
         sortMenu->addAction(sortByType);
         sortMenu->addAction(sortByDate);
+        sortMenu->addSeparator();
+        sortMenu->addAction(sortAscending);
+        sortMenu->addAction(sortDescending);
         sortMenu->addSeparator();
         sortMenu->addAction(dirsFirst);
 
@@ -1551,6 +1588,8 @@ void FolderView::createActions()
         m_actionCollection.addAction("sort_size", sortBySize);
         m_actionCollection.addAction("sort_type", sortByType);
         m_actionCollection.addAction("sort_date", sortByDate);
+        m_actionCollection.addAction("sort_ascending", sortAscending);
+        m_actionCollection.addAction("sort_descending", sortDescending);
 
         updateSortActionsState();
     }
@@ -1749,10 +1788,25 @@ void FolderView::sortingChanged(QAction *action)
 
     if (column != m_sortColumn) {
         m_model->invalidate();
-        m_model->sort(column, Qt::AscendingOrder);
+        m_model->sort(column, m_sortOrder);
         m_model->setDynamicSortFilter(true);
         m_sortColumn = column;
         config().writeEntry("sortColumn", m_sortColumn);
+        emit configNeedsSaving();
+        m_delayedSaveTimer.start(5000, this);
+    }
+}
+
+void FolderView::sortingOrderChanged(QAction *action)
+{
+    const Qt::SortOrder order = action->data().value<Qt::SortOrder>();
+
+    if (order != m_sortOrder) {
+        m_model->invalidate();
+        m_model->sort(m_sortColumn, order);
+        m_model->setDynamicSortFilter(true);
+        m_sortOrder = order;
+        config().writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
     }
@@ -1762,6 +1816,9 @@ void FolderView::updateSortActionsState()
 {
     foreach (QAction *action, m_sortingGroup->actions()) {
         action->setChecked(action->data() == int(m_sortColumn));
+    }
+    foreach (QAction *action, m_sortingOrderGroup->actions()) {
+        action->setChecked(action->data().value<Qt::SortOrder>() == m_sortOrder);
     }
 }
 

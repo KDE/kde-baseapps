@@ -125,6 +125,7 @@ protected slots:
     void toggleClickToViewFolders(bool enable);
     void toggleDirectoriesFirst(bool enable);
     void sortingChanged(QAction *action);
+    void sortingOrderChanged(QAction *action);
     void aboutToShowCreateNew();
     void updateIconWidget();
     void iconWidgetClicked();
@@ -190,7 +191,9 @@ private:
     QPointer<KNewFileMenu> m_newMenu;
     KActionCollection m_actionCollection;
     QActionGroup *m_sortingGroup;
+    QActionGroup *m_sortingOrderGroup;
     int m_sortColumn;
+    Qt::SortOrder m_sortOrder;
     Ui::folderviewFilterConfig uiFilter;
     Ui::folderviewDisplayConfig uiDisplay;
     Ui::folderviewLocationConfig uiLocation;
