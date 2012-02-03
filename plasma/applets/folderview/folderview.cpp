@@ -342,7 +342,7 @@ void FolderView::init()
     connect(KGlobalSettings::self(), SIGNAL(settingsChanged(int)), SLOT(clickSettingsChanged(int)));
 
     // Find out about theme changes
-    connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), SLOT(themeChanged()));
+    connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), SLOT(plasmaThemeChanged()));
 
     // Find out about network availability changes
     connect(Solid::Networking::notifier(), SIGNAL(statusChanged(Solid::Networking::Status)),
@@ -1105,7 +1105,7 @@ void FolderView::clickSettingsChanged(int category)
   }
 }
 
-void FolderView::themeChanged()
+void FolderView::plasmaThemeChanged()
 {
     if (m_textColor != Qt::transparent) {
         return;
