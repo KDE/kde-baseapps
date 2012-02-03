@@ -69,6 +69,7 @@ PopupView::PopupView(const QModelIndex &index, const QPoint &pos,
       m_parentView(parentView),
       m_busyWidget(0),
       m_iconView(0),
+      m_parentViewModel(0),
       m_dirModel(0),
       m_model(0),
       m_actionCollection(this),
@@ -98,7 +99,9 @@ PopupView::PopupView(const QModelIndex &index, const QPoint &pos,
     pal.setColor(QPalette::Text, Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     setPalette(pal);
 
-    KFileItem item = static_cast<const ProxyModel*>(index.model())->itemForIndex(index);
+    m_parentViewModel = static_cast<const ProxyModel*>(index.model());
+
+    KFileItem item = m_parentViewModel->itemForIndex(index);
     if (item.isDesktopFile()) {
         KDesktopFile file(item.localPath());
         m_url = file.readUrl();
@@ -188,11 +191,15 @@ void PopupView::init()
 
     m_model = new ProxyModel(this);
     m_model->setSourceModel(m_dirModel);
-    m_model->setSortLocaleAware(true);
-    m_model->setDynamicSortFilter(true);
-    m_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    m_model->setParseDesktopFiles(m_url.protocol() == "desktop");
-    m_model->sort(KDirModel::Name, Qt::AscendingOrder);
+    m_model->setSortLocaleAware(m_parentViewModel->isSortLocaleAware());
+    m_model->setFilterCaseSensitivity(m_parentViewModel->filterCaseSensitivity());
+    m_model->setParseDesktopFiles(m_parentViewModel->parseDesktopFiles());
+    m_model->setFilterMode(m_parentViewModel->filterMode());
+    m_model->setMimeTypeFilterList(m_parentViewModel->mimeTypeFilterList());
+    m_model->setFileNameFilter(m_parentViewModel->fileNameFilter());
+    m_model->setSortDirectoriesFirst(m_parentViewModel->sortDirectoriesFirst());
+    m_model->setDynamicSortFilter(m_parentViewModel->dynamicSortFilter());
+    m_model->sort(m_parentViewModel->sortColumn(), m_parentViewModel->sortOrder());
 
     m_delegate = new KFileItemDelegate(this);
     m_selectionModel = new QItemSelectionModel(m_model, this);
