@@ -106,6 +106,7 @@ private:
     const IconView *m_parentView;
     Plasma::BusyWidget *m_busyWidget;
     IconView *m_iconView;
+    const ProxyModel *m_parentViewModel;
     KDirModel *m_dirModel;
     ProxyModel *m_model;
     KFileItemDelegate *m_delegate;
