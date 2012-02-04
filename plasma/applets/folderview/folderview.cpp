@@ -289,6 +289,27 @@ void RemoteWallpaperSetter::result(KJob *job)
 }
 
 
+// ---------------------------------------------------------------------------
+
+
+static QString sortOrderEnumToString(Qt::SortOrder order)
+{
+    if (order == Qt::AscendingOrder) {
+        return "ascending";
+    } else {
+        return "descending";
+    }
+}
+
+static Qt::SortOrder sortOrderStringToEnum(const QString& order)
+{
+    if (order == "ascending") {
+       return Qt::AscendingOrder;
+    } else {
+       return Qt::DescendingOrder;
+    }
+}
+
 
 // ---------------------------------------------------------------------------
 
@@ -331,24 +352,6 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
     // As we use some part of konqueror libkonq must be added to have translations
     KGlobal::locale()->insertCatalog("libkonq");
-}
-
-static QString sortOrderEnumToString(Qt::SortOrder order)
-{
-    if (order == Qt::AscendingOrder) {
-        return "ascending";
-    } else {
-        return "descending";
-    }
-}
-
-static Qt::SortOrder sortOrderStringToEnum(const QString& order)
-{
-    if (order == "ascending") {
-       return Qt::AscendingOrder;
-    } else {
-       return Qt::DescendingOrder;
-    }
 }
 
 void FolderView::init()
