@@ -1100,7 +1100,7 @@ void FolderView::iconSettingsChanged(int group)
 
 void FolderView::clickSettingsChanged(int category)
 {
-  if (category == KGlobalSettings::SETTINGS_MOUSE) {
+  if (category == KGlobalSettings::SETTINGS_MOUSE && m_iconView) {
     m_iconView->setShowSelectionMarker(KGlobalSettings::singleClick());
   }
 }
