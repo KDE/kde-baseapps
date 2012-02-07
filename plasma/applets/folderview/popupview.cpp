@@ -215,7 +215,7 @@ void PopupView::init()
     m_iconView->setGridSize(m_parentView->gridSize());
     m_iconView->setWordWrap(m_parentView->wordWrap());
     m_iconView->setIconsMoveable(false);
-    m_iconView->setClickToViewFolders(m_parentView->clickToViewFolders());
+    m_iconView->setClickToViewFolders(false);
     m_iconView->setShowSelectionMarker(m_parentView->showSelectionMarker());
 
     connect(m_iconView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
