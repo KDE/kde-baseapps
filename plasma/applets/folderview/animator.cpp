@@ -53,6 +53,8 @@ void HoverAnimation::updateCurrentTime(int currentTime)
 Animator::Animator(AbstractItemView *view)
     : QObject(view)
 {
+    m_effectsOn = (KGlobalSettings::graphicEffectsLevel() >= KGlobalSettings::SimpleAnimationEffects); //do not animate if the graphics effects are set to Low CPU
+    connect(KGlobalSettings::self(), SIGNAL(settingsChanged(int)), SLOT(graphicsEffectsToggled(int)));
     connect(view, SIGNAL(entered(QModelIndex)), SLOT(entered(QModelIndex)));
     connect(view, SIGNAL(left(QModelIndex)), SLOT(left(QModelIndex)));
 }
@@ -111,13 +113,26 @@ void Animator::animationDestroyed(QObject *obj)
 void Animator::entered(const QModelIndex &index)
 {
     m_hoveredIndex = index;
-    animate(HoverEnter, index);
+    if (m_effectsOn) {
+        animate(HoverEnter, index);
+    }
 }
 
 void Animator::left(const QModelIndex &index)
 {
     m_hoveredIndex = QModelIndex();
-    animate(HoverLeave, index);
+    if (m_effectsOn) {
+        animate(HoverLeave, index);
+    }
+}
+
+void Animator::graphicsEffectsToggled(int category)
+{
+    if ( (category == KGlobalSettings::SETTINGS_STYLE) && (KGlobalSettings::graphicEffectsLevel() & KGlobalSettings::SimpleAnimationEffects) ) {
+        m_effectsOn = true;
+    } else {
+        m_effectsOn = false;
+    }
 }
 
 #include "animator.moc"

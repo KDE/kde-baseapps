@@ -24,6 +24,8 @@
 #include <QEasingCurve>
 #include <QModelIndex>
 
+#include <kglobalsettings.h>
+
 class AbstractItemView;
 
 class HoverAnimation : public QAbstractAnimation
@@ -68,10 +70,12 @@ private slots:
     void entered(const QModelIndex &index);
     void left(const QModelIndex &index);
     void animationDestroyed(QObject *object);
+    void graphicsEffectsToggled(int category);
 
 private:
     QList<HoverAnimation*> m_list;
     QPersistentModelIndex m_hoveredIndex;
+    bool m_effectsOn;
 };
 
 #endif
