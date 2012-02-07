@@ -155,10 +155,10 @@ bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) con
         bool leftIsDir = isDir(left, dirModel);
         bool rightIsDir = isDir(right, dirModel);
         if (leftIsDir && !rightIsDir) {
-            return true;
+            return (sortOrder() == Qt::AscendingOrder);
         }
         if (!leftIsDir && rightIsDir) {
-            return false;
+            return (sortOrder() == Qt::DescendingOrder);
         }
     }
 
