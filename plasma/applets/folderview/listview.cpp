@@ -199,6 +199,7 @@ QSize ListView::itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex
     QSize size;
     size.rwidth() += contentsRect().width();
     size.rheight() = qMax(option.decorationSize.height(), m_numTextLines * fm.height());
+    size.rheight() += top + bottom;
 
     return size;
 }
@@ -259,7 +260,7 @@ void ListView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
 
     qreal left, top, right, bottom;
     m_itemFrame->getMargins(left, top, right, bottom);
-    const QRect r = option.rect.adjusted(left, 0, -right, 0);
+    const QRect r = option.rect.adjusted(left, top, -right, -bottom);
 
 
     const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignLeft | Qt::AlignVCenter,
