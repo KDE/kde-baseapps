@@ -82,8 +82,10 @@ protected:
     void layoutChanged();
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
+private slots:
+    void svgChanged();
+
 private:
-    Plasma::FrameSvg *m_itemFrame;
     Animator *m_animator;
     int m_rowHeight;
     int m_numTextLines;

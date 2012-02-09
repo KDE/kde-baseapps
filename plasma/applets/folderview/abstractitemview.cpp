@@ -48,6 +48,7 @@ static const int sSmoothScrollTick = 14;
 
 AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
     : QGraphicsWidget(parent),
+      m_itemFrame(0),
       m_delegate(0),
       m_lastScrollValue(0),
       m_viewScrolled(false),
@@ -67,6 +68,12 @@ AbstractItemView::AbstractItemView(QGraphicsWidget *parent)
     connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(scrollBarValueChanged(int)));
     connect(m_scrollBar->nativeWidget(), SIGNAL(actionTriggered(int)), SLOT(scrollBarActionTriggered(int)));
     connect(m_scrollBar->nativeWidget(), SIGNAL(sliderReleased()), SLOT(scrollBarSliderReleased()));
+
+    m_itemFrame = new Plasma::FrameSvg(this);
+    m_itemFrame->setImagePath("widgets/viewitem");
+    m_itemFrame->setCacheAllRenderedFrames(true);
+    m_itemFrame->setElementPrefix("normal");
+    connect(m_itemFrame, SIGNAL(repaintNeeded()), this, SLOT(svgChanged()));
 
     // This is a dummy widget that's never shown - it's just passed to
     // KFileItemDelegate in the style options, so it will use the widget's
@@ -509,6 +516,9 @@ void AbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndEd
     Q_UNUSED(hint)
 }
 
+void AbstractItemView::svgChanged()
+{
+}
 
 void AbstractItemView::scrollTo(const QModelIndex &index,  QAbstractItemView::ScrollHint hint)
 {

@@ -189,6 +189,7 @@ private slots:
     void repositionWidgetsManually();
     void closeEditor(QGraphicsWidget *editor, QAbstractItemDelegate::EndEditHint hint);
     void checkIfFolderResult(const QModelIndex &index, bool isFolder);
+    void svgChanged();
 
 private:
     void paintMessage(QPainter *painter, const QRect &rect, const QString &message,
@@ -217,7 +218,6 @@ private:
     void repaintSelectedIcons();
 
 private:
-    Plasma::FrameSvg *m_itemFrame;
     QVector<ViewItem> m_items;
     QHash<QString, QPoint> m_savedPositions;
     mutable QCache<quint64, QRegion> m_regionCache;
