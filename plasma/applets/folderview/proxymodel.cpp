@@ -150,27 +150,80 @@ bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) con
 {
     const KDirModel *dirModel = static_cast<KDirModel*>(sourceModel());
 
-    // Sort directories first
-    if (m_sortDirsFirst) {
+    // When sorting by size, folders are compared using the number of items in them,
+    // so they need to be given precedence over regular files as the comparison criteria is different
+    if (m_sortDirsFirst || left.column() == KDirModel::Size) {
         bool leftIsDir = isDir(left, dirModel);
         bool rightIsDir = isDir(right, dirModel);
         if (leftIsDir && !rightIsDir) {
-            return (sortOrder() == Qt::AscendingOrder);
+            return (sortOrder() == Qt::AscendingOrder); // folders > files independent of the sorting order
         }
         if (!leftIsDir && rightIsDir) {
-            return (sortOrder() == Qt::DescendingOrder);
+            return (sortOrder() == Qt::DescendingOrder); // same here
         }
     }
 
-    if (left.column() == KDirModel::ModifiedTime) {
-        return dirModel->data(left, KDirModel::FileItemRole).value<KFileItem>().time(KFileItem::ModificationTime) <
-               dirModel->data(right, KDirModel::FileItemRole).value<KFileItem>().time(KFileItem::ModificationTime);
+    const KFileItem leftItem = dirModel->data(left, KDirModel::FileItemRole).value<KFileItem>();
+    const KFileItem rightItem = dirModel->data(right, KDirModel::FileItemRole).value<KFileItem>();
+    const int column = left.column();
+    int result = 0;
+
+    switch (column) {
+      case KDirModel::Name:
+            // fall through to the naturalCompare call
+            break;
+        case KDirModel::ModifiedTime: {
+            const KDateTime leftTime = leftItem.time(KFileItem::ModificationTime);
+            const KDateTime rightTime = rightItem.time(KFileItem::ModificationTime);
+            if (leftTime < rightTime)
+                result = -1;
+            else if (leftTime > rightTime)
+                result = +1;
+            break;
+            }
+        case KDirModel::Size: {
+            if (isDir(left, dirModel) && isDir(right, dirModel)) {
+                const int leftChildCount = dirModel->data(left, KDirModel::ChildCountRole).toInt();
+                const int rightChildCount = dirModel->data(right, KDirModel::ChildCountRole).toInt();
+                if (leftChildCount < rightChildCount)
+                    result = -1;
+                else if (leftChildCount > rightChildCount)
+                    result = +1;
+            } else {
+                const KIO::filesize_t leftSize = leftItem.size();
+                const KIO::filesize_t rightSize = rightItem.size();
+                if (leftSize < rightSize)
+                    result = -1;
+                else if (leftSize > rightSize)
+                    result = +1;
+            }
+            break;
+            }
+        case KDirModel::Type:
+            // add other sorting modes here
+            // KDirModel::data(index, Qt::DisplayRole) returns the data in index.column()
+            result = QString::compare(dirModel->data(left, Qt::DisplayRole).toString(),
+                                      dirModel->data(right, Qt::DisplayRole).toString());
+            break;
     }
 
-    const QString name1 = dirModel->data(left).toString();
-    const QString name2 = dirModel->data(right).toString();
+    if (result != 0)
+        return result < 0;
 
-    return KStringHandler::naturalCompare(name1, name2, Qt::CaseInsensitive) < 0;
+    // The following code is taken from dolphin/src/kfileitemmodel.cpp
+    // and ensures that the sorting order is always determined
+    // Copyright (C) 2011 by Peter Penz <peter.penz91@gmail.com>
+    result = KStringHandler::naturalCompare(leftItem.text(), rightItem.text(), Qt::CaseSensitive);
+
+    if (result != 0)
+        return result < 0;
+
+    result = KStringHandler::naturalCompare(leftItem.name(), rightItem.name(), Qt::CaseSensitive);
+
+    if (result != 0)
+        return result < 0;
+
+    return QString::compare(leftItem.url().url(), rightItem.url().url(), Qt::CaseSensitive);
 }
 
 ProxyModel::FilterMode ProxyModel::filterModeFromInt(int filterMode)
