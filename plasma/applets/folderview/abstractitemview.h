@@ -30,6 +30,7 @@
 #include <QBasicTimer>
 
 #include <plasma/widgets/scrollbar.h>
+#include <plasma/framesvg.h>
 
 
 class KDirModel;
@@ -118,6 +119,7 @@ protected slots:
     virtual void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint);
 
     virtual void finishedScrolling();
+    virtual void svgChanged();
 
 private slots:
     void scrollBarValueChanged(int value);
@@ -125,6 +127,7 @@ private slots:
     void scrollBarSliderReleased();
 
 protected:
+    Plasma::FrameSvg *m_itemFrame;
     KFileItemDelegate *m_delegate;
     QPointer<KDirModel> m_dirModel;
     QPointer<ProxyModel> m_model;

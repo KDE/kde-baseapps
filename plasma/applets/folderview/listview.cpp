@@ -42,7 +42,6 @@
 
 ListView::ListView(QGraphicsWidget *parent)
     : AbstractItemView(parent),
-      m_itemFrame(0),
       m_rowHeight(-1),
       m_numTextLines(2),
       m_dragInProgress(false),
@@ -51,11 +50,6 @@ ListView::ListView(QGraphicsWidget *parent)
     setAcceptHoverEvents(true);
     setAcceptDrops(true);
     setCacheMode(NoCache);
-
-    m_itemFrame = new Plasma::FrameSvg(this);
-    m_itemFrame->setImagePath("widgets/viewitem");
-    m_itemFrame->setCacheAllRenderedFrames(true);
-    m_itemFrame->setElementPrefix("normal");
 
     m_animator = new Animator(this);
 }
@@ -146,6 +140,12 @@ void ListView::layoutChanged()
 void ListView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
     markAreaDirty(visualRect(topLeft) | visualRect(bottomRight));
+}
+
+void ListView::svgChanged()
+{
+    m_rowHeight = -1;
+    updateSizeHint();
 }
 
 void ListView::updateScrollBar()

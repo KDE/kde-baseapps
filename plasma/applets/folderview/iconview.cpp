@@ -63,7 +63,6 @@
 
 IconView::IconView(QGraphicsWidget *parent)
     : AbstractItemView(parent),
-      m_itemFrame(0),
       m_columns(0),
       m_rows(0),
       m_validRows(0),
@@ -100,11 +99,6 @@ IconView::IconView(QGraphicsWidget *parent)
 
     m_toolTipWidget = new ToolTipWidget(this);
     m_toolTipWidget->hide();
-
-    m_itemFrame = new Plasma::FrameSvg(this);
-    m_itemFrame->setImagePath("widgets/viewitem");
-    m_itemFrame->setCacheAllRenderedFrames(true);
-    m_itemFrame->setElementPrefix("normal");
 
     m_animator = new Animator(this);
 
@@ -1582,6 +1576,16 @@ void IconView::checkIfFolderResult(const QModelIndex &index, bool isFolder)
     } else if (m_popupView) {
         m_popupView->delayedHide();
     }
+}
+
+void IconView::svgChanged()
+{
+    for (int i = 0; i < m_validRows; ++i) {
+        m_items[i].needSizeAdjust = true;
+    }
+
+    // this updates the grid size, then calls layoutItems() which in turn repaints the view
+    updateGridSize();
 }
 
 void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
