@@ -1095,6 +1095,8 @@ void FolderView::iconSettingsChanged(int group)
         m_listView->setIconSize(QSize(size, size));
         m_listView->markAreaDirty(m_listView->visibleArea());
         m_listView->update();
+
+        updateGeometry();
     }
 }
 
@@ -1196,7 +1198,7 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
                 setupIconView();
             }
             setAspectRatioMode(Plasma::IgnoreAspectRatio);
-        } else {
+        } else if (!m_iconWidget) {
             // Clean up the icon view
             delete m_label;
             delete m_iconView;
@@ -1243,8 +1245,12 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             layout->addItem(m_iconWidget);
 
             setLayout(layout);
+            int iconSize = IconSize(KIconLoader::Panel);
+            setMinimumSize(QSizeF(iconSize, iconSize));
             setAspectRatioMode(Plasma::ConstrainedSquare);
         }
+
+        update();
     }
 
     if (constraints & Plasma::ScreenConstraint) {
@@ -2029,11 +2035,25 @@ void FolderView::timerEvent(QTimerEvent *event)
 QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
     if (which == Qt::PreferredSize) {
-        if (!constraint.isEmpty()) {
-            return QSizeF(600, 400).boundedTo(constraint);
-        } else {
-            return QSizeF(600, 400);
+        QSizeF size;
+
+        switch (formFactor()) {
+          case Plasma::Planar:
+          case Plasma::MediaCenter:
+              if (!constraint.isEmpty()) {
+                  size = QSizeF(600, 400).boundedTo(constraint);
+              } else {
+                  size = QSizeF(600, 400);
+              }
+              break;
+          case Plasma::Horizontal:
+          case Plasma::Vertical:
+              const int iconSize = IconSize(KIconLoader::Panel);
+              size = QSizeF(iconSize, iconSize);
+              break;
         }
+
+        return size;
     }
 
     return Containment::sizeHint(which, constraint);
