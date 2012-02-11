@@ -1013,6 +1013,7 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
     // Draw the item background
     // ========================
     const bool selected = (option.state & QStyle::State_Selected);
+    const bool hovered = (option.state & QStyle::State_MouseOver);
     const qreal hoverProgress = m_animator->hoverProgress(index);
 
     QPixmap from(option.rect.size());
@@ -1027,7 +1028,7 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
         m_itemFrame->paintFrame(&p, QPoint());
     }
 
-    if (hoverProgress > 0.0) {
+    if (hovered && hoverProgress > 0.0) {
         QPainter p(&to);
         m_itemFrame->setElementPrefix(selected ? "selected+hover" : "hover");
         m_itemFrame->resizeFrame(option.rect.size());
