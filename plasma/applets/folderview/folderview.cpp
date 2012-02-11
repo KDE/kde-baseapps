@@ -518,6 +518,11 @@ void FolderView::configChanged()
         updateSortActionsState();
     }
 
+    const int flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
+    if (flow != m_flow) {
+        m_flow = static_cast<IconView::Flow>(flow);
+    }
+
     const int filterType = cg.readEntry("filter", m_filterType);
     if (filterType != m_filterType) {
         m_filterType = filterType;
