@@ -382,6 +382,7 @@ void FolderView::init()
     m_alignToGrid         = cg.readEntry("alignToGrid", false);
     m_clickToView         = cg.readEntry("clickForFolderPreviews", true);
     m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail" << "jpegthumbnail");
+    m_customIconSize      = cg.readEntry("customIconSize", 0);
     m_sortDirsFirst       = cg.readEntry("sortDirsFirst", true);
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
     m_sortOrder           = sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
