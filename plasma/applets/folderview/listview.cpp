@@ -92,7 +92,7 @@ void ListView::setTextLineCount(int count)
     if (count != m_numTextLines) {
         m_numTextLines = count;
         m_rowHeight = -1;
-        markAreaDirty(visibleArea());
+        updateSizeHint();
     }
 }
 
