@@ -213,6 +213,7 @@ void PopupView::init()
     m_iconView->setDrawShadows(m_parentView->drawShadows());
     m_iconView->setIconSize(m_parentView->iconSize());
     m_iconView->setGridSize(m_parentView->gridSize());
+    m_iconView->setTextLineCount(m_parentView->textLineCount());
     m_iconView->setWordWrap(m_parentView->wordWrap());
     m_iconView->setIconsMoveable(false);
     m_iconView->setClickToViewFolders(false);
