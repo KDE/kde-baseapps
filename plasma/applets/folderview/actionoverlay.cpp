@@ -311,6 +311,20 @@ void ActionOverlay::toggleShowActionButton(bool show, ActionIcon* button, unsign
     button->show();
   } else if (m_layout->itemAt(pos, 0) == button) {
     button->hide();
+#if QT_VERSION >= 0x040800
     m_layout->removeItem(button);
+#else
+    /* find the index of the item: yeah, this is ugly... on the other hand, this works in Qt 4.7,
+     * and if you have a look at the 4.8 source, this is exactly what it does. */
+    int index = -1;
+    for (int i = 0; i < m_layout->count(); ++i) {
+      if (m_layout->itemAt(i) == button) {
+        index = i;
+        break;
+      }
+    }
+    Q_ASSERT(index >= 0); // the button *is* part of the layout, so we have to find it
+    m_layout->removeAt(index);
+#endif
   }
 }
