@@ -192,11 +192,8 @@ void PopupView::init()
     m_model = new ProxyModel(this);
     m_model->setSourceModel(m_dirModel);
     m_model->setSortLocaleAware(m_parentViewModel->isSortLocaleAware());
-    m_model->setFilterCaseSensitivity(m_parentViewModel->filterCaseSensitivity());
     m_model->setParseDesktopFiles(m_parentViewModel->parseDesktopFiles());
-    m_model->setFilterMode(m_parentViewModel->filterMode());
-    m_model->setMimeTypeFilterList(m_parentViewModel->mimeTypeFilterList());
-    m_model->setFileNameFilter(m_parentViewModel->fileNameFilter());
+    m_model->setFilterMode(m_parentViewModel->ProxyModel::NoFilter);
     m_model->setSortDirectoriesFirst(m_parentViewModel->sortDirectoriesFirst());
     m_model->setDynamicSortFilter(m_parentViewModel->dynamicSortFilter());
     m_model->sort(m_parentViewModel->sortColumn(), m_parentViewModel->sortOrder());
