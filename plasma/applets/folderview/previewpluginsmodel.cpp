@@ -32,6 +32,7 @@ PreviewPluginsModel::PreviewPluginsModel(QObject *parent)
     : QAbstractListModel(parent)
 {
     plugins = KServiceTypeTrader::self()->query("ThumbCreator");
+    checkedRows = QVector<bool>(plugins.size(), false);
 
     // Sort the list alphabetially
     qStableSort(plugins.begin(), plugins.end(), lessThan);
@@ -59,7 +60,7 @@ QVariant PreviewPluginsModel::data(const QModelIndex &index, int role) const
         return plugins.at(index.row())->name();
 
     case Qt::CheckStateRole:
-        return checkedRows.contains(index.row()) ? Qt::Checked : Qt::Unchecked;
+        return checkedRows.at(index.row()) ? Qt::Checked : Qt::Unchecked;
     }
 
     return QVariant();
@@ -73,9 +74,9 @@ bool PreviewPluginsModel::setData(const QModelIndex &index, const QVariant &valu
 
     const Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
     if (state == Qt::Checked) {
-        checkedRows.append(index.row());
+        checkedRows[(index.row())] = true;
     } else {
-        checkedRows.removeAll(index.row());
+        checkedRows[(index.row())] = false;
     }
 
     emit dataChanged(index, index);
@@ -97,7 +98,7 @@ void PreviewPluginsModel::setCheckedPlugins(const QStringList &list)
     foreach (const QString &name, list) {
         const int row = indexOfPlugin(name);
         if (row != -1) {
-            checkedRows.append(row);
+            checkedRows[row] = true;
             emit dataChanged(index(row, 0), index(row, 0));
         }
     }
@@ -106,8 +107,10 @@ void PreviewPluginsModel::setCheckedPlugins(const QStringList &list)
 QStringList PreviewPluginsModel::checkedPlugins() const
 {
     QStringList list;
-    foreach (int row, checkedRows) {
-        list.append(plugins.at(row)->desktopEntryName());
+    for (int i =0; i < checkedRows.size(); ++i) {
+        if (checkedRows.at(i)) {
+            list.append(plugins.at(i)->desktopEntryName());
+        }
     }
     return list;
 }
