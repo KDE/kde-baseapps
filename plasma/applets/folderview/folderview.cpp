@@ -470,7 +470,6 @@ void FolderView::configChanged()
         needReload = true;
     }
 
-    m_showPreviews = cg.readEntry("showPreviews", m_showPreviews);
     m_drawShadows  = cg.readEntry("drawShadows", m_drawShadows);
     m_clickToView  = cg.readEntry("clickForFolderPreviews", m_clickToView);
     m_numTextLines = cg.readEntry("numTextLines", m_numTextLines);
@@ -489,6 +488,21 @@ void FolderView::configChanged()
     if (color != m_textColor) {
         m_textColor = color;
         needReload = true;
+    }
+
+    const bool showPreviews = cg.readEntry("showPreviews", m_showPreviews);
+    if (showPreviews != m_showPreviews) {
+        m_showPreviews = showPreviews;
+
+        //As disabling the previews will force a rearrangement, we need to manually
+        //save and restore the icons positions
+
+        //Enable/disable the previews
+        m_previewGenerator->setPreviewShown(m_showPreviews);
+        if (m_iconView)
+            m_iconView->update(m_iconView->visibleArea());
+        if (m_listView)
+            m_listView->update(m_listView->visibleArea());
     }
 
     m_previewPlugins = cg.readEntry("previewPlugins", m_previewPlugins);
@@ -806,25 +820,7 @@ void FolderView::configAccepted()
 
     cg.writeEntry("drawShadows", uiDisplay.drawShadows->isChecked());
 
-    if (m_showPreviews != uiDisplay.showPreviews->isChecked()) {
-        cg.writeEntry("showPreviews", uiDisplay.showPreviews->isChecked());
-        //As disabling the previews will force a rearrangement, we need to manually
-        //save and restore the icons positions
-
-        QStringList iconPositionsData;
-        if (!m_showPreviews && m_iconView) {
-            //Save the icon positions
-            iconPositionsData = m_iconView->iconPositionsData();
-        }
-
-        //Enable/disable the previews
-        m_previewGenerator->setPreviewShown(m_showPreviews);
-
-        if (!m_showPreviews && m_iconView) {
-            //Restore the icon positions
-            m_iconView->setIconPositionsData(iconPositionsData);
-        }
-    }
+    cg.writeEntry("showPreviews", uiDisplay.showPreviews->isChecked());
 
     if (m_previewGenerator && m_previewPlugins != m_previewGenerator->enabledPlugins()) {
         cg.writeEntry("previewPlugins", m_previewPlugins);
