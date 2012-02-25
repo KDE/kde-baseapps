@@ -22,7 +22,7 @@
 
 #include <QAbstractListModel>
 #include <KService>
-#include <QList>
+#include <QVector>
 
 class QStringList;
 
@@ -43,7 +43,7 @@ private:
 
 private:
     KService::List plugins;
-    QList<int> checkedRows;
+    QVector<bool> checkedRows;
 };
 
 #endif
