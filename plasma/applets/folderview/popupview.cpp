@@ -77,6 +77,7 @@ PopupView::PopupView(const QModelIndex &index, const QPoint &pos,
       m_itemActions(0),
       m_showingMenu(false),
       m_showPreview(showPreview),
+      m_delayedClose(false),
       m_previewPlugins(previewPlugins)
 {
     setAttribute(Qt::WA_TranslucentBackground);
@@ -363,6 +364,8 @@ void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
                                                    KBookmarkManager::userBookmarksManager(),
                                                    actionGroups);
 
+    connect(contextMenu->fileItemActions(), SIGNAL(openWithDialogAboutToBeShown()), this, SLOT(openWithDialogAboutToShow()));
+
     m_showingMenu = true;
     contextMenu->exec(screenPos);
     delete contextMenu;
@@ -370,6 +373,11 @@ void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
 
     if (pasteTo) {
         pasteTo->setEnabled(false);
+    }
+
+    if (m_delayedClose) {
+        m_delayedClose = false;
+        closeThisAndParentPopup();
     }
 }
 
@@ -447,6 +455,12 @@ void PopupView::activated(const QModelIndex &index)
     item.run();
 
     closeThisAndParentPopup();
+}
+
+void PopupView::openWithDialogAboutToShow()
+{
+    m_delayedClose = true;
+    hideThisAndParentPopup();
 }
 
 void PopupView::setBusy(bool busy)
@@ -592,6 +606,12 @@ void PopupView::closeThisAndParentPopup() {
     hide();
     deleteLater();
     callOnParent("closeThisAndParentPopup");
+}
+
+void PopupView::hideThisAndParentPopup()
+{
+    hide();
+    callOnParent("hideThisAndParentPopup");
 }
 
 void PopupView::cancelHideTimer()
