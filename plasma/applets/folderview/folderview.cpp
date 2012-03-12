@@ -1241,18 +1241,17 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             m_dialog = new Dialog;
             m_dialog->setGraphicsWidget(m_listView); // Ownership is transferred to the scene in the dialog
 
-            QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+            QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(this);
             layout->setContentsMargins(0, 0, 0, 0);
             layout->setSpacing(0);
             layout->addItem(m_iconWidget);
 
             setLayout(layout);
             int iconSize = IconSize(KIconLoader::Panel);
-            setMinimumSize(QSizeF(iconSize, iconSize));
+            setPreferredSize(QSizeF(iconSize, iconSize));
             setAspectRatioMode(Plasma::ConstrainedSquare);
+            setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         }
-
-        update();
     }
 
     if (constraints & Plasma::ScreenConstraint) {
