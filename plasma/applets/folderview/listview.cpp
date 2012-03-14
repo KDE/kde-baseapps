@@ -69,7 +69,7 @@ void ListView::setIconSize(const QSize &size)
     if (size != m_iconSize) {
         m_iconSize = size;
         m_rowHeight = -1;
-        markAreaDirty(visibleArea());
+	updateSizeHint();
     }
 }
 
@@ -78,7 +78,7 @@ void ListView::setWordWrap(bool on)
     if (m_wordWrap != on) {
         m_wordWrap = on;
         m_rowHeight = -1;
-        markAreaDirty(visibleArea());
+	updateSizeHint();
     }
 }
 
