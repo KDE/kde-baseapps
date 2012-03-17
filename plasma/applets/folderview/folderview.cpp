@@ -321,8 +321,9 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     m_delegate = new KFileItemDelegate(this);
     m_selectionModel = new QItemSelectionModel(m_model, this);
 
+    // we are not calling setUrl here since m_dirLister does not exist
     if (args.count() > 0) {
-        setUrl(KUrl(args.value(0).toString()));
+        m_url = KUrl(args.value(0).toString());
     }
 
     //resize(600, 400);
@@ -391,7 +392,8 @@ void FolderView::init()
 
     if (m_url.isValid()) {
         // this means that we were passed a URL via the args list in the constructor
-        // setUrl has already been called, we just need to save it in the config file
+        // we need to set it and save it in the config file
+        setUrl(m_url);
         KConfigGroup cg = config();
         cg.writeEntry("url", m_url);
     } else {
