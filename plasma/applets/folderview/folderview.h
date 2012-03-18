@@ -98,6 +98,10 @@ public:
 
     void configChanged();
 
+public slots:
+    // Move to Plasma::Containment in 4.9
+    void addUrls(const KUrl::List& urls);
+
 protected:
     void createConfigurationInterface(KConfigDialog *parent);
     QList<QAction*> contextualActions();

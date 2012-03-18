@@ -614,6 +614,16 @@ void FolderView::saveState(KConfigGroup &config) const
     saveIconPositions();
 }
 
+void FolderView::addUrls(const KUrl::List& urls)
+{
+    KIO::CopyJob *job;
+
+    foreach (KUrl url, urls) {
+        job = KIO::link(url.url(), m_url);
+        KIO::FileUndoManager::self()->recordCopyJob(job);
+    }
+}
+
 void FolderView::createConfigurationInterface(KConfigDialog *parent)
 {
     QWidget *widgetFilter = new QWidget;
