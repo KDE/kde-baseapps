@@ -603,7 +603,7 @@ FolderView::~FolderView()
 
 void FolderView::saveState(KConfigGroup &config) const
 {
-    Q_UNUSED(config)
+    Containment::saveState(config);
     saveIconPositions();
 }
 
