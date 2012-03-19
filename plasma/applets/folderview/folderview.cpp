@@ -1285,11 +1285,9 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
     if (constraints & Plasma::ScreenConstraint) {
         Plasma::Corona *c = corona();
         disconnect(c, SIGNAL(availableScreenRegionChanged()), this, SLOT(updateScreenRegion()));
-        if (isContainment()) {
-            if (screen() >= 0) {
-                updateScreenRegion();
-                connect(c, SIGNAL(availableScreenRegionChanged()), this, SLOT(updateScreenRegion()));
-            }
+        if (isContainment() && screen() > -1) {
+            updateScreenRegion();
+            connect(c, SIGNAL(availableScreenRegionChanged()), this, SLOT(updateScreenRegion()));
         }
     }
 }
