@@ -349,7 +349,7 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
         m_url = KUrl(args.value(0).toString());
     }
 
-    //resize(600, 400);
+    resize(600, 400);
 
     // As we use some part of konqueror libkonq must be added to have translations
     KGlobal::locale()->insertCatalog("libkonq");
@@ -1225,8 +1225,6 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
                 // Give the applet a sane size
                 setupIconView();
             }
-
-            resize(600, 400);
             setAspectRatioMode(Plasma::IgnoreAspectRatio);
         } else if (!m_iconWidget) {
             // Clean up the icon view
