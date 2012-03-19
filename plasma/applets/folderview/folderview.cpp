@@ -1184,11 +1184,13 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
 
         if (formFactor() == Plasma::Planar || formFactor() == Plasma::MediaCenter) {
             // Clean up the icon widget
-            if (m_iconWidget) {
+            const bool wasIconified = m_iconWidget != 0;
+            if (wasIconified) {
                 disconnect(m_dirModel->dirLister(), SIGNAL(newItems(KFileItemList)), this, SLOT(updateIconWidget()));
                 disconnect(m_dirModel->dirLister(), SIGNAL(itemsDeleted(KFileItemList)), this, SLOT(updateIconWidget()));
                 disconnect(m_dirModel->dirLister(), SIGNAL(clear()), this, SLOT(updateIconWidget()));
             }
+
             delete m_iconWidget;
             delete m_dialog;
             m_iconWidget = 0;
@@ -1198,6 +1200,14 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             if (!isContainment()) {
                 // Give the applet a sane size
                 setupIconView();
+            }
+
+            if (wasIconified) {
+                // if we're coming out of an iconified state, let's reset to a reasonable sane state
+                // NOTE: usually one NEVER resizes outside of the constructor as that overrides the
+                // user settings, but in this case we are changing applet state completely and there
+                // is no user state for size in that case for folderview (by defintion)
+                resize(600, 400);
             }
             setAspectRatioMode(Plasma::IgnoreAspectRatio);
         } else if (!m_iconWidget) {
