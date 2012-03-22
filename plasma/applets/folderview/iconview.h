@@ -216,6 +216,7 @@ private:
     void selectIconsInArea(const QRect &area, const QPoint &finalPos);            //Selects all icons in the specified rectangular area
     void selectIconRange(const QModelIndex &begin, const QModelIndex &end);
     void repaintSelectedIcons();
+    QRect selectedItemsBoundingRect() const;
 
 private:
     QVector<ViewItem> m_items;

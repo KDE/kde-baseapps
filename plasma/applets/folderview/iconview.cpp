@@ -1803,13 +1803,19 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         const QModelIndex index = indexAt(pos);
         if (index.isValid()) {
             if (!m_selectionModel->isSelected(index)) {
+                // A previously unselected icon clicked, clear and repaint selection
+                // then select and repaint the icon at index
+                const QRect dirtyRect = selectedItemsBoundingRect();
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                markAreaDirty(visibleArea());
+                markAreaDirty(dirtyRect);
+                markAreaDirty(visualRect(index));
             }
         } else if (m_selectionModel->hasSelection()) {
+            // Empty space clicked, clear and repaint selection
+            const QRect dirtyRect = selectedItemsBoundingRect();
             m_selectionModel->clearSelection();
-            markAreaDirty(visibleArea());
+            markAreaDirty(dirtyRect);
         }
         event->ignore(); // Causes contextMenuEvent() to get called
         return;
@@ -1820,7 +1826,7 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         // If an icon was pressed
         if (index.isValid()) {
-            //if ctrl is held
+            // If ctrl is held
             if (event->modifiers() & Qt::ControlModifier) {
                 m_selectionModel->select(index, QItemSelectionModel::Toggle);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
@@ -1834,10 +1840,11 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     selectIconRange(current, index);
                 }
             } else if (!m_selectionModel->isSelected(index)) {
-                //if not already selected
+                // If not already selected
+                const QRect dirtyRect = selectedItemsBoundingRect();
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                markAreaDirty(visibleArea());
+                markAreaDirty(dirtyRect);
             } else {
                 markAreaDirty(visualRect(index));
             }
@@ -1872,8 +1879,9 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
         if (m_selectionModel->hasSelection()) {
             if (!(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))) {
+                const QRect dirtyRect = selectedItemsBoundingRect();
                 m_selectionModel->clearSelection();
-                markAreaDirty(visibleArea());
+                markAreaDirty(dirtyRect);
             }
         }
     }
@@ -1904,12 +1912,11 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                     // we ignore double clicks when in single click mode
                     if (!m_doubleClick) {
                         emit activated(index);
-                        m_selectionModel->clearSelection();
-                        markAreaDirty(visibleArea());
+                        markAreaDirty(visualRect(index));
                     }
                 } else {
                     // since icon shrinking is delayed, we always repaint after mouse release
-                    markAreaDirty(visibleArea());
+                    markAreaDirty(visualRect(index));
                 }
 
                 // We don't clear and update the selection and current index in
@@ -1917,9 +1924,10 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 // so we need to do that here.
                 if (m_selectionModel->currentIndex() != index ||
                     m_selectionModel->selectedIndexes().count() > 1) {
+                    const QRect dirtyRect = selectedItemsBoundingRect();
                     m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                     m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                    markAreaDirty(visibleArea());
+                    markAreaDirty(dirtyRect);
                 }
             }
         }
@@ -1956,8 +1964,10 @@ void IconView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     // Activate the item
     emit activated(index);
 
-    m_selectionModel->clearSelection();
-    markAreaDirty(visibleArea());
+    // A double-click implies a single-click, which means that the selection will
+    // be reset and repainted on mousePressEvent
+    // so we only need to repant the icon itself to get the "sunken" effect
+    markAreaDirty(visualRect(index));
 }
 
 void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -2595,13 +2605,18 @@ void IconView::selectIconRange(const QModelIndex &begin, const QModelIndex &end)
     repaintSelectedIcons();
 }
 
+QRect IconView::selectedItemsBoundingRect() const
+{
+    QRect rect;
+    foreach (const QModelIndex &index, m_selectionModel->selectedIndexes()) {
+            rect |= visualRect(index);
+    }
+    return rect;
+}
+
 void IconView::repaintSelectedIcons()
 {
-    QRect dirtyRect;
-    foreach (const QModelIndex &index, m_selectionModel->selectedIndexes()) {
-            dirtyRect |= visualRect(index);
-    }
-    markAreaDirty(dirtyRect);
+    markAreaDirty(selectedItemsBoundingRect());
 }
 
 void IconView::popupCloseRequested()
