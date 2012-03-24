@@ -99,6 +99,16 @@ public:
     void setCustomLayout(bool value);
     bool customLayout() const;
 
+    /**
+    * The icon position data is encoded in a QStringList as follows:
+    *
+    * 1 string for version number
+    * 1 string for icon count
+    * 3 strings for every icon:
+    *   1 string for icon name
+    *   1 string for icon x position (relative to contentsRect().left())
+    *   1 string for icon y position (relative to contentsRect().top())
+    */
     void setIconPositionsData(const QStringList &data);
     QStringList iconPositionsData() const;
 

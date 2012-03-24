@@ -261,9 +261,10 @@ bool IconView::customLayout() const
 
 void IconView::setIconPositionsData(const QStringList &data)
 {
-    // Sanity checks
-    if (data.size() < 5 || data.at(0).toInt() != 1 || ((data.size() - 2) % 3) ||
-        data.at(1).toInt() != ((data.size() - 2) / 3)) {
+    if (data.size() < 5 ||                               // is there data stored for at least 1 icon?
+        data.at(0).toInt() != 1 ||                       // is format version number 1?
+        ((data.size() - 2) % 3) ||                       // are there 3 strings stored for every icon?
+        data.at(1).toInt() != ((data.size() - 2) / 3)) { // is the specified number of icons equal to the stored number of icon entries?
         return;
     }
 
