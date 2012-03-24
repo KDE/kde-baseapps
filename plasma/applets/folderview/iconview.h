@@ -200,6 +200,7 @@ private slots:
     void closeEditor(QGraphicsWidget *editor, QAbstractItemDelegate::EndEditHint hint);
     void checkIfFolderResult(const QModelIndex &index, bool isFolder);
     void svgChanged();
+    void viewScrolled();
 
 private:
     void paintMessage(QPainter *painter, const QRect &rect, const QString &message,
@@ -219,6 +220,7 @@ private:
     void updateScrollBarGeometry();
     void updateEditorGeometry();
     void updateToolTip();
+    void updateRubberband();
     void createDropActions(const KUrl::List &urls, QActionGroup *actions);
     QStyleOptionViewItemV4 viewOptions() const;
     void selectIcon(QModelIndex index);
@@ -256,6 +258,7 @@ private:
     QPersistentModelIndex m_editorIndex;
     QRect m_rubberBand;
     QPointF m_buttonDownPos;
+    QPointF m_mouseMovedPos;
     QTime m_pressTime;
     Flow m_flow;
     QString m_errorMessage;
