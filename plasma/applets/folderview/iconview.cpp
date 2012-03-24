@@ -96,6 +96,7 @@ IconView::IconView(QGraphicsWidget *parent)
 
     m_scrollBar->hide();
     connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(repositionWidgetsManually()));
+    connect(m_scrollBar, SIGNAL(valueChanged(int)), SLOT(viewScrolled()));
 
     m_toolTipWidget = new ToolTipWidget(this);
     m_toolTipWidget->hide();
@@ -935,7 +936,7 @@ void IconView::finishedScrolling()
 {
     // Find the bounding rect of the items
     QRect boundingRect = itemsBoundingRect();
-    
+
     if (boundingRect.isValid()) {
         // Add the margin
         boundingRect.adjust(-10, -10, 10, 10);
@@ -1558,6 +1559,43 @@ void IconView::updateToolTip()
     }
 }
 
+void IconView::updateRubberband()
+{
+    const int scrollBarOffset = m_scrollBar->isVisible() ? m_scrollBar->geometry().width() : 0;
+    const QRect realContentsRect = itemsBoundingRect().adjusted(-10, -10, 10, 10) | contentsRect().toAlignedRect();
+    const QRect viewportRect = layoutDirection() == Qt::LeftToRight ?
+                   realContentsRect.adjusted(0, 0, int(-scrollBarOffset), 0) :
+                   realContentsRect.adjusted(int(scrollBarOffset), 0, 0, 0);
+    const QPointF pos = mapToViewport(m_mouseMovedPos);
+    const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
+    const QRect r = QRectF(rubberBand & viewportRect).toAlignedRect();
+
+    const QModelIndex prevHoveredIndex = m_hoveredIndex;
+
+    if (r != m_rubberBand) {
+        const QPoint pt = pos.toPoint();
+        QRectF dirtyRect = m_rubberBand | r;
+        m_rubberBand = r;
+
+        dirtyRect |= visualRect(m_hoveredIndex);
+        m_hoveredIndex = QModelIndex();
+
+        repaintSelectedIcons();
+        selectIconsInArea(m_rubberBand, pt);
+
+        markAreaDirty(dirtyRect);
+    }
+
+    if (prevHoveredIndex != m_hoveredIndex) {
+        if (prevHoveredIndex.isValid()) {
+            emit left(prevHoveredIndex);
+        }
+        if (m_hoveredIndex.isValid()) {
+            emit entered(m_hoveredIndex);
+        }
+    }
+}
+
 void IconView::checkIfFolderResult(const QModelIndex &index, bool isFolder)
 {
     m_toolTipShowTimer.stop();
@@ -1588,6 +1626,13 @@ void IconView::svgChanged()
 
     // this updates the grid size, then calls layoutItems() which in turn repaints the view
     updateGridSize();
+}
+
+void IconView::viewScrolled()
+{
+    if (m_rubberBand.isValid()) {
+        updateRubberband();
+    }
 }
 
 void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -1898,6 +1943,7 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         if (m_rubberBand.isValid()) {
             markAreaDirty(m_rubberBand);
             m_rubberBand = QRect();
+	    stopAutoScrolling();
             return;
         }
 
@@ -1987,38 +2033,21 @@ void IconView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
 
-    const int scrollBarOffset = m_scrollBar->isVisible() ? m_scrollBar->geometry().width() : 0;
-    const QRect viewportRect = layoutDirection() == Qt::LeftToRight ?
-                   visibleArea().adjusted(0, 0, int(-scrollBarOffset), 0) :
-                   visibleArea().adjusted(int(scrollBarOffset), 0, 0, 0);
-    const QPointF pos = mapToViewport(event->pos());
-    const QRectF rubberBand = QRectF(m_buttonDownPos, pos).normalized();
-    const QRect r = QRectF(rubberBand & viewportRect).toAlignedRect();
+    m_mouseMovedPos = event->pos();
 
-    const QModelIndex prevHoveredIndex = m_hoveredIndex;
-
-    if (r != m_rubberBand) {
-        const QPoint pt = pos.toPoint();
-        QRectF dirtyRect = m_rubberBand | r;
-        m_rubberBand = r;
-
-        dirtyRect |= visualRect(m_hoveredIndex);
-        m_hoveredIndex = QModelIndex();
-
-        repaintSelectedIcons();
-        selectIconsInArea(m_rubberBand, pt);
-
-        markAreaDirty(dirtyRect);
+    const int maxSpeed = 500; // Pixels per second
+    const int distance = gridSize().height() * .75;
+    if (event->pos().y() < contentsRect().y() + distance) {
+        int speed = maxSpeed / distance * (distance - event->pos().y() - contentsRect().y());
+        autoScroll(ScrollUp, speed);
+    } else if (event->pos().y() > contentsRect().bottom() - distance) {
+        int speed = maxSpeed / distance * (event->pos().y() - contentsRect().bottom() + distance);
+        autoScroll(ScrollDown, speed);
+    } else {
+        stopAutoScrolling();
     }
 
-    if (prevHoveredIndex != m_hoveredIndex) {
-        if (prevHoveredIndex.isValid()) {
-            emit left(prevHoveredIndex);
-        }
-        if (m_hoveredIndex.isValid()) {
-            emit entered(m_hoveredIndex);
-        }
-    }
+    updateRubberband();
 }
 
 void IconView::wheelEvent(QGraphicsSceneWheelEvent *event)
@@ -2032,6 +2061,7 @@ void IconView::wheelEvent(QGraphicsSceneWheelEvent *event)
         return;
     }
 
+    stopAutoScrolling();
     int pixels = 64 * event->delta() / 120;
     smoothScroll(0, -pixels);
 }

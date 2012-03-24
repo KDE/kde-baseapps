@@ -548,6 +548,7 @@ void AbstractItemView::autoScroll(ScrollDirection direction, int pixelsPerSecond
 void AbstractItemView::stopAutoScrolling()
 {
     m_autoScrollSetSpeed = 0;
+    m_autoScrollTimer.stop();
 }
 
 void AbstractItemView::scrollBarValueChanged(int value)
@@ -566,11 +567,13 @@ void AbstractItemView::scrollBarActionTriggered(int action)
     case QAbstractSlider::SliderSingleStepSub:
     case QAbstractSlider::SliderPageStepAdd:
     case QAbstractSlider::SliderPageStepSub:
+        stopAutoScrolling();
         smoothScroll(0, m_scrollBar->nativeWidget()->sliderPosition() - m_scrollBar->value());
         break;
 
     case QAbstractSlider::SliderToMinimum:
     case QAbstractSlider::SliderToMaximum:
+        stopAutoScrolling();
         // Use a delayed call since the value won't propagate until after this function returns
         QMetaObject::invokeMethod(this, "finishedScrolling", Qt::QueuedConnection);
         break;
