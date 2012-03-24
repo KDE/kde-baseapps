@@ -518,8 +518,15 @@ void FolderView::configChanged()
         preserveIconPositions = true;
     }
 
-    m_sortDirsFirst = cg.readEntry("sortDirsFirst", m_sortDirsFirst);
-    toggleDirectoriesFirst(m_sortDirsFirst);
+    const bool sortDirsFirst = cg.readEntry("sortDirsFirst", m_sortDirsFirst);
+    if (sortDirsFirst != m_sortDirsFirst) {
+        m_sortDirsFirst = sortDirsFirst;
+
+        m_model->setSortDirectoriesFirst(m_sortDirsFirst);
+        if (m_sortColumn != -1) {
+            m_model->invalidate();
+        }
+    }
 
     const int sortColumn = cg.readEntry("sortColumn", m_sortColumn);
     if (m_sortColumn != sortColumn) {
@@ -1753,11 +1760,12 @@ void FolderView::toggleDirectoriesFirst(bool enable)
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
     if (m_sortColumn != -1) {
         m_model->invalidate();
-        m_delayedSaveTimer.start(5000, this);
     }
 
     config().writeEntry("sortDirsFirst", m_sortDirsFirst);
     emit configNeedsSaving();
+
+    m_delayedSaveTimer.start(5000, this);
 }
 
 void FolderView::sortingChanged(QAction *action)
