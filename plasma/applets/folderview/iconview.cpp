@@ -1891,6 +1891,7 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
                 m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
                 markAreaDirty(dirtyRect);
+                markAreaDirty(visualRect(index));
             } else {
                 markAreaDirty(visualRect(index));
             }
