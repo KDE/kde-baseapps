@@ -304,6 +304,11 @@ bool ActionOverlay::showSelectionButton() const
   return m_showSelectionButton;
 }
 
+QSizeF ActionOverlay::iconSize() const
+{
+    return m_openButton->geometry().size();
+}
+
 void ActionOverlay::toggleShowActionButton(bool show, ActionIcon* button, unsigned int pos)
 {
   if (show && m_layout->itemAt(pos, 0) != button) {

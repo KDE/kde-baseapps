@@ -139,6 +139,8 @@ public:
     void setShowSelectionMarker(bool show);
     bool showSelectionMarker() const;
 
+    bool overlayEnabled() const;
+
 signals:
     void indexesMoved(const QModelIndexList &indexes);
     void popupViewClosed();
@@ -221,6 +223,7 @@ private:
     void updateEditorGeometry();
     void updateToolTip();
     void updateRubberband();
+    void updateActionButtons();
     void createDropActions(const KUrl::List &urls, QActionGroup *actions);
     QStyleOptionViewItemV4 viewOptions() const;
     void selectIcon(QModelIndex index);
