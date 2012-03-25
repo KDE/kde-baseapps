@@ -1885,22 +1885,20 @@ void IconView::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 else {
                     selectIconRange(current, index);
                 }
-            } else if (!m_selectionModel->isSelected(index)) {
-                // If not already selected
-                const QRect dirtyRect = selectedItemsBoundingRect();
-                m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
-                m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                markAreaDirty(dirtyRect);
-                markAreaDirty(visualRect(index));
             } else {
+                if (!m_selectionModel->isSelected(index)) {
+                    // If not already selected
+                    const QRect dirtyRect = selectedItemsBoundingRect();
+                    m_selectionModel->select(index, QItemSelectionModel::ClearAndSelect);
+                    m_selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+                    markAreaDirty(dirtyRect);
+                }
+                m_drawIconShrinked = KGlobalSettings::singleClick();
                 markAreaDirty(visualRect(index));
             }
 
             m_pressedIndex = index;
             m_buttonDownPos = pos;
-            if (KGlobalSettings::singleClick()) {
-              m_drawIconShrinked = true;
-            }
             return;
         }
 
@@ -1944,7 +1942,7 @@ void IconView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         if (m_rubberBand.isValid()) {
             markAreaDirty(m_rubberBand);
             m_rubberBand = QRect();
-	    stopAutoScrolling();
+            stopAutoScrolling();
             return;
         }
 
