@@ -672,15 +672,15 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     // The label is not shown when the applet is acting as a containment,
     // so don't confuse the user by making it editable.
     if (isContainment()) {
-        uiDisplay.lblCustomLabel->hide();
-        uiDisplay.labelEdit->hide();
+        uiDisplay.titleLabel->hide();
+        uiDisplay.titleEdit->hide();
         uiDisplay.headerTitle->hide();
     }
 
     KLineEdit *ledit = new KLineEdit(widgetDisplay);
     ledit->setClearButtonShown(false);
     ledit->setClickMessage(i18n("Title"));
-    uiDisplay.labelEdit->setLineEdit(ledit);
+    uiDisplay.titleEdit->setLineEdit(ledit);
 
     QString configTitleText = m_customLabel;
     if (m_customLabel.isEmpty() || m_customLabel == "___EMPTY___") {
@@ -690,16 +690,16 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     } else if (m_customLabel == "___FULL___") {
         configTitleText = i18n("Full path");
     } else {
-        uiDisplay.labelEdit->addItem(m_customLabel);
+        uiDisplay.titleEdit->addItem(m_customLabel);
     }
 
-    uiDisplay.labelEdit->addItem(i18n("None"));
-    uiDisplay.labelEdit->addItem(i18n("Default"));
-    uiDisplay.labelEdit->addItem(i18n("Full path"));
-    uiDisplay.labelEdit->setCurrentItem(configTitleText);
-    uiDisplay.labelEdit->completionBox()->setActivateOnSelect(true);
-    uiDisplay.labelEdit->setCompletionMode(KGlobalSettings::CompletionPopupAuto);
-    connect(uiDisplay.labelEdit->lineEdit(), SIGNAL(editingFinished()), this, SLOT(setTitleText()));
+    uiDisplay.titleEdit->addItem(i18n("None"));
+    uiDisplay.titleEdit->addItem(i18n("Default"));
+    uiDisplay.titleEdit->addItem(i18n("Full path"));
+    uiDisplay.titleEdit->setCurrentItem(configTitleText);
+    uiDisplay.titleEdit->completionBox()->setActivateOnSelect(true);
+    uiDisplay.titleEdit->setCompletionMode(KGlobalSettings::CompletionPopupAuto);
+    connect(uiDisplay.titleEdit->lineEdit(), SIGNAL(editingFinished()), this, SLOT(setTitleText()));
 
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
     uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
@@ -721,7 +721,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), IconView::RightToLeft);
 
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
-    uiDisplay.setClicktoView->setChecked(m_clickToView);
+    uiDisplay.clickToView->setChecked(m_clickToView);
     uiDisplay.lockInPlace->setChecked(m_iconsLocked);
     uiDisplay.drawShadows->setChecked(m_drawShadows);
     uiDisplay.showPreviews->setChecked(m_showPreviews);
@@ -784,14 +784,14 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         }
     }
 
-    connect(uiDisplay.labelEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.titleEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
     connect(uiDisplay.flowCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sizeSlider, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.lockInPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.alignToGrid, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
-    connect(uiDisplay.setClicktoView, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.clickToView, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.numLinesEdit, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.colorButton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
     connect(uiDisplay.drawShadows, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
@@ -857,7 +857,7 @@ void FolderView::configAccepted()
     cg.writeEntry("flow", flow);
 
     cg.writeEntry("alignToGrid", uiDisplay.alignToGrid->isChecked());
-    cg.writeEntry("clickForFolderPreviews", uiDisplay.setClicktoView->isChecked());
+    cg.writeEntry("clickForFolderPreviews", uiDisplay.clickToView->isChecked());
     cg.writeEntry("iconsLocked", uiDisplay.lockInPlace->isChecked());
 
     cg.writeEntry("blankLabel" , m_blankLabel);
@@ -2081,7 +2081,7 @@ QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 
 void FolderView::setTitleText()
 {
-    QString text = uiDisplay.labelEdit->currentText();
+    QString text = uiDisplay.titleEdit->currentText();
     if (text == i18n("None") || text.isEmpty()) {
         m_customLabel.clear();
         m_blankLabel = true;

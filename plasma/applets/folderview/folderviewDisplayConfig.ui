@@ -47,7 +47,7 @@
     </spacer>
    </item>
    <item row="1" column="1">
-    <widget class="QLabel" name="lblCustomLabel">
+    <widget class="QLabel" name="titleLabel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -63,7 +63,7 @@
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="QLabel" name="label_7">
+    <widget class="QLabel" name="iconsTitle">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -118,7 +118,7 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="sortLabel">
      <property name="text">
       <string>Sorting:</string>
      </property>
@@ -151,7 +151,7 @@
     </spacer>
    </item>
    <item row="5" column="1">
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="sizeSliderLabel">
      <property name="text">
       <string>Size:</string>
      </property>
@@ -207,7 +207,7 @@
     </layout>
    </item>
    <item row="6" column="1">
-    <widget class="QLabel" name="label_8">
+    <widget class="QLabel" name="previewsAdvancedLabel">
      <property name="text">
       <string>Previews:</string>
      </property>
@@ -254,7 +254,7 @@
     </layout>
    </item>
    <item row="7" column="1">
-    <widget class="QLabel" name="label_11">
+    <widget class="QLabel" name="lockInPlaceLabel">
      <property name="text">
       <string>Lock in place:</string>
      </property>
@@ -276,7 +276,7 @@ This option is useful if you want to avoid accidentally moving the icons while i
     </widget>
    </item>
    <item row="8" column="1">
-    <widget class="QLabel" name="label_12">
+    <widget class="QLabel" name="alignToGridLabel">
      <property name="text">
       <string>Align to grid:</string>
      </property>
@@ -298,7 +298,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
     </widget>
    </item>
    <item row="9" column="1">
-    <widget class="QLabel" name="label_13">
+    <widget class="QLabel" name="clickToViewLabel">
      <property name="text">
       <string>Click to view folder:</string>
      </property>
@@ -308,7 +308,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
     </widget>
    </item>
    <item row="9" column="2">
-    <widget class="QCheckBox" name="setClicktoView">
+    <widget class="QCheckBox" name="clickToView">
      <property name="whatsThis">
       <string>Check this option if you want folder previews to appear only when clicked. When this option is turned off, folder previews will appear automatically when the mouse hovers over a folder.</string>
      </property>
@@ -318,7 +318,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
     </widget>
    </item>
    <item row="10" column="0" colspan="2">
-    <widget class="QLabel" name="label_9">
+    <widget class="QLabel" name="iconTextTitle">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -337,7 +337,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
     </widget>
    </item>
    <item row="11" column="1">
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="numLinesEditLabel">
      <property name="text">
       <string>Lines:</string>
      </property>
@@ -391,7 +391,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
     </spacer>
    </item>
    <item row="12" column="1">
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="colorButtonLabel">
      <property name="text">
       <string>Color:</string>
      </property>
@@ -414,7 +414,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
     </widget>
    </item>
    <item row="13" column="1">
-    <widget class="QLabel" name="label_10">
+    <widget class="QLabel" name="drawShadowsLabel">
      <property name="text">
       <string>Shadows:</string>
      </property>
@@ -454,7 +454,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
     </spacer>
    </item>
    <item row="1" column="2" colspan="2">
-    <widget class="KComboBox" name="labelEdit">
+    <widget class="KComboBox" name="titleEdit">
      <property name="editable">
       <bool>true</bool>
      </property>
