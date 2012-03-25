@@ -146,6 +146,7 @@ void IconView::setIconSize(const QSize &size)
     if (size != m_iconSize) {
         m_iconSize = size;
         updateGridSize();
+        updateActionButtons();
     }
 }
 
@@ -1596,6 +1597,12 @@ void IconView::updateRubberband()
     }
 }
 
+void IconView::updateActionButtons()
+{
+    m_actionOverlay->setShowFolderButton(clickToViewFolders());
+    m_actionOverlay->setShowSelectionButton(showSelectionMarker());
+}
+
 void IconView::checkIfFolderResult(const QModelIndex &index, bool isFolder)
 {
     m_toolTipShowTimer.stop();
@@ -1626,6 +1633,7 @@ void IconView::svgChanged()
 
     // this updates the grid size, then calls layoutItems() which in turn repaints the view
     updateGridSize();
+    updateActionButtons();
 }
 
 void IconView::viewScrolled()
@@ -1642,7 +1650,7 @@ void IconView::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         emit entered(index);
         m_hoveredIndex = index;
         markAreaDirty(visualRect(index));
-        if (!m_clickToViewFolders) {
+        if (!clickToViewFolders()) {
             AsyncFileTester::checkIfFolder(m_hoveredIndex, this, "checkIfFolderResult");
         }
     }
@@ -1678,7 +1686,7 @@ void IconView::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         m_hoveredIndex = index;
         updateToolTip();
 
-        if (!m_clickToViewFolders) {
+        if (!clickToViewFolders()) {
             AsyncFileTester::checkIfFolder(m_hoveredIndex, this, "checkIfFolderResult");
         }
     }
@@ -2660,12 +2668,12 @@ void IconView::popupCloseRequested()
 void IconView::setClickToViewFolders(bool click)
 {
     m_clickToViewFolders = click;
-    m_actionOverlay->setShowFolderButton(click);
+    m_actionOverlay->setShowFolderButton(clickToViewFolders());
 }
 
 bool IconView::clickToViewFolders() const
 {
-    return m_clickToViewFolders;
+    return overlayEnabled() ? m_clickToViewFolders : false;
 }
 
 void IconView::openPopup(const QModelIndex &index)
@@ -2719,12 +2727,18 @@ void IconView::openPopup(const QModelIndex &index)
 void IconView::setShowSelectionMarker(bool show)
 {
     m_showSelectionMarker = show;
-    m_actionOverlay->setShowSelectionButton(show);
+    m_actionOverlay->setShowSelectionButton(showSelectionMarker());
 }
 
 bool IconView::showSelectionMarker() const
 {
-    return m_showSelectionMarker;
+    return overlayEnabled() ? m_showSelectionMarker : false;
+}
+
+bool IconView::overlayEnabled() const
+{
+    // Do not let the action overlay cover the icon
+    return gridSize().width() - m_iconSize.width() > 2*qMin(m_actionOverlay->iconSize().width(), m_actionOverlay->iconSize().height());
 }
 
 void IconView::timerEvent(QTimerEvent *event)

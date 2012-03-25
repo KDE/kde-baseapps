@@ -80,6 +80,8 @@ public:
     bool showFolderButton() const;
     bool showSelectionButton() const;
 
+    QSizeF iconSize() const;
+
 private slots:
     void toggleSelection();
     void openPopup();
