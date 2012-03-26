@@ -1029,6 +1029,10 @@ void FolderView::setupIconView()
     }
 
     m_iconView = new IconView(this);
+
+    const QStringList data = config().readEntry("savedPositions", QStringList());
+    m_iconView->setIconPositionsData(data);
+
     m_iconView->setModel(m_model);
     m_iconView->setItemDelegate(m_delegate);
     m_iconView->setSelectionModel(m_selectionModel);
@@ -1048,9 +1052,6 @@ void FolderView::setupIconView()
     }
 
     updateIconViewState();
-
-    const QStringList data = config().readEntry("savedPositions", QStringList());
-    m_iconView->setIconPositionsData(data);
 
     connect(m_iconView, SIGNAL(activated(QModelIndex)), SLOT(activated(QModelIndex)));
     connect(m_iconView, SIGNAL(indexesMoved(QModelIndexList)), SLOT(indexesMoved(QModelIndexList)));
