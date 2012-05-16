@@ -851,8 +851,7 @@ void FolderView::configAccepted()
     if (uiLocation.showDesktopFolder->isChecked()) {
         url = KUrl("desktop:/");
     } else if (uiLocation.showActivity->isChecked()) {
-        // TODO: Show the current activity
-        url = KUrl("activities:/");
+        url = KUrl("activities:/current/");
     } else if (uiLocation.showPlace->isChecked()) {
         PlacesFilterModel *filter = static_cast<PlacesFilterModel*>(uiLocation.placesCombo->model());
         KFilePlacesModel *model = static_cast<KFilePlacesModel*>(filter->sourceModel());
