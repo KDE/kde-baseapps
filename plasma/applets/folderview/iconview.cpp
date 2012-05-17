@@ -2709,12 +2709,7 @@ void IconView::openPopup(const QModelIndex &index)
         gv = qobject_cast<QGraphicsView*>(m_popupCausedWidget->parentWidget());
     } else {
         // We position the popup relative to the view under the mouse cursor
-        foreach (QGraphicsView *view, scene()->views()) {
-            if (view->underMouse()) {
-                gv = view;
-                break;
-            }
-        }
+        gv = Plasma::viewFor(m_actionOverlay);
     }
 
     const QPoint pos = gv ? gv->mapToGlobal(gv->mapFromScene(scenePos)) : QPoint();
