@@ -677,6 +677,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         uiLocation.showDesktopFolder->setChecked(true);
         uiLocation.placesCombo->setEnabled(false);
         uiLocation.lineEdit->setEnabled(false);
+    } else if (m_url == KUrl("activities:/current/")) {
+        uiLocation.showActivity->setChecked(true);
+        uiLocation.placesCombo->setEnabled(false);
+        uiLocation.lineEdit->setEnabled(false);
     } else {
         QModelIndex index;
         for (int i = 0; i < placesFilter->rowCount(); i++) {
