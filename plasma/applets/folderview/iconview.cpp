@@ -1788,7 +1788,7 @@ void IconView::keyPressEvent(QKeyEvent *event)
 
         newItem = currentIndex.row() + hdirection*hMultiplier + vdirection*vMultiplier;
 
-        if ( (newItem < 0) || (newItem >= m_dirModel->rowCount()) ) {
+        if ( (newItem < 0) || (newItem >= m_model->rowCount()) ) {
             newItem = prevItem;
         }
 
