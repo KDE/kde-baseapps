@@ -2396,7 +2396,9 @@ void IconView::changeEvent(QEvent *event)
             }
             m_validRows = 0;
             m_delayedLayoutTimer.start(10, this);
-            m_delayedCacheClearTimer.start(5000, this);
+            if (m_delayedCacheClearTimer.isActive()) {
+                m_delayedCacheClearTimer.start(5000, this);
+            }
         }
 
         if (m_validRows == 0) {
