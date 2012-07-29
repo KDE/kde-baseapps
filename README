@@ -1,14 +1,12 @@
 KWebKitPart
 ===========
 
-KWebKitPart is a web browser component for KDE (KPart). You can use
-it for example for browsing the web in Konqueror.
+KWebKitPart is a KDE component (KPart) wrapper for QtWebKit. It is intended to
+allow KPart based KDE applications such as Konqueror to use it in place of other
+browser engine, such as KHTML, to browse the web in Konqueror.
 
-KWebKitPart is still in early development and thus not guaranted to
-be in production quality yet.
-
-There are known limitations / issues; please see the following two
-documents before reporting issues:
+Known limitations and unimplemented features are listed in the following
+documents:
 
 * https://projects.kde.org/projects/kde/kdelibs/repository/revisions/master/entry/kdewebkit/ISSUES
 * https://projects.kde.org/projects/extragear/base/kwebkitpart/repository/revisions/master/entry/TODO
@@ -19,11 +17,6 @@ IMPORTANT NOTE: Do not select "konqueror" as product, but "kwebkitpart"!
 There is also a public mailing list available for support:
 
     webkit-devel @ kde.org
-
-Versions:
----------
-** KDE 4.4 or higher is required for building and running KWebKitPart.
-** For KDE 4.5.x or older you MUST use the 0.9 branch of kwebkitpart.
 
 How to use KWebKitPart in Konqueror
 ===================================
