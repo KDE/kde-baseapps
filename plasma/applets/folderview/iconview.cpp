@@ -568,9 +568,9 @@ QPoint inline IconView::nextGridPosition(const QPoint &lastPos, const QSize &gri
     QRect r = contentRect.adjusted(margin, margin, -margin, -margin);
     if (m_flow == LeftToRight || m_flow == RightToLeft) {
         if (layoutDirection() == Qt::LeftToRight) {
-            r.adjust(0, 0, -m_scrollBar->geometry().width(), 0); 
+            r.adjust(0, 0, -m_scrollBar->geometry().width(), 0);
         } else {
-            r.adjust(m_scrollBar->geometry().width(), 0, 0, 0); 
+            r.adjust(m_scrollBar->geometry().width(), 0, 0, 0);
         }
     }
 
@@ -600,8 +600,8 @@ QPoint inline IconView::nextGridPosition(const QPoint &lastPos, const QSize &gri
         }
         break;
 
-    case TopToBottom: 
-    case TopToBottomRightToLeft: 
+    case TopToBottom:
+    case TopToBottomRightToLeft:
         pos.ry() += grid.height() + spacing;
         if (pos.y() + grid.height() >= r.bottom()) {
             if (m_flow == TopToBottom) {
@@ -759,7 +759,7 @@ void IconView::layoutItems()
     updateScrollBar();
 }
 
-// Returns the contents rect with the width and height snapped to the grid 
+// Returns the contents rect with the width and height snapped to the grid
 // and aligned according to the direction of the flow.
 QRect IconView::adjustedContentsRect(int *rowCount, int *colCount) const
 {
@@ -1770,7 +1770,7 @@ void IconView::keyPressEvent(QKeyEvent *event)
         int newItem = 0;
         int hMultiplier = 1;
         int vMultiplier = 1;
-        
+
         switch (m_flow)        //Perform flow related calculations
         {
         case RightToLeft:
@@ -2093,7 +2093,8 @@ void IconView::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 void IconView::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     const bool accepted = KUrl::List::canDecode(event->mimeData()) ||
-                          event->mimeData()->hasFormat(QLatin1String("application/x-kde-dndextract"));
+                          (event->mimeData()->hasFormat(QLatin1String("application/x-kde-ark-dndextract-service")) &&
+                           event->mimeData()->hasFormat(QLatin1String("application/x-kde-ark-dndextract-path")));
     event->setAccepted(accepted);
     m_hoverDrag = accepted;
 }
@@ -2266,12 +2267,14 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
         ev.setDropAction(event->dropAction());
         //kDebug() << "dropping to" << m_url << "with" << view() << event->modifiers();
 
-        if (mimeData->hasFormat(QLatin1String("application/x-kde-dndextract"))) {
-            const QString remoteDBusClient = mimeData->data(QLatin1String("application/x-kde-dndextract"));
+        if (mimeData->hasFormat(QLatin1String("application/x-kde-ark-dndextract-service")) &&
+            mimeData->hasFormat(QLatin1String("application/x-kde-ark-dndextract-service"))) {
+            const QString remoteDBusClient = mimeData->data(QLatin1String("application/x-kde-ark-dndextract-service"));
+            const QString remoteDBusPath = mimeData->data(QLatin1String("application/x-kde-ark-dndextract-path"));
 
             QDBusMessage message =
-                QDBusMessage::createMethodCall(remoteDBusClient, QLatin1String("/DndExtract"),
-                                               QLatin1String("org.kde.DndExtract"),
+                QDBusMessage::createMethodCall(remoteDBusClient, remoteDBusPath,
+                                               QLatin1String("org.kde.ark.DndExtract"),
                                                QLatin1String("extractSelectedFilesTo"));
             message.setArguments(QVariantList() << m_dirModel->dirLister()->url().pathOrUrl());
 
@@ -2392,7 +2395,7 @@ void IconView::changeEvent(QEvent *event)
             QMutableHashIterator<QString, QPoint> i(m_savedPositions);
             while (i.hasNext()) {
                 i.next();
-                i.setValue(i.value() + delta);   
+                i.setValue(i.value() + delta);
             }
             m_validRows = 0;
             m_delayedLayoutTimer.start(10, this);
@@ -2457,7 +2460,7 @@ void IconView::changeEvent(QEvent *event)
                 m_regionCache.clear();
                 markAreaDirty(mapToViewport(rect()).toAlignedRect());
                 updateScrollBar();
-            }    
+            }
         }
 
         m_margins[Plasma::LeftMargin]   = left;
@@ -2694,7 +2697,7 @@ void IconView::openPopup(const QModelIndex &index)
     delete m_popupView;
 
     if (QApplication::activePopupWidget() || QApplication::activeModalWidget()) {
-        // Don't open a popup view when a menu or similar widget is being shown 
+        // Don't open a popup view when a menu or similar widget is being shown
         return;
     }
 
@@ -2767,7 +2770,7 @@ void IconView::timerEvent(QTimerEvent *event)
                     r.adjust(int(m_scrollBar->geometry().width()), 0, 0, 0);
                 }
             }
- 
+
             for (int i = 0; i < m_validRows; i++) {
                 if ((horizontalFlow && m_items[i].rect.right() > r.right()) ||
                     (!horizontalFlow && m_items[i].rect.bottom() > r.height()))
