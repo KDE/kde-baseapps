@@ -34,3 +34,4 @@ target_link_libraries(plasma_applet_folderview ${KDE4_PLASMA_LIBS} konq
 install(TARGETS plasma_applet_folderview DESTINATION ${PLUGIN_INSTALL_DIR})
 install(FILES plasma-applet-folderview.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 
+add_subdirectory("declarative")
