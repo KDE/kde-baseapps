@@ -35,7 +35,8 @@ Item {
 
     DirectoryModel {
         id: dirModel
-
+        sortDirectoriesFirst: true
+        fileNameFilter: "*.png"
     }
 
     //Rectangle { anchors.fill: parent; color: "green"; opacity: 0.2 }
@@ -45,7 +46,6 @@ Item {
         anchors.fill: parent
         cellWidth: iconSize * 1.5
         cellHeight: iconSize * 2
-        //spacing: iconSize / 4
         model: dirModel
 
         delegate: Item {
@@ -70,15 +70,13 @@ Item {
                 maximumLineCount: 3
                 width: parent.width
                 font.pointSize: theme.smallestFont.pointSize
-                //width: paintedWidth > parent.width ? parent.width : paintedWidth
                 anchors {
                     top: fileIcon.bottom;
-                    //topMargin: iconSize/4;
                     horizontalCenter: fileIcon.horizontalCenter;
                 }
                 text: name
             }
-            Rectangle { anchors.fill: parent; color: "green"; opacity: 0.2 }
+            //Rectangle { anchors.fill: parent; color: "green"; opacity: 0.2 }
         }
     }
 
