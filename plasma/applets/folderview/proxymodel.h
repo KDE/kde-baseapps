@@ -31,6 +31,16 @@ class KUrl;
 
 class ProxyModel : public QSortFilterProxyModel
 {
+    Q_OBJECT
+
+    Q_ENUMS(FilterMode)
+
+    Q_PROPERTY(FilterMode filterMode READ filterMode WRITE setFilterMode NOTIFY filterModeChanged)
+    Q_PROPERTY(QStringList mimeTypeFilterList READ mimeTypeFilterList WRITE setMimeTypeFilterList NOTIFY mimeTypeFilterListChanged)
+    Q_PROPERTY(QString fileNameFilter READ fileNameFilter WRITE setFileNameFilter NOTIFY fileNameFilterChanged)
+    Q_PROPERTY(bool sortDirectoriesFirst READ sortDirectoriesFirst WRITE setSortDirectoriesFirst NOTIFY sortDirectoriesFirstChanged)
+    Q_PROPERTY(bool parseDesktopFiles READ parseDesktopFiles WRITE setParseDesktopFiles NOTIFY parseDesktopFilesChanged)
+
 public:
     enum FilterMode {
         NoFilter = 0,
@@ -41,6 +51,15 @@ public:
     ProxyModel(QObject *parent = 0);
     ~ProxyModel();
 
+
+    QModelIndex indexForUrl(const KUrl &url) const;
+    KFileItem itemForIndex(const QModelIndex &index) const;
+    bool isDir(const QModelIndex &index, const KDirModel *dirModel) const;
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
+
+    static FilterMode filterModeFromInt(int filterMode);
+
+public Q_SLOTS:
     void setFilterMode(FilterMode filterMode);
     FilterMode filterMode() const;
 
@@ -56,12 +75,12 @@ public:
     void setParseDesktopFiles(bool enable);
     bool parseDesktopFiles() const;
 
-    QModelIndex indexForUrl(const KUrl &url) const;
-    KFileItem itemForIndex(const QModelIndex &index) const;
-    bool isDir(const QModelIndex &index, const KDirModel *dirModel) const;
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
-
-    static FilterMode filterModeFromInt(int filterMode);
+Q_SIGNALS:
+    void filterModeChanged();
+    void mimeTypeFilterListChanged();
+    void fileNameFilterChanged();
+    void sortDirectoriesFirstChanged();
+    void parseDesktopFilesChanged();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;

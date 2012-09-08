@@ -49,6 +49,7 @@ void ProxyModel::setFilterMode(FilterMode filterMode)
 {
     m_filterMode = filterMode;
     invalidateFilter();
+    emit filterModeChanged();
 }
 
 ProxyModel::FilterMode ProxyModel::filterMode() const
@@ -60,6 +61,7 @@ void ProxyModel::setMimeTypeFilterList(const QStringList &mimeList)
 {
     m_mimeSet = QSet<QString>::fromList(mimeList);
     invalidateFilter();
+    emit mimeTypeFilterListChanged();
 }
 
 QStringList ProxyModel::mimeTypeFilterList() const
@@ -81,6 +83,7 @@ void ProxyModel::setFileNameFilter(const QString &pattern)
         rx.setCaseSensitivity(Qt::CaseInsensitive);
         m_regExps.append(rx);
     }
+    emit fileNameFilterChanged();
 }
 
 QString ProxyModel::fileNameFilter() const
@@ -90,7 +93,11 @@ QString ProxyModel::fileNameFilter() const
 
 void ProxyModel::setSortDirectoriesFirst(bool enable)
 {
-    m_sortDirsFirst = enable;
+    if (m_sortDirsFirst != enable) {
+        m_sortDirsFirst = enable;
+        invalidate();
+        emit sortDirectoriesFirstChanged();
+    }
 }
 
 bool ProxyModel::sortDirectoriesFirst() const
