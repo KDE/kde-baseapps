@@ -31,7 +31,7 @@ Item {
     width: 400
     height: 400
 
-    property int iconSize: 64
+    property int iconSize: 48
 
     DirectoryModel {
         id: dirModel
@@ -41,43 +41,112 @@ Item {
 
     //Rectangle { anchors.fill: parent; color: "green"; opacity: 0.2 }
 
-    GridView {
-        id: dirGrid
-        anchors.fill: parent
-        cellWidth: iconSize * 1.5
-        cellHeight: iconSize * 2
-        model: dirModel
+    Item {
+        id: selection
+        //parent: dirGrid
 
-        delegate: Item {
-            id: fileDelegate
-            width: GridView.view.cellWidth
-            height: GridView.view.cellHeight
+        property int selectionX
+        property int selectionY
+        property int selectionWidth
+        property int selectionHeight
 
-            clip: true
-            QtExtras.QIconItem {
-                id: fileIcon
-                icon: iconName
-                width: iconSize
-                height: width
-                anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; }
-            }
+        Rectangle {
+            id: selectionRect
+            color: "#51AECFFF"
+            //opacity: 0.9
+            border.width: 1
+            border.color: "#51AECF"
 
-            PlasmaComponents.Label {
-                id: nameLabel
-                elide: Text.ElideMiddle
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.Wrap
-                maximumLineCount: 3
-                width: parent.width
-                font.pointSize: theme.smallestFont.pointSize
-                anchors {
-                    top: fileIcon.bottom;
-                    horizontalCenter: fileIcon.horizontalCenter;
-                }
-                text: name
-            }
-            //Rectangle { anchors.fill: parent; color: "green"; opacity: 0.2 }
+            x: parent.selectionX
+            y: parent.selectionY
+            width: parent.selectionWidth
+            height: parent.selectionHeight
         }
+
+    }
+
+
+    QtExtras.MouseEventListener {
+        id: mel
+        anchors.fill: parent
+
+        onPressed: {
+            selection.selectionX = mouse.x;
+            selection.selectionY = mouse.y;
+            selection.selectionWidth = 0;
+            selection.selectionHeight = 0;
+            dirGrid.interactive = false;
+        }
+        onPositionChanged: {
+
+            var w = (mouse.x - selection.selectionX);
+            var h = (mouse.y - selection.selectionY);
+            var _x = selection.selectionX;
+            var _y = selection.selectionY;
+
+            if (w > 0) {
+                selection.selectionWidth = w;
+            } else {
+                print( " X, W: " + _x + ", " + (w*-1));
+                selection.selectionX = selection.selectionX + w;
+                selection.selectionWidth = w;
+            }
+
+            if (h > 0) {
+                selection.selectionHeight = (mouse.y - selection.selectionY);
+            } else {
+
+            }
+
+        }
+
+        onReleased: {
+            // reset selection
+            dirGrid.interactive = true;
+            selection.selectionX = mouse.x;
+            selection.selectionY = mouse.y;
+            selection.selectionWidth = 0;
+            selection.selectionHeight = 0;
+        }
+        GridView {
+            id: dirGrid
+            anchors.fill: parent
+            cellWidth: iconSize * 1.5
+            cellHeight: iconSize * 2
+            model: dirModel
+            clip: true
+
+            delegate: Item {
+                id: fileDelegate
+                width: GridView.view.cellWidth
+                height: GridView.view.cellHeight
+
+                QtExtras.QIconItem {
+                    id: fileIcon
+                    icon: iconName
+                    width: iconSize
+                    height: width
+                    anchors { horizontalCenter: parent.horizontalCenter; top: parent.top; }
+                }
+
+                PlasmaComponents.Label {
+                    id: nameLabel
+                    elide: Text.ElideMiddle
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                    maximumLineCount: 3
+                    width: parent.width
+                    font.pointSize: theme.smallestFont.pointSize
+                    anchors {
+                        top: fileIcon.bottom;
+                        horizontalCenter: fileIcon.horizontalCenter;
+                    }
+                    text: name
+                }
+                //Rectangle { anchors.fill: parent; color: "green"; opacity: 0.2 }
+            }
+        }
+
     }
 
     Component.onCompleted: print("DirectoryApplet loaded.")
