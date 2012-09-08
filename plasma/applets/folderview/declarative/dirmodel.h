@@ -32,6 +32,7 @@ class DirModelPrivate;
 class DirModel : public ProxyModel
 {
     Q_OBJECT
+
 public:
     enum FileItemRoles {
         NameRole = Qt::UserRole + 1,

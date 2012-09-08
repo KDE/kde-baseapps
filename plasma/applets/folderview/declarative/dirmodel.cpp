@@ -72,7 +72,6 @@ QVariant DirModel::data(const QModelIndex & index, int role) const {
     //if (index.row() < 0 || index.row() > m_animals.count())
     //    return QVariant();
 
-    const KDirModel *dm = static_cast<KDirModel*>(sourceModel());
     const KFileItem fileItem = itemForIndex(index);
     if (role == NameRole) {
         return fileItem.name();
