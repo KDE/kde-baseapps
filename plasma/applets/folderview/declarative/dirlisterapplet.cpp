@@ -19,6 +19,7 @@
 
 #include "dirlisterapplet.h"
 
+#include "dirmodel.h"
 
 #include <QtDeclarative>
 //#include <QDeclarativeItem>
@@ -48,14 +49,13 @@ void DirListerApplet::init()
 
     Plasma::PackageStructure::Ptr structure = Plasma::PackageStructure::load("Plasma/Generic");
     Plasma::Package *package = new Plasma::Package(QString(), "org.kde.plasma.filemanagement", structure);
-    //const QString qmlFile = package->filePath("ui", "DirectoryApplet.qml");
     const QString qmlFile = package->filePath("mainscript");
     delete package;
 
     kDebug() << " Loading QML File from package: " << qmlFile;
     m_declarativeWidget = new Plasma::DeclarativeWidget(this);
 
-    //qmlRegisterType<DirectoryModel>("org.kde.plasma.filemanagement", 0, 1, "DirectoryModel");
+    qmlRegisterType<DirModel>("org.kde.plasma.filemanagement", 0, 1, "DirectoryModel");
 
     m_declarativeWidget->setQmlPath(qmlFile);
     m_declarativeWidget->setMinimumSize(220, 250);
