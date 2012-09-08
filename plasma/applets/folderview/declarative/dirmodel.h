@@ -21,7 +21,6 @@
 #define DIRMODEL_H
 
 #include <QAbstractListModel>
-#include <QStringList>
 
 #include <KFileItem>
 
@@ -37,15 +36,20 @@ public:
     enum FileItemRoles {
         NameRole = Qt::UserRole + 1,
         IconNameRole,
+        CommentRole,
+        IsDirRole,
+        IsFileRole,
+        IsLinkRole,
+        IsLocalFileRole,
+        MimetypeRole,
+        ModificationTimeRole,
+        AccessTimeRole,
+        CreationTimeRole,
         UrlRole
     };
 
     DirModel(QObject *parent = 0);
     virtual ~DirModel();
-
-//    void addAnimal(const KFileItem animal);
-
-//     int rowCount(const QModelIndex & parent = QModelIndex()) const;
 
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 

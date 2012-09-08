@@ -73,10 +73,39 @@ QVariant DirModel::data(const QModelIndex & index, int role) const {
     //    return QVariant();
 
     const KFileItem fileItem = itemForIndex(index);
+
+    /*
+        CommentRole,
+        IsDirRole,
+        IsFileRole,
+        IsLinkRole,
+        IsLocalFileRole,
+        MimeTypeRole,
+        ModificationTimeRole,
+        AccessTimeRole,
+        CreationTimeRole,
+     */
+
     if (role == NameRole) {
         return fileItem.name();
     } else if (role == IconNameRole) {
         return fileItem.iconName();
+    } else if (role == IsDirRole) {
+        return fileItem.isDir();
+    } else if (role == IsFileRole) {
+        return fileItem.isFile();
+    } else if (role == IsLinkRole) {
+        return fileItem.isLink();
+    } else if (role == IsLocalFileRole) {
+        return fileItem.isLocalFile();
+    } else if (role == MimetypeRole) {
+        return fileItem.mimetype();
+    } else if (role == ModificationTimeRole) {
+        return fileItem.time(KFileItem::ModificationTime).dateTime();
+    } else if (role == CreationTimeRole) {
+        return fileItem.time(KFileItem::CreationTime).dateTime();
+    } else if (role == AccessTimeRole) {
+        return fileItem.time(KFileItem::AccessTime).dateTime();
     } else if (role == UrlRole) {
         return fileItem.url();
     }
