@@ -10,7 +10,9 @@ include_directories(
 
 set(dirlister_SRCS
     dirlisterapplet.cpp
+    dirmodel.cpp
     ../proxymodel.cpp
+    ../dirlister.cpp
   )
 
 add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
