@@ -1271,7 +1271,7 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
             // Set up the icon widget
             m_iconWidget = new IconWidget(this);
             m_iconWidget->setModel(m_dirModel);
-            m_iconWidget->setIcon(m_icon.isNull() ? KIcon("user-folder") : m_icon);
+            m_iconWidget->setIcon(m_icon.isNull() ? KIcon("folder-blue") : m_icon);
             connect(m_iconWidget, SIGNAL(clicked()), SLOT(iconWidgetClicked()));
 
             updateIconWidget();
@@ -2063,7 +2063,7 @@ void FolderView::updateIconWidget()
     } else if (index.isValid()) {
         m_icon = m_placesModel->icon(index);
     } else {
-        m_icon = KIcon("user-folder");
+        m_icon = KIcon("folder-blue");
     }
 
     m_iconWidget->setIcon(m_icon);
