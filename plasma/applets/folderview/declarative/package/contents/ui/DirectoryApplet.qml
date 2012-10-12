@@ -32,6 +32,7 @@ Item {
     height: 400
 
     property int iconSize: 48
+    property bool selectionModeEnabled: false // too experimental / broken right now
 
     DirectoryModel {
         id: dirModel
@@ -71,6 +72,7 @@ Item {
         anchors.fill: parent
 
         onPressed: {
+            if (!selectionModeEnabled) return;
             selection.selectionX = mouse.x;
             selection.selectionY = mouse.y;
             selection.selectionWidth = 0;
@@ -78,6 +80,7 @@ Item {
             dirGrid.interactive = false;
         }
         onPositionChanged: {
+            if (!selectionModeEnabled) return;
 
             var w = (mouse.x - selection.selectionX);
             var h = (mouse.y - selection.selectionY);
@@ -101,6 +104,7 @@ Item {
         }
 
         onReleased: {
+            if (!selectionModeEnabled) return;
             // reset selection
             dirGrid.interactive = true;
             selection.selectionX = mouse.x;
