@@ -76,6 +76,7 @@ private:
     void createActions();
     bool callOnParent(const char *method);
     KUrl::List selectedUrls() const;
+    void showContextMenu(QWidget *widget, const QPoint &pos, const QList<QModelIndex> &indexes);
 
 private slots:
     void init();

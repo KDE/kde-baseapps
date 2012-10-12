@@ -296,12 +296,21 @@ void PopupView::createActions()
     m_actionCollection.addAction("empty_trash", emptyTrash);
 }
 
-void PopupView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
+void PopupView::contextMenuRequest(QWidget* widget, const QPoint& screenPos)
+{
+    showContextMenu(widget, screenPos, m_selectionModel->selectedIndexes());
+}
+
+void PopupView::showContextMenu(QWidget *widget, const QPoint &screenPos, const QList<QModelIndex> &indexes)
 {
     Q_UNUSED(widget)
     // contextMenuRequest is only called from the icon view, which is created in init()
     // which mean m_model should always be initialized
     Q_ASSERT(m_model);
+
+    if (indexes.isEmpty()) {
+        return;
+    }
 
     if (m_actionCollection.isEmpty()) {
         createActions();
