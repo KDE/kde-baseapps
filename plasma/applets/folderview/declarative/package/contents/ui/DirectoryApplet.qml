@@ -81,7 +81,6 @@ Item {
         }
         onPositionChanged: {
             if (!selectionModeEnabled) return;
-
             var w = (mouse.x - selection.selectionX);
             var h = (mouse.y - selection.selectionY);
             var _x = selection.selectionX;
