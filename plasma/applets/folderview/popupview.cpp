@@ -296,7 +296,7 @@ void PopupView::createActions()
     m_actionCollection.addAction("empty_trash", emptyTrash);
 }
 
-void PopupView::contextMenuRequest(QWidget* widget, const QPoint& screenPos)
+void PopupView::contextMenuRequest(QWidget *widget, const QPoint& screenPos)
 {
     showContextMenu(widget, screenPos, m_selectionModel->selectedIndexes());
 }
@@ -336,10 +336,12 @@ void PopupView::showContextMenu(QWidget *widget, const QPoint &screenPos, const 
         }
     }
 
-    QAction* pasteTo = m_actionCollection.action("pasteto");
+    QAction *pasteTo = m_actionCollection.action("pasteto");
     if (pasteTo) {
-        pasteTo->setEnabled(m_actionCollection.action("paste")->isEnabled());
-        pasteTo->setText(m_actionCollection.action("paste")->text());
+        if (QAction *paste = m_actionCollection.action("paste")) {
+            pasteTo->setEnabled(paste->isEnabled());
+            pasteTo->setText(paste->text());
+        }
     }
 
     QList<QAction*> editActions;
