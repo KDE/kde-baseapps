@@ -289,7 +289,6 @@ QStringList IconView::iconPositionsData() const
         data << QString::number(m_items.size());
 
         const QPoint offset = contentsRect().topLeft().toPoint();
-        const QSize size = gridSize();
         for (int i = 0; i < m_items.size(); i++) {
             QModelIndex index = m_model->index(i, 0);
             KFileItem item = m_model->itemForIndex(index);

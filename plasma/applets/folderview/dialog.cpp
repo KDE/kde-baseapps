@@ -120,7 +120,6 @@ void Dialog::show(Plasma::Applet *applet)
     QSize size = m_widget->preferredSize().toSize() + margin;
     QPoint pos = applet->popupPosition(size);
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(pos);
-    const QSize maxSize = availableGeometry.size();
 
     if (pos.y() < 0) {
         size.rheight() += pos.y();
