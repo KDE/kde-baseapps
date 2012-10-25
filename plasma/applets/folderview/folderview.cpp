@@ -317,14 +317,14 @@ static Qt::SortOrder sortOrderStringToEnum(const QString& order)
 
 FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
-      m_previewGenerator(0),
-      m_placesModel(0),
-      m_itemActions(0),
       m_iconView(0),
       m_listView(0),
       m_label(0),
+      m_previewGenerator(0),
+      m_placesModel(0),
       m_iconWidget(0),
       m_dialog(0),
+      m_itemActions(0),
       m_newMenu(0),
       m_actionCollection(this)
 {

@@ -173,35 +173,46 @@ private:
     void setAppletTitle();
 
 private:
-    KFileItemDelegate *m_delegate;
-    QPointer<KFilePreviewGenerator> m_previewGenerator;
-    QItemSelectionModel *m_selectionModel;
+
+    // Models, views and helpers
+
     ProxyModel *m_model;
     KDirModel *m_dirModel;
-    KFilePlacesModel *m_placesModel;
-    KFileItemActions *m_itemActions;
+    DirLister *m_dirLister;
+    QItemSelectionModel *m_selectionModel;
+
     IconView *m_iconView;
     ListView *m_listView;
     Label *m_label;
+
+    KFileItemDelegate *m_delegate;
+    QPointer<KFilePreviewGenerator> m_previewGenerator;
+    KFilePlacesModel *m_placesModel;
+
+    // Panel mode
+
     IconWidget *m_iconWidget;
     Dialog *m_dialog;
     QIcon m_icon;
+
+    // Actions
+
+    QPointer<KNewFileMenu> m_newMenu;
+    KFileItemActions *m_itemActions;
+    KActionCollection m_actionCollection;
+    QActionGroup *m_sortingGroup;
+    QActionGroup *m_sortingOrderGroup;
+
+    // Configuration variables
+
     KUrl m_url;
     QColor m_textColor;
     QString m_titleText;
     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
-    QPointer<KNewFileMenu> m_newMenu;
-    KActionCollection m_actionCollection;
-    QActionGroup *m_sortingGroup;
-    QActionGroup *m_sortingOrderGroup;
     int m_sortColumn;
     Qt::SortOrder m_sortOrder;
-    Ui::folderviewFilterConfig uiFilter;
-    Ui::folderviewDisplayConfig uiDisplay;
-    Ui::folderviewLocationConfig uiLocation;
-    Ui::folderviewPreviewConfig uiPreviewConfig;
     bool m_sortDirsFirst;
     bool m_showPreviews;
     bool m_drawShadows;
@@ -216,8 +227,15 @@ private:
     int m_customIconSize;
     int m_numTextLines;
     IconView::Flow m_flow;
+
+    // Configuration interface
+
+    Ui::folderviewFilterConfig uiFilter;
+    Ui::folderviewDisplayConfig uiDisplay;
+    Ui::folderviewLocationConfig uiLocation;
+    Ui::folderviewPreviewConfig uiPreviewConfig;
+
     QBasicTimer m_delayedSaveTimer;
-    DirLister *m_dirLister;
 };
 
 
