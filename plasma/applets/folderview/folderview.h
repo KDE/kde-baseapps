@@ -175,18 +175,18 @@ private:
 
     // Models, views and helpers
 
-    ProxyModel *m_model;
-    KDirModel *m_dirModel;
-    DirLister *m_dirLister;
-    QItemSelectionModel *m_selectionModel;
+    QPointer<ProxyModel> m_model;
+    QPointer<KDirModel> m_dirModel;
+    QPointer<DirLister> m_dirLister;
+    QPointer<QItemSelectionModel> m_selectionModel;
 
-    IconView *m_iconView;
-    ListView *m_listView;
-    Label *m_label;
+    QPointer<IconView> m_iconView;
+    QPointer<ListView> m_listView;
+    QPointer<Label> m_label;
 
-    KFileItemDelegate *m_delegate;
+    QPointer<KFileItemDelegate> m_delegate;
     QPointer<KFilePreviewGenerator> m_previewGenerator;
-    KFilePlacesModel *m_placesModel;
+    QPointer<KFilePlacesModel> m_placesModel;
 
     // Panel mode
 
@@ -197,10 +197,10 @@ private:
     // Actions
 
     QPointer<KNewFileMenu> m_newMenu;
-    KFileItemActions *m_itemActions;
+    QPointer<KFileItemActions> m_itemActions;
     KActionCollection m_actionCollection;
-    QActionGroup *m_sortingGroup;
-    QActionGroup *m_sortingOrderGroup;
+    QPointer<QActionGroup> m_sortingGroup;
+    QPointer<QActionGroup> m_sortingOrderGroup;
 
     // Configuration variables
 
