@@ -90,12 +90,6 @@ K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 Q_DECLARE_METATYPE(Qt::SortOrder)
 
 
-
-
-
-// ---------------------------------------------------------------------------
-
-
 static QString sortOrderEnumToString(Qt::SortOrder order)
 {
     if (order == Qt::AscendingOrder) {
