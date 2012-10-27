@@ -36,7 +36,6 @@
 #include <KDesktopFile>
 #include <KDirModel>
 #include <KFileItemDelegate>
-#include <kfileplacesmodel.h>
 #include <kfilepreviewgenerator.h>
 #include <KGlobalSettings>
 #include <KProtocolInfo>
@@ -80,6 +79,7 @@
 #include "settings/previewpluginsmodel.h"
 #include "settings/mimemodel.h"
 #include "settings/proxymimemodel.h"
+#include "settings/placesfiltermodel.h"
 #include "proxymodel.h"
 #include "listview.h"
 #include <kcompletionbox.h>
@@ -88,23 +88,6 @@
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 
 Q_DECLARE_METATYPE(Qt::SortOrder)
-
-// Proxy model for KFilePlacesModel that filters out hidden items.
-class PlacesFilterModel : public QSortFilterProxyModel
-{
-public:
-    PlacesFilterModel(QObject *parent = 0) : QSortFilterProxyModel(parent) {}
-    bool filterAcceptsRow(int row, const QModelIndex &parent) const {
-        KFilePlacesModel *model = static_cast<KFilePlacesModel*>(sourceModel());
-        const QModelIndex index = model->index(row, 0, parent);
-        return !model->isHidden(index);
-    }
-};
-
-
-
-// ---------------------------------------------------------------------------
-
 
 
 RemoteWallpaperSetter::RemoteWallpaperSetter(const KUrl &url, FolderView *containment)
