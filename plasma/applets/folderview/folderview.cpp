@@ -43,6 +43,7 @@
 #include <KTemporaryFile>
 #include <KStandardDirs>
 #include <KMenu>
+#include <KCompletionBox>
 
 #include <kio/copyjob.h>
 #include <kio/fileundomanager.h>
@@ -72,17 +73,18 @@
 #include <Plasma/WindowEffects>
 #include <Plasma/Applet>
 
-#include "dialog.h"
+#include "proxymodel.h"
+#include "dirlister.h"
 #include "folderviewadapter.h"
+#include "iconview.h"
+#include "listview.h"
+#include "dialog.h"
 #include "iconwidget.h"
 #include "label.h"
 #include "settings/previewpluginsmodel.h"
 #include "settings/mimemodel.h"
 #include "settings/proxymimemodel.h"
 #include "settings/placesfiltermodel.h"
-#include "proxymodel.h"
-#include "listview.h"
-#include <kcompletionbox.h>
 
 
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
