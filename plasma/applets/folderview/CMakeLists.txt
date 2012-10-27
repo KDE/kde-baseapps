@@ -13,13 +13,15 @@ set(folderview_SRCS
     dirlister.cpp
     proxymodel.cpp
     folderviewadapter.cpp
-    previewpluginsmodel.cpp
     tooltipwidget.cpp
     style.cpp
     itemeditor.cpp
     animator.cpp
     actionoverlay.cpp
-    asyncfiletester.cpp)
+    asyncfiletester.cpp
+    settings/previewpluginsmodel.cpp
+    settings/mimemodel.cpp
+    settings/proxymimemodel.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   settings/ui/folderviewFilterConfig.ui

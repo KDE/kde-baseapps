@@ -22,13 +22,11 @@
 #define FOLDERVIEW_H
 
 #include <QCache>
-#include <QSortFilterProxyModel>
 #include <QStyleOption>
 #include <QPointer>
 #include <QBasicTimer>
 
 #include <KActionCollection>
-#include <KMimeType>
 
 #include <Solid/Networking>
 
@@ -236,54 +234,6 @@ private:
     Ui::folderviewPreviewConfig uiPreviewConfig;
 
     QBasicTimer m_delayedSaveTimer;
-};
-
-
-
-// ---------------------------------------------------------------------------
-
-
-
-class MimeModel : public QStringListModel
-{
-public:
-    MimeModel(QObject *parent = 0);
-
-    virtual QVariant data(const QModelIndex &index, int role) const;
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const;
-    virtual QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-
-private:
-    KMimeType::List m_mimetypes;
-    QMap<KMimeType*, Qt::CheckState> m_state;
-};
-
-
-
-// ---------------------------------------------------------------------------
-
-
-
-class ProxyMimeModel : public QSortFilterProxyModel
-{
-Q_OBJECT
-
-public:
-    ProxyMimeModel(QObject *parent = 0);
-
-    virtual void setSourceModel(QAbstractItemModel *sourceModel);
-
-public slots:
-    void setFilter(const QString &filter);
-
-protected:
-    virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
-    virtual bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-
-private:
-    QString m_filter;
 };
 
 #endif
