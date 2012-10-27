@@ -22,10 +22,10 @@ set(folderview_SRCS
     asyncfiletester.cpp)
 
 kde4_add_ui_files(folderview_SRCS
-                  folderviewFilterConfig.ui
-                  folderviewDisplayConfig.ui
-                  folderviewLocationConfig.ui
-                  folderviewPreviewConfig.ui)
+                  settings/ui/folderviewFilterConfig.ui
+                  settings/ui/folderviewDisplayConfig.ui
+                  settings/ui/folderviewLocationConfig.ui
+                  settings/ui/folderviewPreviewConfig.ui)
 
 kde4_add_plugin(plasma_applet_folderview ${folderview_SRCS})
 
