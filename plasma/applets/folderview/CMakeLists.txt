@@ -19,6 +19,7 @@ set(folderview_SRCS
     animator.cpp
     actionoverlay.cpp
     asyncfiletester.cpp
+    remotewallpapersetter.cpp
     settings/previewpluginsmodel.cpp
     settings/mimemodel.cpp
     settings/proxymimemodel.cpp)
