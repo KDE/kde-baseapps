@@ -56,13 +56,6 @@ class Label;
 class Dialog;
 
 
-
-
-
-// ----------------------------------------------------------------------------
-
-
-
 class FolderView : public Plasma::Containment
 {
     Q_OBJECT
