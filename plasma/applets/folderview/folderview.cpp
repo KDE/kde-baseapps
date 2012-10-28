@@ -36,7 +36,7 @@
 #include <KDesktopFile>
 #include <KDirModel>
 #include <KFileItemDelegate>
-#include <kfilepreviewgenerator.h>
+#include <KFilePreviewGenerator>
 #include <KGlobalSettings>
 #include <KProtocolInfo>
 #include <KStandardShortcut>
