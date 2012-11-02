@@ -21,7 +21,6 @@
 #ifndef FOLDERVIEW_H
 #define FOLDERVIEW_H
 
-#include <QCache>
 #include <QStyleOption>
 #include <QPointer>
 #include <QBasicTimer>

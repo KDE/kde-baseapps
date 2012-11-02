@@ -27,6 +27,7 @@
 #include <QGraphicsSceneDragDropEvent>
 #include <QImageReader>
 #include <QItemSelectionModel>
+#include <QCache>
 
 #include <KAction>
 #include <KAuthorized>
@@ -64,7 +65,6 @@
 #endif // Q_OS_WIN
 
 #include <Plasma/Corona>
-#include <Plasma/PaintUtils>
 #include <Plasma/Theme>
 #include <Plasma/ToolTipManager>
 #include <Plasma/Wallpaper>
