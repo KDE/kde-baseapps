@@ -18,6 +18,7 @@
  */
 
 #include "popupview.h"
+#include "dialogshadows_p.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -530,6 +531,11 @@ void PopupView::resizeEvent(QResizeEvent *event)
     } else {
         setMask(m_background->mask());
     }
+}
+
+void PopupView::showEvent(QShowEvent * event)
+{
+    DialogShadows::self()->addWindow(this);
 }
 
 void PopupView::paintEvent(QPaintEvent *event)

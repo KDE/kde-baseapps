@@ -18,6 +18,7 @@
  */
 
 #include "dialog.h"
+#include "dialogshadows_p.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -145,6 +146,7 @@ void Dialog::show(Plasma::Applet *applet)
     move(pos);
 
     QWidget::show();
+    DialogShadows::self()->addWindow(this, borders);
 }
 
 void Dialog::resizeEvent(QResizeEvent *event)
