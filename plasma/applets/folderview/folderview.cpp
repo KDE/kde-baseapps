@@ -1244,7 +1244,6 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
 
             delete m_iconWidget;
             delete m_dialog;
-            delete m_listView;
             m_iconWidget = 0;
             m_dialog = 0;
             m_listView = 0;
