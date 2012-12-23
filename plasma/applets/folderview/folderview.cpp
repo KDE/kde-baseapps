@@ -626,6 +626,8 @@ void FolderView::configChanged()
 
 FolderView::~FolderView()
 {
+    if (m_dialog)
+        delete m_dialog;
     delete m_newMenu;
 }
 
