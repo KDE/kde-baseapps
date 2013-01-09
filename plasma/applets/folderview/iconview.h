@@ -216,8 +216,6 @@ private:
     QRect itemsBoundingRect() const;
     QRect adjustedContentsRect(int *rowCount, int *colCount) const;
     bool doLayoutSanityCheck();
-    void saveIconPositions() const;
-    void loadIconPositions();
     void updateScrollBar();
     void updateScrollBarGeometry();
     void updateEditorGeometry();
