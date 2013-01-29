@@ -79,6 +79,7 @@
 #include "dialog.h"
 #include "iconwidget.h"
 #include "label.h"
+#include "settings/settings.h"
 #include "settings/previewpluginsmodel.h"
 #include "settings/mimemodel.h"
 #include "settings/proxymimemodel.h"
@@ -88,25 +89,6 @@
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 
 Q_DECLARE_METATYPE(Qt::SortOrder)
-
-
-static QString sortOrderEnumToString(Qt::SortOrder order)
-{
-    if (order == Qt::AscendingOrder) {
-        return "ascending";
-    } else {
-        return "descending";
-    }
-}
-
-static Qt::SortOrder sortOrderStringToEnum(const QString& order)
-{
-    if (order == "ascending") {
-       return Qt::AscendingOrder;
-    } else {
-       return Qt::DescendingOrder;
-    }
-}
 
 
 // ---------------------------------------------------------------------------
@@ -181,10 +163,9 @@ void FolderView::init()
     m_alignToGrid         = cg.readEntry("alignToGrid", false);
     m_clickToView         = cg.readEntry("clickForFolderPreviews", true);
     m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail" << "jpegthumbnail");
-    m_customIconSize      = cg.readEntry("customIconSize", 0);
     m_sortDirsFirst       = cg.readEntry("sortDirsFirst", true);
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
-    m_sortOrder           = sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
+    m_sortOrder           = Settings::sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
     m_filterFiles         = cg.readEntry("filterFiles", "*");
     m_filterType          = cg.readEntry("filter", 0);
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
@@ -351,7 +332,7 @@ void FolderView::configChanged()
     }
 
     const int sortColumn = cg.readEntry("sortColumn", m_sortColumn);
-    const Qt::SortOrder sortOrder = sortOrderStringToEnum(cg.readEntry("sortOrder", sortOrderEnumToString(m_sortOrder)));
+    const Qt::SortOrder sortOrder = Settings::sortOrderStringToEnum(cg.readEntry("sortOrder", Settings::sortOrderEnumToString(m_sortOrder)));
     if ((m_sortColumn != sortColumn) || (m_sortOrder != m_sortOrder)) {
         m_sortColumn = sortColumn;
         m_sortOrder = sortOrder;
@@ -1645,7 +1626,7 @@ void FolderView::sortingOrderChanged(QAction *action)
         m_model->sort(m_sortColumn, order);
         m_model->setDynamicSortFilter(true);
         m_sortOrder = order;
-        config().writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
+        config().writeEntry("sortOrder", Settings::sortOrderEnumToString(m_sortOrder));
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
     }
