@@ -1,6 +1,5 @@
 /*
  *   Copyright © 2013 Ignat Semenov <ignat.semenov@blue-systems.org>
- *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Library General Public
@@ -18,21 +17,28 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#include "locationpage.h"
+#ifndef PAGEBASE_H
+#define PAGEBASE_H
+
+#include <qgraphicswidget.h>
+
+#include <KConfigDialog>
 
 
-LocationPage::LocationPage(KConfigDialog *parent, Settings *settings) : PageBase(parent, settings)
+class Settings;
+
+class PageBase : public QWidget
 {
-}
+    Q_OBJECT
 
-void LocationPage::createInterface()
-{
+public:
+    PageBase(KConfigDialog *parent, Settings *settings);
 
-}
+    virtual void createInterface() = 0;
+    virtual void saveSettings() = 0;
 
-void LocationPage::saveSettings()
-{
+protected:
+    Settings *m_settings;
+};
 
-}
-
-#include "locationpage.moc"
+#endif
