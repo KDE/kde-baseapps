@@ -61,8 +61,6 @@ public:
     bool isDir(const QModelIndex &index, const KDirModel *dirModel) const;
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
 
-    static FilterMode filterModeFromInt(int filterMode);
-
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
     bool matchMimeType(const KFileItem &item) const;
