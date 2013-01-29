@@ -1,5 +1,6 @@
 /*
  *   Copyright © 2012 Ignat Semenov <ignat.semenov@blue-systems.com>
+ *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Library General Public
@@ -24,15 +25,29 @@
 #include <QColor>
 #include <QStringList>
 
+#include <KConfigGroup>
 #include <KUrl>
 
 #include "../iconview.h"
+#include "../proxymodel.h"
+
 
 class Settings : public QObject
 {
+    Q_OBJECT
+
 public:
 
     Settings();
+
+    void loadDefaults();
+    void loadSettings(KConfigGroup &);
+    void writeSettings(KConfigGroup &);
+
+    static QString sortOrderEnumToString(Qt::SortOrder);
+    static Qt::SortOrder sortOrderStringToEnum(const QString&);
+    static QString filterModeEnumToString(ProxyModel::FilterMode);
+    static ProxyModel::FilterMode filterModeStringToEnum(const QString&);
 
 private:
 
