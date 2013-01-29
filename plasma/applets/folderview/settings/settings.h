@@ -46,8 +46,12 @@ public:
 
     static QString sortOrderEnumToString(Qt::SortOrder);
     static Qt::SortOrder sortOrderStringToEnum(const QString&);
+
     static QString filterModeEnumToString(ProxyModel::FilterMode);
     static ProxyModel::FilterMode filterModeStringToEnum(const QString&);
+
+    static QString iconFlowEnumToString(IconView::Flow);
+    static IconView::Flow iconFlowStringToEnum(const QString&);
 
 private:
 
