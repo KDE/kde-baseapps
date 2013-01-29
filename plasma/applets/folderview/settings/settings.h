@@ -72,7 +72,7 @@ private:
     int m_numTextLines;
     IconView::Flow m_flow;
 
-    int m_filterType;
+    ProxyModel::FilterMode m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
 };

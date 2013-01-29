@@ -24,7 +24,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QComboBox" name="filterType">
+    <widget class="QComboBox" name="filterCombo">
      <property name="toolTip">
       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -36,21 +36,6 @@ p, li { white-space: pre-wrap; }
      <property name="whatsThis">
       <string/>
      </property>
-     <item>
-      <property name="text">
-       <string>Show All Files</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Show Files Matching</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Hide Files Matching</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item>
@@ -200,11 +185,6 @@ For example, if you have &quot;*&quot; as your pattern, but have nothing selecte
    <class>KLineEdit</class>
    <extends>QLineEdit</extends>
    <header>klineedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>KComboBox</class>
-   <extends>QComboBox</extends>
-   <header>kcombobox.h</header>
   </customwidget>
  </customwidgets>
  <includes>
