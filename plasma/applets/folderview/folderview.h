@@ -33,6 +33,7 @@
 
 #include "iconview.h"
 #include "dirlister.h"
+#include "proxymodel.h"
 
 #include "ui_folderviewFilterConfig.h"
 #include "ui_folderviewDisplayConfig.h"
@@ -180,6 +181,7 @@ private:
     KUrl m_url;
     QColor m_textColor;
     QString m_titleText;
+    //ProxyModel::FilterMode m_filterType;
     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
