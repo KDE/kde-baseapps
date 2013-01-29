@@ -87,6 +87,7 @@
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 
 Q_DECLARE_METATYPE(Qt::SortOrder)
+Q_DECLARE_METATYPE(ProxyModel::FilterMode)
 
 MimeModel::MimeModel(QObject *parent)
     : QStringListModel(parent)
@@ -388,10 +389,9 @@ void FolderView::init()
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
     m_sortOrder           = sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
     m_filterFiles         = cg.readEntry("filterFiles", "*");
-    m_filterType          = cg.readEntry("filter", 0);
+    m_filterType          = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", 0));
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
     m_blankLabel          = cg.readEntry("blankLabel", false);
-    m_userSelectedShowAllFiles = m_filterType;
     m_showSelectionMarker = KGlobalSettings::singleClick();
 
     if (isContainment()) {
@@ -401,7 +401,7 @@ void FolderView::init()
     }
     m_flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
 
-    m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
+    m_model->setFilterMode(m_filterType);
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
     m_model->setFileNameFilter(m_filterFiles);
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
@@ -573,14 +573,12 @@ void FolderView::configChanged()
         m_flow = static_cast<IconView::Flow>(flow);
     }
 
-    const int filterType = cg.readEntry("filter", m_filterType);
+    const ProxyModel::FilterMode filterType = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(m_filterType)));
     if (filterType != m_filterType) {
         m_filterType = filterType;
-        m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
+        m_model->setFilterMode(m_filterType);
         needReload = true;
     }
-
-    m_userSelectedShowAllFiles = m_filterType;
 
     const QString filterFiles = cg.readEntry("filterFiles", m_filterFiles);
     if (filterFiles != m_filterFiles) {
@@ -757,6 +755,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), IconView::LeftToRight);
     uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), IconView::RightToLeft);
 
+    uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
+    uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
+    uiFilter.filterCombo->addItem(i18n("Hide Files Matching"), QVariant::fromValue(ProxyModel::FilterHideMatches));
+
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
     uiDisplay.clickToView->setChecked(m_clickToView);
     uiDisplay.lockInPlace->setChecked(m_iconsLocked);
@@ -780,6 +782,15 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
        }
     }
 
+    for (int i = 0; i < uiFilter.filterCombo->maxCount(); i++) {
+       if (m_filterType == uiFilter.filterCombo->itemData(i).value<ProxyModel::FilterMode>()) {
+           uiFilter.filterCombo->setCurrentIndex(i);
+           break;
+       }
+    }
+
+    filterChanged(uiFilter.filterCombo->currentIndex());
+
     // Hide the icon arrangement controls when we're not acting as a containment,
     // since this option doesn't make much sense in the applet.
     if (!isContainment()) {
@@ -797,25 +808,18 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
-    connect(uiFilter.filterType, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
-    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
+    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectAllMimetypes()));
+    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(deselectAllMimeTypes()));
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
-    KConfigGroup cg = config();
-    const int filter = cg.readEntry("filter", 0);
-    uiFilter.filterType->setCurrentIndex(filter);
-    filterChanged(filter);
-
-    QStringList selectedItems = cg.readEntry("mimeFilter", QStringList());
-
-    if (selectedItems.count()) {
+    if (m_filterFilesMimeList.count()) {
         for (int i = 0; i < pMimeModel->rowCount(); i++) {
             const QModelIndex index = pMimeModel->index(i, 0);
             const KMimeType *mime = static_cast<KMimeType*>(pMimeModel->mapToSource(index).internalPointer());
-            if (mime && selectedItems.contains(mime->name())) {
-                selectedItems.removeAll(mime->name());
+            if (mime && m_filterFilesMimeList.contains(mime->name())) {
+                m_filterFilesMimeList.removeAll(mime->name());
                 uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
             }
         }
@@ -833,7 +837,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiDisplay.colorButton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
     connect(uiDisplay.drawShadows, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
 
-    connect(uiFilter.filterType, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiFilter.filterFilesPattern, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
     connect(uiFilter.filterFilesList->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), parent, SLOT(settingsModified()));
 
@@ -905,7 +909,10 @@ void FolderView::configAccepted()
 
     cg.writeEntry("url", url);
     cg.writeEntry("filterFiles", uiFilter.filterFilesPattern->text());
-    cg.writeEntry("filter", uiFilter.filterType->currentIndex());
+
+    const ProxyModel::FilterMode filterMode =
+    uiFilter.filterCombo->itemData(uiFilter.filterCombo->currentIndex()).value<ProxyModel::FilterMode>();
+    cg.writeEntry("filter", static_cast<int>(filterMode));
 
     // Now, we have to iterate over all items (not only the filtered ones). For that reason we have
     // to ask the source model, not the proxy model.
@@ -1866,22 +1873,31 @@ void FolderView::updateSortActionsState()
 
 void FolderView::filterChanged(int index)
 {
-    uiFilter.filterFilesPattern->setEnabled(index != 0);
-    uiFilter.searchMimetype->setEnabled(index != 0);
-    uiFilter.filterFilesList->setEnabled(index != 0);
-    uiFilter.selectAll->setEnabled(index != 0);
-    uiFilter.deselectAll->setEnabled(index != 0);
-    if ((index != 0) && (m_userSelectedShowAllFiles == 0)) {
-      for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
-        const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
-        uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
-      }
+    const ProxyModel::FilterMode filterMode = uiFilter.filterCombo->itemData(index).value<ProxyModel::FilterMode>();
+    const bool filterActive = (filterMode != ProxyModel::NoFilter);
+
+    uiFilter.filterFilesPattern->setEnabled(filterActive);
+    uiFilter.searchMimetype->setEnabled(filterActive);
+    uiFilter.filterFilesList->setEnabled(filterActive);
+    uiFilter.selectAll->setEnabled(filterActive);
+    uiFilter.deselectAll->setEnabled(filterActive);
+    if (filterActive) {
+        selectAllMimetypes();
     }
 }
 
-void FolderView::selectUnselectAll()
+void FolderView::selectAllMimetypes()
 {
-    Qt::CheckState state = sender() == uiFilter.selectAll ? Qt::Checked : Qt::Unchecked;
+    toggleAllMimetypes(Qt::Checked);
+}
+
+void FolderView::deselectAllMimeTypes()
+{
+    toggleAllMimetypes(Qt::Unchecked);
+}
+
+void FolderView::toggleAllMimetypes(Qt::CheckState state)
+{
     for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);

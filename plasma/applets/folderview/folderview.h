@@ -36,6 +36,7 @@
 
 #include "iconview.h"
 #include "dirlister.h"
+#include "proxymodel.h"
 
 #include "ui_folderviewFilterConfig.h"
 #include "ui_folderviewDisplayConfig.h"
@@ -140,7 +141,8 @@ protected slots:
 
     void configAccepted();
     void filterChanged(int index);
-    void selectUnselectAll();
+    void selectAllMimetypes();
+    void deselectAllMimeTypes();
     void fontSettingsChanged();
     void iconSettingsChanged(int group);
     void clickSettingsChanged(int category);
@@ -171,6 +173,7 @@ private:
     void timerEvent(QTimerEvent *event);
     void recreateLayout();
     void setAppletTitle();
+    void toggleAllMimetypes(Qt::CheckState);
 
 private:
     KFileItemDelegate *m_delegate;
@@ -189,7 +192,7 @@ private:
     KUrl m_url;
     QColor m_textColor;
     QString m_titleText;
-    int m_filterType;
+    ProxyModel::FilterMode m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
     QPointer<KNewFileMenu> m_newMenu;
@@ -209,7 +212,6 @@ private:
     bool m_alignToGrid;
     bool m_clickToView;
     bool m_showSelectionMarker;
-    bool m_userSelectedShowAllFiles;
     bool m_blankLabel;
     QString m_customLabel;
     QStringList m_previewPlugins;
