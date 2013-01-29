@@ -181,8 +181,8 @@ private:
     KUrl m_url;
     QColor m_textColor;
     QString m_titleText;
-    //ProxyModel::FilterMode m_filterType;
-    int m_filterType;
+    ProxyModel::FilterMode m_filterType;
+//     int m_filterType;
     QString m_filterFiles;
     QStringList m_filterFilesMimeList;
     int m_sortColumn;
