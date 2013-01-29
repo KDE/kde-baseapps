@@ -68,6 +68,36 @@ ProxyModel::FilterMode Settings::filterModeStringToEnum(const QString& mode)
     }
 }
 
+QString Settings::iconFlowEnumToString(IconView::Flow flow)
+{
+    switch (flow) {
+        case IconView::LeftToRight:
+            return "leftToRight";
+            break;
+        case IconView::RightToLeft:
+            return "rightToLeft";
+            break;
+        case IconView::TopToBottom:
+            return "topToBottomLeftToRight";
+            break;
+        default:
+            return "topToBotomRightToLeft";
+            break;
+    }
+}
+
+IconView::Flow Settings::iconFlowStringToEnum(const QString& flow)
+{
+    if (flow == "leftToRight") {
+        return IconView::LeftToRight;
+    } else if (flow == "rightToLeft") {
+        return IconView::RightToLeft;
+    } else if (flow == "topToBottomLeftToRight") {
+        return IconView::TopToBottom;
+    } else {
+        return IconView::TopToBottomRightToLeft;
+    }
+}
 
 Settings::Settings()
     : QObject()
