@@ -1,6 +1,5 @@
 /*
  *   Copyright © 2013 Ignat Semenov <ignat.semenov@blue-systems.org>
- *   Copyright © 2008, 2009 Fredrik Höglund <fredrik@kde.org>
  *
  *   This library is free software; you can redistribute it and/or
  *   modify it under the terms of the GNU Library General Public
@@ -18,21 +17,9 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#include "locationpage.h"
+#include "pagebase.h"
 
 
-LocationPage::LocationPage(KConfigDialog *parent, Settings *settings) : PageBase(parent, settings)
-{
-}
+PageBase::PageBase(KConfigDialog *parent, Settings *settings) : QWidget(parent), m_settings(settings) {}
 
-void LocationPage::createInterface()
-{
-
-}
-
-void LocationPage::saveSettings()
-{
-
-}
-
-#include "locationpage.moc"
+#include "pagebase.moc"
