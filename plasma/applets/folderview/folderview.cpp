@@ -167,8 +167,7 @@ void FolderView::init()
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
     m_sortOrder           = Settings::sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
     m_filterFiles         = cg.readEntry("filterFiles", "*");
-    //m_filterType          = cg.readEntry("filter", ProxyModel::NoFilter);
-    m_filterType          = cg.readEntry("filter", 0);
+    m_filterType          = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", 0));
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
     m_blankLabel          = cg.readEntry("blankLabel", false);
     m_userSelectedShowAllFiles = m_filterType;
@@ -181,8 +180,7 @@ void FolderView::init()
     }
     m_flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
 
-    //m_model->setFilterMode(m_filterType);
-    m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
+    m_model->setFilterMode(m_filterType);
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
     m_model->setFileNameFilter(m_filterFiles);
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
@@ -354,11 +352,10 @@ void FolderView::configChanged()
         m_flow = static_cast<IconView::Flow>(flow);
     }
 
-    //const ProxyModel::FilterMode filterType = cg.readEntry("filter", m_filterType);
-    const int filterType = cg.readEntry("filter", m_filterType);
+    const ProxyModel::FilterMode filterType = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(m_filterType)));
     if (filterType != m_filterType) {
         m_filterType = filterType;
-        m_model->setFilterMode(ProxyModel::filterModeFromInt(m_filterType));
+        m_model->setFilterMode(m_filterType);
         needReload = true;
     }
 
