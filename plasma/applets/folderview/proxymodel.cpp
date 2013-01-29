@@ -226,18 +226,6 @@ bool ProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) con
     return QString::compare(leftItem.url().url(), rightItem.url().url(), Qt::CaseSensitive);
 }
 
-ProxyModel::FilterMode ProxyModel::filterModeFromInt(int filterMode)
-{
-    switch (filterMode) {
-        case 0:
-            return ProxyModel::NoFilter;
-        case 1:
-            return ProxyModel::FilterShowMatches;
-        default:
-            return ProxyModel::FilterHideMatches;
-    }
-}
-
 inline bool ProxyModel::matchMimeType(const KFileItem &item) const
 {
     if (m_mimeSet.isEmpty()) {
