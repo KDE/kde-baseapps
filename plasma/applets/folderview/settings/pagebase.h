@@ -20,8 +20,6 @@
 #ifndef PAGEBASE_H
 #define PAGEBASE_H
 
-#include <qgraphicswidget.h>
-
 #include <KConfigDialog>
 
 
