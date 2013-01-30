@@ -70,21 +70,12 @@ LocationPage::LocationPage(KConfigDialog *dialog, Settings *settings) : PageBase
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
 
-    loadSettings();
-
-    connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
-    connect(uiLocation.showActivity, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
-    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
-    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
-    connect(uiLocation.placesCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(settingsChanged()));
-    connect(uiLocation.lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(settingsChanged()));
-
-    connect(this, SIGNAL(settingsChanged()), dialog, SLOT(settingsModified()));
-}
-
-void LocationPage::loadSettings()
-{
-
+    connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
+    connect(uiLocation.showActivity, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
+    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
+    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
+    connect(uiLocation.placesCombo, SIGNAL(currentIndexChanged(int)), parent(), SLOT(settingsModified()));
+    connect(uiLocation.lineEdit, SIGNAL(textChanged(QString)), parent(), SLOT(settingsModified()));
 }
 
 void LocationPage::saveSettings()

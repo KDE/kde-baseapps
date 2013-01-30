@@ -37,7 +37,6 @@ public:
     LocationPage(KConfigDialog *parent, Settings *settings);
 
 protected:
-    void loadSettings();
     void saveSettings();
 
 private:

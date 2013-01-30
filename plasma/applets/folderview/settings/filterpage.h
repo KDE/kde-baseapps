@@ -36,11 +36,11 @@ public:
     FilterPage(KConfigDialog *parent, Settings *settings);
 
 protected:
-    void loadSettings();
     void saveSettings();
 
 private slots:
     void selectUnselectAll();
+    void filterChanged();
 
 private:
     QPointer<MimeModel> m_mimeModel;
