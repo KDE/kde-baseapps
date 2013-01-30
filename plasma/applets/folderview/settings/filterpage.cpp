@@ -44,15 +44,10 @@ FilterPage::FilterPage(KConfigDialog* parent, Settings* settings): PageBase(pare
        }
     }
 
-    connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), m_proxyMimeModel, SLOT(setFilter(QString)));
-    connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
-    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-
     if (m_filterFilesMimeList.count()) {
         for (int i = 0; i < pMimeModel->rowCount(); i++) {
             const QModelIndex index = pMimeModel->index(i, 0);
-            const KMimeType *mime = static_cast<KMimeType*>(pMimeModel->mapToSource(index).internalPointer());
+            const KMimeType *mime = static_cast<KMimeType*>(m_proxyMimeModel->mapToSource(index).internalPointer());
             if (mime && m_filterFilesMimeList.contains(mime->name())) {
                 m_filterFilesMimeList.removeAll(mime->name());
                 uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
@@ -60,7 +55,10 @@ FilterPage::FilterPage(KConfigDialog* parent, Settings* settings): PageBase(pare
         }
     }
 
-    loadSettings();
+    connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), m_proxyMimeModel, SLOT(setFilter(QString)));
+    connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
+    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
 
     connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiFilter.filterFilesPattern, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
@@ -73,6 +71,21 @@ void FilterPage::selectUnselectAll()
     for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);
+    }
+}
+
+void FilterPage::filterChanged()
+{
+    uiFilter.filterFilesPattern->setEnabled(index != 0);
+    uiFilter.searchMimetype->setEnabled(index != 0);
+    uiFilter.filterFilesList->setEnabled(index != 0);
+    uiFilter.selectAll->setEnabled(index != 0);
+    uiFilter.deselectAll->setEnabled(index != 0);
+    if ((index != 0) && (m_userSelectedShowAllFiles == 0)) {
+      for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
+        const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
+        uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
+      }
     }
 }
 
