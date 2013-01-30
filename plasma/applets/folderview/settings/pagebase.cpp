@@ -20,6 +20,8 @@
 #include "pagebase.h"
 
 
-PageBase::PageBase(KConfigDialog *parent, Settings *settings) : QWidget(parent), m_settings(settings) {}
+PageBase::PageBase(KConfigDialog *dialog, Settings *settings) : QWidget(dialog), m_settings(settings)
+{
+}
 
 #include "pagebase.moc"

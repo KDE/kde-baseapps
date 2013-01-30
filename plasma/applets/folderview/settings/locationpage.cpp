@@ -20,12 +20,69 @@
 
 #include "locationpage.h"
 
+#include <KGlobalSettings>
 
-LocationPage::LocationPage(KConfigDialog *parent, Settings *settings) : PageBase(parent, settings)
+
+LocationPage::LocationPage(KConfigDialog *dialog, Settings *settings) : PageBase(dialog, settings)
 {
+    uiLocation.setupUi(this);
+
+    m_placesModel = new KFilePlacesModel(this);
+    m_placesFilterModel = new PlacesFilterModel(this);
+    m_placesFilterModel->setSourceModel(m_placesModel);
+
+    uiLocation.placesCombo->setModel(m_placesFilterModel);
+
+    QDir desktopFolder(KGlobalSettings::desktopPath());
+    const bool desktopVisible = desktopFolder != QDir::homePath() && desktopFolder.exists();
+    uiLocation.showDesktopFolder->setVisible(desktopVisible);
+
+    if (desktopVisible && m_url == KUrl("desktop:/")) {
+        uiLocation.showDesktopFolder->setChecked(true);
+        uiLocation.placesCombo->setEnabled(false);
+        uiLocation.lineEdit->setEnabled(false);
+    } else if (m_url == KUrl("activities:/current/")) {
+        uiLocation.showActivity->setChecked(true);
+        uiLocation.placesCombo->setEnabled(false);
+        uiLocation.lineEdit->setEnabled(false);
+    } else {
+        QModelIndex index;
+        for (int i = 0; i < m_placesFilterModel->rowCount(); i++) {
+            const KUrl url = m_placesModel->url(m_placesFilterModel->mapToSource(m_placesFilterModel->index(i, 0)));
+            if (url.equals(m_url, KUrl::CompareWithoutTrailingSlash)) {
+                index = m_placesFilterModel->index(i, 0);
+                break;
+            }
+        }
+        if (index.isValid()) {
+            uiLocation.placesCombo->setCurrentIndex(index.row());
+            uiLocation.showPlace->setChecked(true);
+            uiLocation.lineEdit->setEnabled(false);
+        } else {
+            uiLocation.showCustomFolder->setChecked(true);
+            uiLocation.lineEdit->setUrl(m_url);
+            uiLocation.placesCombo->setEnabled(false);
+        }
+    }
+
+    uiLocation.lineEdit->setMode(KFile::Directory);
+
+    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
+    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
+
+    loadSettings();
+
+    connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
+    connect(uiLocation.showActivity, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
+    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
+    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), this, SIGNAL(settingsChanged()));
+    connect(uiLocation.placesCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(settingsChanged()));
+    connect(uiLocation.lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(settingsChanged()));
+
+    connect(this, SIGNAL(settingsChanged()), dialog, SLOT(settingsModified()));
 }
 
-void LocationPage::createInterface()
+void LocationPage::loadSettings()
 {
 
 }
