@@ -24,13 +24,20 @@
 
 FilterPage::FilterPage(KConfigDialog* parent, Settings* settings): PageBase(parent, settings)
 {
-    uiFilter.setupUi(this);
+}
 
+void FilterPage::preSetupUi()
+{
     m_mimeModel = new MimeModel(uiFilter.filterFilesList);
     m_proxyMimeModel = new ProxyMimeModel(uiFilter.filterFilesList);
     m_proxyMimeModel->setSourceModel(m_mimeModel);
-    uiFilter.filterFilesList->setModel(m_proxyMimeModel);
 
+    uiFilter.setupUi(this);
+}
+
+void FilterPage::setupUi()
+{
+    uiFilter.filterFilesList->setModel(m_proxyMimeModel);
     uiFilter.filterFilesPattern->setText(m_filterFiles);
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), ProxyModel::NoFilter);
@@ -54,7 +61,10 @@ FilterPage::FilterPage(KConfigDialog* parent, Settings* settings): PageBase(pare
             }
         }
     }
+}
 
+void FilterPage::postSetupUI()
+{
     connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), m_proxyMimeModel, SLOT(setFilter(QString)));
     connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
     connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
@@ -65,6 +75,7 @@ FilterPage::FilterPage(KConfigDialog* parent, Settings* settings): PageBase(pare
     connect(uiFilter.filterFilesList->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), parent, SLOT(settingsModified()));
 }
 
+// ==========Helper functions========
 void FilterPage::selectUnselectAll()
 {
     Qt::CheckState state = sender() == uiFilter.selectAll ? Qt::Checked : Qt::Unchecked;

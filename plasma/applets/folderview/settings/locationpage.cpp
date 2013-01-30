@@ -25,12 +25,19 @@
 
 LocationPage::LocationPage(KConfigDialog *dialog, Settings *settings) : PageBase(dialog, settings)
 {
-    uiLocation.setupUi(this);
+}
 
+void LocationPage::preSetupUi()
+{
     m_placesModel = new KFilePlacesModel(this);
     m_placesFilterModel = new PlacesFilterModel(this);
     m_placesFilterModel->setSourceModel(m_placesModel);
 
+    uiLocation.setupUi(this);
+}
+
+void LocationPage::setupUi()
+{
     uiLocation.placesCombo->setModel(m_placesFilterModel);
 
     QDir desktopFolder(KGlobalSettings::desktopPath());
@@ -66,7 +73,10 @@ LocationPage::LocationPage(KConfigDialog *dialog, Settings *settings) : PageBase
     }
 
     uiLocation.lineEdit->setMode(KFile::Directory);
+}
 
+void LocationPage::postSetupUI()
+{
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
 
