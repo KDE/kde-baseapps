@@ -32,7 +32,20 @@ class PageBase : public QWidget
 public:
     PageBase(KConfigDialog *dialog, Settings *settings);
 
+    /** Call to setup and initialize the page UI with settings. */
+    void init();
+
 protected:
+    /** Create models etc. */
+    virtual void preSetupUi() = 0;
+
+    /** Setup the page UI and load settings into it. */
+    virtual void setupUi() = 0;
+
+    /** Connect field modification signals after the UI has been setup. */
+    virtual void postSetupUI() = 0;
+
+    /** Write back the settings from the UI. */
     virtual void saveSettings() = 0;
 
     Settings *m_settings;
