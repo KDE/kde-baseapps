@@ -25,6 +25,7 @@
 
 #include "mimemodel.h"
 #include "proxymimemodel.h"
+
 #include "ui_folderviewFilterConfig.h"
 
 
