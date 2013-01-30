@@ -36,6 +36,9 @@ public:
     DisplayPage(KConfigDialog *parent, Settings *settings);
 
 protected:
+    virtual void preSetupUi();
+    virtual void setupUi();
+    virtual void postSetupUI();
     void saveSettings();
 
 protected slots:

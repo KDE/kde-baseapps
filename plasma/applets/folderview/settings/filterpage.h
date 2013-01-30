@@ -37,6 +37,9 @@ public:
     FilterPage(KConfigDialog *parent, Settings *settings);
 
 protected:
+    virtual void preSetupUi();
+    virtual void setupUi();
+    virtual void postSetupUI();
     void saveSettings();
 
 private slots:

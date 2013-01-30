@@ -27,13 +27,20 @@
 
 DisplayPage::DisplayPage(KConfigDialog* parent, Settings* settings): PageBase(parent, settings)
 {
+}
+
+void DisplayPage::preSetupUi()
+{
     uiDisplay.setupUi(this);
 
     m_titleLineEdit = new KLineEdit(this);
     m_titleLineEdit->setClearButtonShown(false);
     m_titleLineEdit->setClickMessage(i18n("Title"));
     uiDisplay.titleEdit->setLineEdit(m_titleLineEdit);
+}
 
+void DisplayPage::setupUi()
+{
     QString configTitleText = m_customLabel;
     if (m_customLabel.isEmpty() || m_customLabel == "___EMPTY___") {
         configTitleText = i18n("None");
@@ -95,7 +102,10 @@ DisplayPage::DisplayPage(KConfigDialog* parent, Settings* settings): PageBase(pa
            break;
        }
     }
+}
 
+void DisplayPage::postSetupUI()
+{
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
@@ -112,6 +122,7 @@ DisplayPage::DisplayPage(KConfigDialog* parent, Settings* settings): PageBase(pa
     connect(uiDisplay.drawShadows, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
 }
 
+// ==========Helper functions========
 void DisplayPage::showPreviewConfigDialog()
 {
     QWidget *widget = new QWidget;

@@ -24,4 +24,11 @@ PageBase::PageBase(KConfigDialog *dialog, Settings *settings) : QWidget(dialog),
 {
 }
 
+void PageBase::init()
+{
+    preSetupUi();
+    setupUi();
+    postSetupUI();
+}
+
 #include "pagebase.moc"
