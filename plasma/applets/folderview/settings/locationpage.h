@@ -23,6 +23,11 @@
 
 #include "pagebase.h"
 
+#include <KFilePlacesModel>
+
+#include "placesfiltermodel.h"
+#include "ui_folderviewLocationConfig.h"
+
 
 class LocationPage : public PageBase
 {
@@ -31,8 +36,14 @@ class LocationPage : public PageBase
 public:
     LocationPage(KConfigDialog *parent, Settings *settings);
 
-    void createInterface();
+protected:
+    void loadSettings();
     void saveSettings();
+
+private:
+    QPointer<KFilePlacesModel> m_placesModel;
+    QPointer<PlacesFilterModel> m_placesFilterModel;
+    Ui::folderviewLocationConfig uiLocation;
 };
 
 #endif

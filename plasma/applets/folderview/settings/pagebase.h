@@ -32,12 +32,17 @@ class PageBase : public QWidget
     Q_OBJECT
 
 public:
-    PageBase(KConfigDialog *parent, Settings *settings);
 
-    virtual void createInterface() = 0;
-    virtual void saveSettings() = 0;
+    PageBase(KConfigDialog *dialog, Settings *settings);
+
+protected signals:
+
+    void settingsChanged();
 
 protected:
+
+    virtual void saveSettings() = 0;
+
     Settings *m_settings;
 };
 
