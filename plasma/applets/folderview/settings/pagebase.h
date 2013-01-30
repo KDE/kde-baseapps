@@ -32,9 +32,6 @@ class PageBase : public QWidget
 public:
     PageBase(KConfigDialog *dialog, Settings *settings);
 
-protected signals:
-    void settingsChanged();
-
 protected:
     virtual void saveSettings() = 0;
 
