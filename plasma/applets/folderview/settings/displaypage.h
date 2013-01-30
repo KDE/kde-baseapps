@@ -25,6 +25,7 @@
 #include <KLineEdit>
 
 #include "ui_folderviewDisplayConfig.h"
+#include "ui_folderviewPreviewConfig.h"
 
 
 class DisplayPage : public PageBase
@@ -37,9 +38,13 @@ public:
 protected:
     void saveSettings();
 
+protected slots:
+    void showPreviewConfigDialog();
+
 private:
     QPointer<KLineEdit> m_titleLineEdit;
     Ui::folderviewDisplayConfig uiDisplay;
+    Ui::folderviewPreviewConfig uiPreviewConfig;
 };
 
 #endif
