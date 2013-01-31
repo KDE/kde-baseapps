@@ -28,16 +28,16 @@ FilterPage::FilterPage(KConfigDialog* parent, Settings* settings): PageBase(pare
 
 void FilterPage::preSetupUi()
 {
+    uiFilter.setupUi(this);
+
     m_mimeModel = new MimeModel(uiFilter.filterFilesList);
     m_proxyMimeModel = new ProxyMimeModel(uiFilter.filterFilesList);
     m_proxyMimeModel->setSourceModel(m_mimeModel);
-
-    uiFilter.setupUi(this);
+    uiFilter.filterFilesList->setModel(m_proxyMimeModel);
 }
 
 void FilterPage::setupUi()
 {
-    uiFilter.filterFilesList->setModel(m_proxyMimeModel);
     uiFilter.filterFilesPattern->setText(m_filterFiles);
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), ProxyModel::NoFilter);
