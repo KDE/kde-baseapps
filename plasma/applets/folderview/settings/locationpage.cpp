@@ -29,21 +29,20 @@ LocationPage::LocationPage(KConfigDialog *dialog, Settings *settings) : PageBase
 
 void LocationPage::preSetupUi()
 {
+    uiLocation.setupUi(this);
+
     m_placesModel = new KFilePlacesModel(this);
     m_placesFilterModel = new PlacesFilterModel(this);
     m_placesFilterModel->setSourceModel(m_placesModel);
-
-    uiLocation.setupUi(this);
+    uiLocation.placesCombo->setModel(m_placesFilterModel);
+    uiLocation.lineEdit->setMode(KFile::Directory);
 }
 
 void LocationPage::setupUi()
 {
-    uiLocation.placesCombo->setModel(m_placesFilterModel);
-
     QDir desktopFolder(KGlobalSettings::desktopPath());
     const bool desktopVisible = desktopFolder != QDir::homePath() && desktopFolder.exists();
     uiLocation.showDesktopFolder->setVisible(desktopVisible);
-
     if (desktopVisible && m_url == KUrl("desktop:/")) {
         uiLocation.showDesktopFolder->setChecked(true);
         uiLocation.placesCombo->setEnabled(false);
@@ -71,8 +70,6 @@ void LocationPage::setupUi()
             uiLocation.placesCombo->setEnabled(false);
         }
     }
-
-    uiLocation.lineEdit->setMode(KFile::Directory);
 }
 
 void LocationPage::postSetupUI()
