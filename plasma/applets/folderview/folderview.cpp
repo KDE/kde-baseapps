@@ -2164,6 +2164,7 @@ void FolderView::setTitleEditEnabled(int index)
 {
     if (uiLocation.titleCombo->itemData(index).value<FolderView::LabelType>() == FolderView::Custom) {
         uiLocation.titleEdit->setEnabled(true);
+        uiLocation.titleEdit->setFocus();
     } else {
         uiLocation.titleEdit->setEnabled(false);
     }
