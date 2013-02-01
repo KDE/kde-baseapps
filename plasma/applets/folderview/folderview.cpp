@@ -491,11 +491,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiLocation.titleCombo->addItem(i18n("None"), FolderView::None);
     uiLocation.titleCombo->addItem(i18n("Default"), FolderView::PlaceName);
     uiLocation.titleCombo->addItem(i18n("Full Path"), FolderView::FullPath);
+    uiLocation.titleCombo->addItem(i18n("Custom title"), FolderView::Custom);
 
-    uiLocation.selectTitle->setChecked(m_labelType != FolderView::Custom);
-    uiLocation.customTitle->setChecked(m_labelType == FolderView::Custom);
-    uiLocation.titleCombo->setEnabled(uiLocation.selectTitle->isChecked());
-    uiLocation.titleEdit->setEnabled(uiLocation.customTitle->isChecked());
+    uiLocation.titleEdit->setEnabled(m_labelType == FolderView::Custom);
 
     if (m_labelType == FolderView::Custom) {
         uiLocation.titleEdit->setText(m_customLabel);
@@ -507,8 +505,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         uiLocation.titleLabel->hide();
         uiLocation.titleCombo->hide();
         uiLocation.titleEdit->hide();
-        uiLocation.selectTitle->hide();
-        uiLocation.customTitle->hide();
     }
 
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
@@ -558,7 +554,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     // Custom not handled in the dropdown
-    for (int i = 0; i < static_cast<int>(Custom); i++) {
+    for (int i = 0; i < uiLocation.titleCombo->maxCount(); i++) {
        if (m_labelType == uiLocation.titleCombo->itemData(i).toInt()) {
            uiLocation.titleCombo->setCurrentIndex(i);
            break;
@@ -602,8 +598,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
-    connect(uiLocation.selectTitle, SIGNAL(toggled(bool)), uiLocation.titleCombo, SLOT(setEnabled(bool)));
-    connect(uiLocation.customTitle, SIGNAL(toggled(bool)), uiLocation.titleEdit, SLOT(setEnabled(bool)));
+    connect(uiLocation.titleCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(setTitleEditEnabled(int)));
     connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
     connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
     connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
@@ -629,8 +624,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.showActivity, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
-    connect(uiLocation.selectTitle, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
-    connect(uiLocation.customTitle, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.titleCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiLocation.titleEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
@@ -697,14 +690,11 @@ void FolderView::configAccepted()
     cg.writeEntry("filterFiles", uiFilter.filterFilesPattern->text());
     cg.writeEntry("filter", uiFilter.filterCombo->currentIndex());
 
-    const bool useCustomTitle = uiLocation.customTitle->isChecked();
+    const FolderView::LabelType labelType = static_cast<FolderView::LabelType>(uiLocation.titleCombo->itemData(uiLocation.titleCombo->currentIndex()).toInt());
     QString customTitle;
-    LabelType labelType;
-    if (useCustomTitle) {
-        labelType = FolderView::Custom;
+    if (labelType == FolderView::Custom) {
         customTitle = uiLocation.titleEdit->text();
     } else {
-        labelType = static_cast<LabelType>(uiLocation.titleCombo->itemData(uiLocation.titleCombo->currentIndex()).toInt());
         customTitle.clear();
     }
     cg.writeEntry("labelType", static_cast<int>(labelType));
@@ -1940,6 +1930,15 @@ QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 
     return Containment::sizeHint(which, constraint);
 
+}
+
+void FolderView::setTitleEditEnabled(int index)
+{
+    if (uiLocation.titleCombo->itemData(index).toInt() == FolderView::Custom) {
+        uiLocation.titleEdit->setEnabled(true);
+    } else {
+        uiLocation.titleEdit->setEnabled(false);
+    }
 }
 
 #include "folderview.moc"

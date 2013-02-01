@@ -128,6 +128,7 @@ protected slots:
 
 private slots:
     void networkAvailable();
+    void setTitleEditEnabled(int);
 
 private:
     void updatePasteAction();
