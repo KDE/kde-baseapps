@@ -1933,6 +1933,7 @@ void FolderView::setTitleEditEnabled(int index)
 {
     if (uiLocation.titleCombo->itemData(index).toInt() == FolderView::Custom) {
         uiLocation.titleEdit->setEnabled(true);
+        uiLocation.titleEdit->setFocus();
     } else {
         uiLocation.titleEdit->setEnabled(false);
     }
