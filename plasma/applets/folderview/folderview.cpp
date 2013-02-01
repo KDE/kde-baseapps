@@ -89,6 +89,9 @@
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 
 Q_DECLARE_METATYPE(Qt::SortOrder)
+Q_DECLARE_METATYPE(IconView::Flow)
+Q_DECLARE_METATYPE(ProxyModel::FilterMode)
+Q_DECLARE_METATYPE(FolderView::LabelType)
 
 
 // ---------------------------------------------------------------------------
@@ -166,9 +169,10 @@ void FolderView::init()
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
     m_sortOrder           = Settings::sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
     m_filterFiles         = cg.readEntry("filterFiles", "*");
-    m_filterType          = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", 0));
+    m_filterType          = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(ProxyModel::NoFilter)));
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
-    m_blankLabel          = cg.readEntry("blankLabel", false);
+//     m_blankLabel          = cg.readEntry("blankLabel", false);
+    m_labelType           = static_cast<LabelType>(cg.readEntry("labelType", static_cast<int>(FolderView::None)));
     m_userSelectedShowAllFiles = m_filterType;
     m_showSelectionMarker = KGlobalSettings::singleClick();
 
@@ -254,19 +258,19 @@ void FolderView::configChanged()
     bool needReload = false;
     bool preserveIconPositions = false;
 
+    const LabelType labelType = static_cast<LabelType>(cg.readEntry("labelType", static_cast<int>(m_labelType)));
+    if (labelType != m_labelType) {
+        m_labelType = labelType;
+        needReload = true;
+    }
+
     //Reload m_customLabel values
     const QString label = cg.readEntry("customLabel", m_customLabel);
     if (label != m_customLabel) {
         m_customLabel = label;
-        setAppletTitle();
         needReload = true;
     }
 
-    const bool blank = cg.readEntry("blankLabel", m_blankLabel);
-    if (blank != m_blankLabel) {
-        m_blankLabel = blank;
-        needReload = true;
-    }
     //Reload m_customIconSize values
     const int size = m_customIconSize;
     m_customIconSize = cg.readEntry("customIconSize", m_customIconSize);
@@ -484,37 +488,28 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     pMimeModel->setSourceModel(mimeModel);
     uiFilter.filterFilesList->setModel(pMimeModel);
 
+    uiLocation.titleCombo->addItem(i18n("None"), FolderView::None);
+    uiLocation.titleCombo->addItem(i18n("Default"), FolderView::PlaceName);
+    uiLocation.titleCombo->addItem(i18n("Full Path"), FolderView::FullPath);
+
+    uiLocation.selectTitle->setChecked(m_labelType != FolderView::Custom);
+    uiLocation.customTitle->setChecked(m_labelType == FolderView::Custom);
+    uiLocation.titleCombo->setEnabled(uiLocation.selectTitle->isChecked());
+    uiLocation.titleEdit->setEnabled(uiLocation.customTitle->isChecked());
+
+    if (m_labelType == FolderView::Custom) {
+        uiLocation.titleEdit->setText(m_customLabel);
+    }
+
     // The label is not shown when the applet is acting as a containment,
     // so don't confuse the user by making it editable.
     if (isContainment()) {
-        uiDisplay.titleLabel->hide();
-        uiDisplay.titleEdit->hide();
-        uiDisplay.headerTitle->hide();
+        uiLocation.titleLabel->hide();
+        uiLocation.titleCombo->hide();
+        uiLocation.titleEdit->hide();
+        uiLocation.selectTitle->hide();
+        uiLocation.customTitle->hide();
     }
-
-    KLineEdit *ledit = new KLineEdit(widgetDisplay);
-    ledit->setClearButtonShown(false);
-    ledit->setClickMessage(i18n("Title"));
-    uiDisplay.titleEdit->setLineEdit(ledit);
-
-    QString configTitleText = m_customLabel;
-    if (m_customLabel.isEmpty() || m_customLabel == "___EMPTY___") {
-        configTitleText = i18n("None");
-    } else if (m_customLabel == "___DEFAULT___") {
-        configTitleText = i18n("Default");
-    } else if (m_customLabel == "___FULL___") {
-        configTitleText = i18n("Full path");
-    } else {
-        uiDisplay.titleEdit->addItem(m_customLabel);
-    }
-
-    uiDisplay.titleEdit->addItem(i18n("None"));
-    uiDisplay.titleEdit->addItem(i18n("Default"));
-    uiDisplay.titleEdit->addItem(i18n("Full path"));
-    uiDisplay.titleEdit->setCurrentItem(configTitleText);
-    uiDisplay.titleEdit->completionBox()->setActivateOnSelect(true);
-    uiDisplay.titleEdit->setCompletionMode(KGlobalSettings::CompletionPopupAuto);
-    connect(uiDisplay.titleEdit->lineEdit(), SIGNAL(editingFinished()), this, SLOT(setTitleText()));
 
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
     uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
@@ -562,6 +557,14 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
        }
     }
 
+    // Custom not handled in the dropdown
+    for (int i = 0; i < static_cast<int>(Custom); i++) {
+       if (m_labelType == uiLocation.titleCombo->itemData(i).toInt()) {
+           uiLocation.titleCombo->setCurrentIndex(i);
+           break;
+       }
+    }
+
     for (int i = 0; i < uiFilter.filterCombo->maxCount(); i++) {
        if (m_filterType == uiFilter.filterCombo->itemData(i).toInt()) {
            uiFilter.filterCombo->setCurrentIndex(i);
@@ -570,31 +573,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     filterChanged(m_filterType);
-
-    // Hide the icon arrangement controls when we're not acting as a containment,
-    // since this option doesn't make much sense in the applet.
-    if (!isContainment()) {
-        uiDisplay.flowLabel->hide();
-        uiDisplay.flowCombo->hide();
-    }
-
-    connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
-
-    parent->addPage(widgetLocation, i18nc("Title of the page that lets the user choose which location should the folderview show", "Location"), "folder");
-    parent->addPage(widgetDisplay, i18nc("Title of the page that lets the user choose how the folderview should be shown", "Display"), "preferences-desktop-display");
-    parent->addPage(widgetFilter, i18nc("Title of the page that lets the user choose how to filter the folderview contents", "Filter"), "view-filter");
-
-    connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
-    connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
-    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
-    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
-    connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
-    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
-    connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
-
-//     QStringList selectedItems = cg.readEntry("mimeFilter", QStringList());
 
     if (m_filterFilesMimeList.count()) {
         for (int i = 0; i < pMimeModel->rowCount(); i++) {
@@ -607,7 +585,32 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         }
     }
 
-    connect(uiDisplay.titleEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
+    // Hide the icon arrangement controls when we're not acting as a containment,
+    // since this option doesn't make much sense in the applet.
+    if (!isContainment()) {
+        uiDisplay.flowLabel->hide();
+        uiDisplay.flowCombo->hide();
+    }
+
+    parent->addPage(widgetLocation, i18nc("Title of the page that lets the user choose which location should the folderview show", "Location"), "folder");
+    parent->addPage(widgetDisplay, i18nc("Title of the page that lets the user choose how the folderview should be shown", "Display"), "preferences-desktop-display");
+    parent->addPage(widgetFilter, i18nc("Title of the page that lets the user choose how to filter the folderview contents", "Filter"), "view-filter");
+
+    connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
+    connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
+
+    connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), pMimeModel, SLOT(setFilter(QString)));
+    connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
+    connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
+    connect(uiLocation.selectTitle, SIGNAL(toggled(bool)), uiLocation.titleCombo, SLOT(setEnabled(bool)));
+    connect(uiLocation.customTitle, SIGNAL(toggled(bool)), uiLocation.titleEdit, SLOT(setEnabled(bool)));
+    connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
+    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
+    connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
+
+
     connect(uiDisplay.flowCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sizeSlider, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
@@ -626,6 +629,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.showActivity, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiLocation.selectTitle, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiLocation.customTitle, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiLocation.titleCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiLocation.titleEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.placesCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiLocation.lineEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
@@ -686,12 +693,22 @@ void FolderView::configAccepted()
     cg.writeEntry("clickForFolderPreviews", uiDisplay.clickToView->isChecked());
     cg.writeEntry("iconsLocked", uiDisplay.lockInPlace->isChecked());
 
-    cg.writeEntry("blankLabel" , m_blankLabel);
-    cg.writeEntry("customLabel", m_customLabel);
-
     cg.writeEntry("url", url);
     cg.writeEntry("filterFiles", uiFilter.filterFilesPattern->text());
     cg.writeEntry("filter", uiFilter.filterCombo->currentIndex());
+
+    const bool useCustomTitle = uiLocation.customTitle->isChecked();
+    QString customTitle;
+    LabelType labelType;
+    if (useCustomTitle) {
+        labelType = FolderView::Custom;
+        customTitle = uiLocation.titleEdit->text();
+    } else {
+        labelType = static_cast<LabelType>(uiLocation.titleCombo->itemData(uiLocation.titleCombo->currentIndex()).toInt());
+        customTitle.clear();
+    }
+    cg.writeEntry("labelType", static_cast<int>(labelType));
+    cg.writeEntry("customLabel", customTitle);
 
     // Now, we have to iterate over all items (not only the filtered ones). For that reason we have
     // to ask the source model, not the proxy model.
@@ -892,7 +909,7 @@ void FolderView::setupIconView()
     QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    if (m_label && !m_blankLabel) {
+    if (m_label && (m_labelType != FolderView::None)) {
         layout->addItem(m_label);
     }
     layout->addItem(m_iconView);
@@ -1174,11 +1191,11 @@ void FolderView::setUrl(const KUrl &url)
 
 void FolderView::setAppletTitle()
 {
-    if (m_customLabel == "___EMPTY___") {
+    if (m_labelType == FolderView::None) {
         m_titleText.clear();
-    } else if (m_customLabel == "___FULL___") {
+    } else if (m_labelType == FolderView::FullPath) {
         m_titleText = m_url.path();
-    } else if (m_customLabel == "___DEFAULT___") {
+    } else if (m_labelType == FolderView::PlaceName) {
         if (m_url == KUrl("desktop:/")) {
             m_titleText = i18n("Desktop Folder");
         } else {
@@ -1209,9 +1226,9 @@ void FolderView::setAppletTitle()
     } else {
         m_titleText = m_customLabel;
     }
-    kDebug() << "WORKING WITH" << m_customLabel << "WE GOT" << m_titleText;
+    kDebug() << "WORKING WITH" << m_labelType << m_customLabel << "WE GOT" << m_titleText;
 
-    if (m_blankLabel) {
+    if (m_labelType == FolderView::None) {
         if (m_label) {
             m_label->hide();
         }
@@ -1231,7 +1248,7 @@ void FolderView::recreateLayout()
     QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    if (!m_blankLabel) {
+    if (m_labelType != FolderView::None) {
         layout->addItem(m_label);
     }
     layout->addItem(m_iconView);
@@ -1920,24 +1937,6 @@ QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 
     return Containment::sizeHint(which, constraint);
 
-}
-
-void FolderView::setTitleText()
-{
-    QString text = uiDisplay.titleEdit->currentText();
-    if (text == i18n("None") || text.isEmpty()) {
-        m_customLabel.clear();
-        m_blankLabel = true;
-    } else if (text == i18n("Default")) {
-        m_customLabel = "___DEFAULT___";
-        m_blankLabel = false;
-    } else if (text == i18n("Full path")) {
-        m_customLabel = "___FULL___";
-        m_blankLabel = false;
-    } else {
-        m_customLabel = text;
-        m_blankLabel = false;
-    }
 }
 
 #include "folderview.moc"
