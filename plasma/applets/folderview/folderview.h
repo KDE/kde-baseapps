@@ -88,6 +88,9 @@ class FolderView : public Plasma::Containment
     Q_OBJECT
 
 public:
+    enum LabelType { None = 0, PlaceName, FullPath, Custom };
+
+public:
     FolderView(QObject *parent, const QVariantList &args);
     ~FolderView();
 
@@ -152,8 +155,8 @@ protected slots:
     void showPreviewConfigDialog();
 
 private slots:
-    void setTitleText();
     void networkAvailable();
+    void setTitleEditEnabled(int);
 
 private:
     void updatePasteAction();
@@ -211,7 +214,7 @@ private:
     bool m_alignToGrid;
     bool m_clickToView;
     bool m_showSelectionMarker;
-    bool m_blankLabel;
+    LabelType m_labelType;
     QString m_customLabel;
     QStringList m_previewPlugins;
     int m_customIconSize;
