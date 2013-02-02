@@ -173,7 +173,7 @@ void FolderView::init()
     m_filterType          = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(ProxyModel::NoFilter)));
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
 //     m_blankLabel          = cg.readEntry("blankLabel", false);
-    m_labelType           = static_cast<LabelType>(cg.readEntry("labelType", static_cast<int>(FolderView::None)));
+    m_labelType           = static_cast<FolderView::LabelType>(cg.readEntry("labelType", static_cast<int>(FolderView::None)));
     m_userSelectedShowAllFiles = m_filterType;
     m_showSelectionMarker = KGlobalSettings::singleClick();
 
@@ -259,7 +259,7 @@ void FolderView::configChanged()
     bool needReload = false;
     bool preserveIconPositions = false;
 
-    const LabelType labelType = static_cast<LabelType>(cg.readEntry("labelType", static_cast<int>(m_labelType)));
+    const FolderView::LabelType labelType = static_cast<FolderView::LabelType>(cg.readEntry("labelType", static_cast<int>(m_labelType)));
     if (labelType != m_labelType) {
         m_labelType = labelType;
         needReload = true;
