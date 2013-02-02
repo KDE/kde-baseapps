@@ -527,9 +527,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), IconView::LeftToRight);
     uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), IconView::RightToLeft);
 
-    uiFilter.filterCombo->addItem(i18n("Show All Files"), ProxyModel::NoFilter);
-    uiFilter.filterCombo->addItem(i18n("Show Files Matching"), ProxyModel::FilterShowMatches);
-    uiFilter.filterCombo->addItem(i18n("Hide Files Matching"), ProxyModel::FilterHideMatches);
+    uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
+    uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
+    uiFilter.filterCombo->addItem(i18n("Hide Files Matching"), QVariant::fromValue(ProxyModel::FilterHideMatches));
 
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
     uiDisplay.clickToView->setChecked(m_clickToView);
@@ -562,7 +562,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     for (int i = 0; i < uiFilter.filterCombo->maxCount(); i++) {
-       if (m_filterType == uiFilter.filterCombo->itemData(i).toInt()) {
+       if (m_filterType == uiFilter.filterCombo->itemData(i).value<ProxyModel::FilterMode>()) {
            uiFilter.filterCombo->setCurrentIndex(i);
            break;
        }
@@ -688,7 +688,10 @@ void FolderView::configAccepted()
 
     cg.writeEntry("url", url);
     cg.writeEntry("filterFiles", uiFilter.filterFilesPattern->text());
-    cg.writeEntry("filter", uiFilter.filterCombo->currentIndex());
+
+    const ProxyModel::FilterMode filterMode =
+    uiFilter.filterCombo->itemData(uiFilter.filterCombo->currentIndex()).value<ProxyModel::FilterMode>();
+    cg.writeEntry("filter", static_cast<int>(filterMode));
 
     const FolderView::LabelType labelType =
     uiLocation.titleCombo->itemData(uiLocation.titleCombo->currentIndex()).value<FolderView::LabelType>();
@@ -1644,12 +1647,15 @@ void FolderView::updateSortActionsState()
 
 void FolderView::filterChanged(int index)
 {
-    uiFilter.filterFilesPattern->setEnabled(index != 0);
-    uiFilter.searchMimetype->setEnabled(index != 0);
-    uiFilter.filterFilesList->setEnabled(index != 0);
-    uiFilter.selectAll->setEnabled(index != 0);
-    uiFilter.deselectAll->setEnabled(index != 0);
-    if ((index != 0) && (m_userSelectedShowAllFiles == 0)) {
+    const ProxyModel::FilterMode filterMode = uiFilter.filterCombo->itemData(index).value<ProxyModel::FilterMode>();
+    const bool filterActive = (filterMode != ProxyModel::NoFilter);
+
+    uiFilter.filterFilesPattern->setEnabled(filterActive);
+    uiFilter.searchMimetype->setEnabled(filterActive);
+    uiFilter.filterFilesList->setEnabled(filterActive);
+    uiFilter.selectAll->setEnabled(filterActive);
+    uiFilter.deselectAll->setEnabled(filterActive);
+    if ((filterActive) && (m_userSelectedShowAllFiles == 0)) {
       for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
