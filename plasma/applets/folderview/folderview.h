@@ -198,8 +198,6 @@ private:
     bool m_alignToGrid;
     bool m_clickToView;
     bool m_showSelectionMarker;
-    bool m_userSelectedShowAllFiles;
-//     bool m_blankLabel;
     LabelType m_labelType;
     QString m_customLabel;
     QStringList m_previewPlugins;

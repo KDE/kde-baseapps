@@ -172,9 +172,7 @@ void FolderView::init()
     m_filterFiles         = cg.readEntry("filterFiles", "*");
     m_filterType          = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(ProxyModel::NoFilter)));
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
-//     m_blankLabel          = cg.readEntry("blankLabel", false);
     m_labelType           = static_cast<FolderView::LabelType>(cg.readEntry("labelType", static_cast<int>(FolderView::None)));
-    m_userSelectedShowAllFiles = m_filterType;
     m_showSelectionMarker = KGlobalSettings::singleClick();
 
     if (isContainment()) {
@@ -362,8 +360,6 @@ void FolderView::configChanged()
         m_model->setFilterMode(m_filterType);
         needReload = true;
     }
-
-    m_userSelectedShowAllFiles = m_filterType;
 
     const QString filterFiles = cg.readEntry("filterFiles", m_filterFiles);
     if (filterFiles != m_filterFiles) {
@@ -1672,7 +1668,7 @@ void FolderView::filterChanged(int index)
     uiFilter.filterFilesList->setEnabled(filterActive);
     uiFilter.selectAll->setEnabled(filterActive);
     uiFilter.deselectAll->setEnabled(filterActive);
-    if ((filterActive) && (m_userSelectedShowAllFiles == 0)) {
+    if (filterActive) {
       for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
