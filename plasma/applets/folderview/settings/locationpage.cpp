@@ -22,6 +22,8 @@
 
 #include <KGlobalSettings>
 
+#include "../folderview.h"
+
 
 LocationPage::LocationPage(KConfigDialog *dialog, Settings *settings) : PageBase(dialog, settings)
 {
@@ -70,12 +72,35 @@ void LocationPage::setupUi()
             uiLocation.placesCombo->setEnabled(false);
         }
     }
+
+    if (m_labelType == FolderView::Custom) {
+        uiLocation.titleEdit->setEnabled(true);
+        uiLocation.titleEdit->setText(m_customLabel);
+    } else {
+        uiLocation.titleEdit->setEnabled(false);
+    }
+
+    // The label is not shown when the applet is acting as a containment,
+    // so don't confuse the user by making it editable.
+    if (isContainment()) {
+        uiLocation.titleLabel->hide();
+        uiLocation.titleCombo->hide();
+        uiLocation.titleEdit->hide();
+    }
+
+    for (int i = 0; i < uiLocation.titleCombo->maxCount(); i++) {
+       if (m_labelType == uiLocation.titleCombo->itemData(i).toInt()) {
+           uiLocation.titleCombo->setCurrentIndex(i);
+           break;
+       }
+    }
 }
 
 void LocationPage::postSetupUI()
 {
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
+    connect(uiLocation.titleCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(setTitleEditEnabled(int)));
 
     connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
     connect(uiLocation.showActivity, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
@@ -83,11 +108,22 @@ void LocationPage::postSetupUI()
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), parent(), SLOT(settingsModified()));
     connect(uiLocation.placesCombo, SIGNAL(currentIndexChanged(int)), parent(), SLOT(settingsModified()));
     connect(uiLocation.lineEdit, SIGNAL(textChanged(QString)), parent(), SLOT(settingsModified()));
+    connect(uiLocation.titleCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiLocation.titleEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
 }
 
 void LocationPage::saveSettings()
 {
+    // TODO
+}
 
+void LocationPage::setTitleEditEnabled(int index)
+{
+    if (uiLocation.titleCombo->itemData(index).toInt() == FolderView::Custom) {
+        uiLocation.titleEdit->setEnabled(true);
+    } else {
+        uiLocation.titleEdit->setEnabled(false);
+    }
 }
 
 #include "locationpage.moc"

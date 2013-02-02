@@ -36,29 +36,10 @@ void DisplayPage::preSetupUi()
     m_titleLineEdit = new KLineEdit(this);
     m_titleLineEdit->setClearButtonShown(false);
     m_titleLineEdit->setClickMessage(i18n("Title"));
-    uiDisplay.titleEdit->setLineEdit(m_titleLineEdit);
 }
 
 void DisplayPage::setupUi()
 {
-    QString configTitleText = m_customLabel;
-    if (m_customLabel.isEmpty() || m_customLabel == "___EMPTY___") {
-        configTitleText = i18n("None");
-    } else if (m_customLabel == "___DEFAULT___") {
-        configTitleText = i18n("Default");
-    } else if (m_customLabel == "___FULL___") {
-        configTitleText = i18n("Full path");
-    } else {
-        uiDisplay.titleEdit->addItem(m_customLabel);
-    }
-
-    uiDisplay.titleEdit->addItem(i18n("None"));
-    uiDisplay.titleEdit->addItem(i18n("Default"));
-    uiDisplay.titleEdit->addItem(i18n("Full path"));
-    uiDisplay.titleEdit->setCurrentItem(configTitleText);
-    uiDisplay.titleEdit->completionBox()->setActivateOnSelect(true);
-    uiDisplay.titleEdit->setCompletionMode(KGlobalSettings::CompletionPopupAuto);
-
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
     uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
     uiDisplay.sizeSlider->setValue(iconSizes.indexOf(iconSize().width()));
@@ -105,11 +86,9 @@ void DisplayPage::setupUi()
 
 void DisplayPage::postSetupUI()
 {
-    connect(uiDisplay.titleEdit->lineEdit(), SIGNAL(editingFinished()), this, SLOT(setTitleText()));
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
-    connect(uiDisplay.titleEdit, SIGNAL(textChanged(QString)), parent(), SLOT(settingsModified()));
     connect(uiDisplay.flowCombo, SIGNAL(currentIndexChanged(int)), parent(), SLOT(settingsModified()));
     connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent(), SLOT(settingsModified()));
     connect(uiDisplay.sizeSlider, SIGNAL(valueChanged(int)), parent(), SLOT(settingsModified()));
@@ -123,24 +102,6 @@ void DisplayPage::postSetupUI()
 }
 
 // ==========Helper functions========
-
-void DisplayPage::setTitleText()
-{
-    QString text = uiDisplay.titleEdit->currentText();
-    if (text == i18n("None") || text.isEmpty()) {
-        m_customLabel.clear();
-        m_blankLabel = true;
-    } else if (text == i18n("Default")) {
-        m_customLabel = "___DEFAULT___";
-        m_blankLabel = false;
-    } else if (text == i18n("Full path")) {
-        m_customLabel = "___FULL___";
-        m_blankLabel = false;
-    } else {
-        m_customLabel = text;
-        m_blankLabel = false;
-    }
-}
 
 void DisplayPage::showPreviewConfigDialog()
 {
@@ -166,7 +127,7 @@ void DisplayPage::showPreviewConfigDialog()
 
 void DisplayPage::saveSettings()
 {
-
+    // TODO
 }
 
 #include "displaypage.moc"
