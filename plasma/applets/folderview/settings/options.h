@@ -30,6 +30,7 @@
 
 #include "../iconview.h"
 #include "../proxymodel.h"
+#include "../folderview.h"
 
 
 class Options : public QObject
@@ -52,6 +53,9 @@ public:
 
     static QString iconFlowEnumToString(IconView::Flow);
     static IconView::Flow iconFlowStringToEnum(const QString&);
+
+    static QString labelTypeEnumToString(FolderView::LabelType);
+    static FolderView::LabelType labelTypeStringToEnum(const QString &);
 
 private:
 

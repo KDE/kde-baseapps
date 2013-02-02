@@ -42,32 +42,6 @@ Qt::SortOrder Options::sortOrderStringToEnum(const QString& order)
     }
 }
 
-QString Options::filterModeEnumToString(ProxyModel::FilterMode mode)
-{
-    switch (mode) {
-        case ProxyModel::NoFilter:
-            return "noFilter";
-            break;
-        case ProxyModel::FilterShowMatches:
-            return "filterShowMatches";
-            break;
-        default:
-            return "filterHideMatches";
-            break;
-    }
-}
-
-ProxyModel::FilterMode Options::filterModeStringToEnum(const QString& mode)
-{
-    if (mode == "noFilter") {
-        return ProxyModel::NoFilter;
-    } else if (mode == "filterShowMatches") {
-        return ProxyModel::FilterShowMatches;
-    } else {
-        return ProxyModel::FilterHideMatches;
-    }
-}
-
 QString Options::iconFlowEnumToString(IconView::Flow flow)
 {
     switch (flow) {
@@ -96,6 +70,63 @@ IconView::Flow Options::iconFlowStringToEnum(const QString& flow)
         return IconView::TopToBottom;
     } else {
         return IconView::TopToBottomRightToLeft;
+    }
+}
+
+QString Options::filterModeEnumToString(ProxyModel::FilterMode mode)
+{
+    switch (mode) {
+        case ProxyModel::NoFilter:
+            return "noFilter";
+            break;
+        case ProxyModel::FilterShowMatches:
+            return "filterShowMatches";
+            break;
+        default:
+            return "filterHideMatches";
+            break;
+    }
+}
+
+ProxyModel::FilterMode Options::filterModeStringToEnum(const QString& mode)
+{
+    if (mode == "noFilter") {
+        return ProxyModel::NoFilter;
+    } else if (mode == "filterShowMatches") {
+        return ProxyModel::FilterShowMatches;
+    } else {
+        return ProxyModel::FilterHideMatches;
+    }
+}
+
+QString Options::labelTypeEnumToString(FolderView::LabelType type)
+{
+    switch (type) {
+        case FolderView::None:
+            return "none";
+            break;
+        case FolderView::PlaceName:
+            return "placeName";
+            break;
+        case FolderView::FullPath:
+            return "fullPath";
+            break;
+        default:
+            return "custom";
+            break;
+    }
+}
+
+FolderView::LabelType Options::labelTypeStringToEnum(const QString& type)
+{
+    if (type == "none") {
+        return FolderView::None;
+    } else if (type == "placeName") {
+        return FolderView::PlaceName;
+    } else if (type == "fullPath") {
+        return FolderView::FullPath;
+    } else {
+        return FolderView::Custom;
     }
 }
 
