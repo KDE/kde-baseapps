@@ -18,7 +18,7 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#include "settings/proxymimemodel.h"
+#include "settings/models/proxymimemodel.h"
 
 #include <KStringHandler>
 #include <KMimeType>

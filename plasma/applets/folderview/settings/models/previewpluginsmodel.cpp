@@ -17,7 +17,7 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#include "previewpluginsmodel.h"
+#include "settings/models/previewpluginsmodel.h"
 
 #include <QStringList>
 

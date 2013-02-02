@@ -21,14 +21,10 @@ set(folderview_SRCS
     asyncfiletester.cpp
     remotewallpapersetter.cpp
     settings/optionsbase.cpp
-    settings/previewpluginsmodel.cpp
-    settings/mimemodel.cpp
-    settings/proxymimemodel.cpp)
-#    settings/proxymimemodel.cpp
-#    settings/pagebase.cpp
-#    settings/locationpage.cpp
-#    settings/filterpage.cpp
-#    settings/displaypage.cpp)
+    settings/pagebase.cpp
+    settings/models/previewpluginsmodel.cpp
+    settings/models/mimemodel.cpp
+    settings/models/proxymimemodel.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   settings/ui/folderviewFilterConfig.ui

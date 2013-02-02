@@ -48,7 +48,7 @@
 #include "dirlister.h"
 #include "folderview.h"
 #include "proxymodel.h"
-#include "settings/previewpluginsmodel.h"
+#include "settings/models/previewpluginsmodel.h"
 #include "tooltipwidget.h"
 #include "animator.h"
 #include "asyncfiletester.h"
