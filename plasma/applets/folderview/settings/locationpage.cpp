@@ -25,7 +25,7 @@
 #include "../folderview.h"
 
 
-LocationPage::LocationPage(KConfigDialog *dialog, Settings *settings) : PageBase(dialog, settings)
+LocationPage::LocationPage(KConfigDialog *dialog, Options *settings) : PageBase(dialog, settings)
 {
 }
 
