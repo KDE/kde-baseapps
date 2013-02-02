@@ -2123,8 +2123,12 @@ QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
               break;
           case Plasma::Horizontal:
           case Plasma::Vertical:
-              const int iconSize = IconSize(KIconLoader::Panel);
-              size = QSizeF(iconSize, iconSize);
+                {
+                    const int iconSize = IconSize(KIconLoader::Panel);
+                    size = QSizeF(iconSize, iconSize);
+                    break;
+                }
+          default:
               break;
         }
 
