@@ -100,4 +100,9 @@ void FilterPage::filterChanged()
     }
 }
 
+void FilterPage::saveSettings()
+{
+    // TODO
+}
+
 #include "filterpage.moc"

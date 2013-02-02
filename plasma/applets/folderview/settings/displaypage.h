@@ -43,7 +43,6 @@ protected:
 
 protected slots:
     void showPreviewConfigDialog();
-    void setTitleText();
 
 private:
     QPointer<KLineEdit> m_titleLineEdit;
