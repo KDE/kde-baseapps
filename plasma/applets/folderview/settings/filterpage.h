@@ -44,7 +44,7 @@ protected:
 
 private slots:
     void selectUnselectAll();
-    void filterChanged();
+    void filterChanged(int);
 
 private:
     QPointer<MimeModel> m_mimeModel;

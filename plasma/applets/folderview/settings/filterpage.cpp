@@ -40,21 +40,23 @@ void FilterPage::setupUi()
 {
     uiFilter.filterFilesPattern->setText(m_filterFiles);
 
-    uiFilter.filterCombo->addItem(i18n("Show All Files"), ProxyModel::NoFilter);
-    uiFilter.filterCombo->addItem(i18n("Show Files Matching"), ProxyModel::FilterShowMatches);
-    uiFilter.filterCombo->addItem(i18n("Hide Files Matching"), ProxyModel::FilterHideMatches);
+    uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
+    uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
+    uiFilter.filterCombo->addItem(i18n("Hide Files Matching"), QVariant::fromValue(ProxyModel::FilterHideMatches));
 
     for (int i = 0; i < uiFilter.filterCombo->maxCount(); i++) {
-       if (m_filterType == uiFilter.filterCombo->itemData(i).toInt()) {
+       if (m_filterType == uiFilter.filterCombo->itemData(i).value<ProxyModel::FilterMode>()) {
            uiFilter.filterCombo->setCurrentIndex(i);
            break;
        }
     }
 
+    filterChanged(m_filterType);
+
     if (m_filterFilesMimeList.count()) {
         for (int i = 0; i < pMimeModel->rowCount(); i++) {
             const QModelIndex index = pMimeModel->index(i, 0);
-            const KMimeType *mime = static_cast<KMimeType*>(m_proxyMimeModel->mapToSource(index).internalPointer());
+            const KMimeType *mime = static_cast<KMimeType*>(pMimeModel->mapToSource(index).internalPointer());
             if (mime && m_filterFilesMimeList.contains(mime->name())) {
                 m_filterFilesMimeList.removeAll(mime->name());
                 uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
@@ -85,14 +87,17 @@ void FilterPage::selectUnselectAll()
     }
 }
 
-void FilterPage::filterChanged()
+void FilterPage::filterChanged(int)
 {
-    uiFilter.filterFilesPattern->setEnabled(index != 0);
-    uiFilter.searchMimetype->setEnabled(index != 0);
-    uiFilter.filterFilesList->setEnabled(index != 0);
-    uiFilter.selectAll->setEnabled(index != 0);
-    uiFilter.deselectAll->setEnabled(index != 0);
-    if ((index != 0) && (m_userSelectedShowAllFiles == 0)) {
+    const ProxyModel::FilterMode filterMode = uiFilter.filterCombo->itemData(index).value<ProxyModel::FilterMode>();
+    const bool filterActive = (filterMode != ProxyModel::NoFilter);
+
+    uiFilter.filterFilesPattern->setEnabled(filterActive);
+    uiFilter.searchMimetype->setEnabled(filterActive);
+    uiFilter.filterFilesList->setEnabled(filterActive);
+    uiFilter.selectAll->setEnabled(filterActive);
+    uiFilter.deselectAll->setEnabled(filterActive);
+    if ((filterActive) && (m_userSelectedShowAllFiles == 0)) {
       for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
