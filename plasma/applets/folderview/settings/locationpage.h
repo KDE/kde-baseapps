@@ -42,6 +42,9 @@ protected:
     virtual void postSetupUI();
     void saveSettings();
 
+private slots:
+    void setTitleEditEnabled(int);
+
 private:
     QPointer<KFilePlacesModel> m_placesModel;
     QPointer<PlacesFilterModel> m_placesFilterModel;
