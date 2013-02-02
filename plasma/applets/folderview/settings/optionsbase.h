@@ -21,12 +21,7 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include <QObject>
-#include <QColor>
-#include <QStringList>
-
 #include <KConfigGroup>
-#include <KUrl>
 
 #include "../iconview.h"
 #include "../proxymodel.h"
