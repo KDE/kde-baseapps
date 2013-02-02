@@ -182,4 +182,4 @@ void Options::loadSettings(KConfigGroup& cg)
 }
 
 
-#include "settings.moc"
+#include "options.moc"
