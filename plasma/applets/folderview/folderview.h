@@ -179,14 +179,15 @@ private:
     QPointer<QActionGroup> m_sortingGroup;
     QPointer<QActionGroup> m_sortingOrderGroup;
 
+    QString m_titleText;
+
     // Configuration variables
 
     KUrl m_url;
+    LabelType m_labelType;
+    QString m_customLabel;
+
     QColor m_textColor;
-    QString m_titleText;
-    ProxyModel::FilterMode m_filterType;
-    QString m_filterFiles;
-    QStringList m_filterFilesMimeList;
     int m_sortColumn;
     Qt::SortOrder m_sortOrder;
     bool m_sortDirsFirst;
@@ -196,12 +197,14 @@ private:
     bool m_alignToGrid;
     bool m_clickToView;
     bool m_showSelectionMarker;
-    LabelType m_labelType;
-    QString m_customLabel;
     QStringList m_previewPlugins;
     int m_customIconSize;
     int m_numTextLines;
     IconView::Flow m_flow;
+
+    ProxyModel::FilterMode m_filterType;
+    QString m_filterFiles;
+    QStringList m_filterFilesMimeList;
 
     // Configuration interface
 
