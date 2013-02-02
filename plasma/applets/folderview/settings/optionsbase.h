@@ -32,19 +32,34 @@
 #include "../proxymodel.h"
 #include "../folderview.h"
 
-
-class Options : public QObject
+/**
+ * Base class for the different config pane option classes.
+ * Also contains the static helper enum <-> string functions.
+ */
+class OptionsBase : public QObject
 {
     Q_OBJECT
 
 public:
 
-    Options();
+    OptionsBase();
 
-    void loadDefaults();
-    void loadSettings(KConfigGroup &);
-    void writeSettings(KConfigGroup &);
+    /** Load default option values before reading from a configuration group. */
+    virtual void loadDefaults() = 0;
 
+    /**
+     * Read option values from a configuration group using current values as the default ones.
+     */
+    virtual void loadSettings(KConfigGroup &) = 0;
+
+    /**
+     * Write option values to a configuration group.
+     */
+    virtual void writeSettings(KConfigGroup &) = 0;
+
+    /** 
+     * Helper functions for reliable writing and reading of enums from configuration files.
+     */
     static QString sortOrderEnumToString(Qt::SortOrder);
     static Qt::SortOrder sortOrderStringToEnum(const QString&);
 
@@ -57,32 +72,6 @@ public:
     static QString labelTypeEnumToString(FolderView::LabelType);
     static FolderView::LabelType labelTypeStringToEnum(const QString &);
 
-private:
-
-    KUrl m_url;
-
-    QColor m_textColor;
-    QString m_titleText;
-    int m_sortColumn;
-    Qt::SortOrder m_sortOrder;
-    bool m_sortDirsFirst;
-    bool m_showPreviews;
-    bool m_drawShadows;
-    bool m_iconsLocked;
-    bool m_alignToGrid;
-    bool m_clickToView;
-    bool m_showSelectionMarker;
-    bool m_userSelectedShowAllFiles;
-    bool m_blankLabel;
-    QString m_customLabel;
-    QStringList m_previewPlugins;
-    int m_customIconSize;
-    int m_numTextLines;
-    IconView::Flow m_flow;
-
-    ProxyModel::FilterMode m_filterType;
-    QString m_filterFiles;
-    QStringList m_filterFilesMimeList;
 };
 
 #endif

@@ -79,7 +79,7 @@
 #include "dialog.h"
 #include "iconwidget.h"
 #include "label.h"
-#include "settings/options.h"
+#include "settings/optionsbase.h"
 #include "settings/previewpluginsmodel.h"
 #include "settings/mimemodel.h"
 #include "settings/proxymimemodel.h"
@@ -168,7 +168,7 @@ void FolderView::init()
     m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail" << "jpegthumbnail");
     m_sortDirsFirst       = cg.readEntry("sortDirsFirst", true);
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
-    m_sortOrder           = Options::sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
+    m_sortOrder           = OptionsBase::sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
     m_filterFiles         = cg.readEntry("filterFiles", "*");
     m_filterType          = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(ProxyModel::NoFilter)));
     m_filterFilesMimeList = cg.readEntry("mimeFilter", QStringList());
@@ -334,7 +334,7 @@ void FolderView::configChanged()
     }
 
     const int sortColumn = cg.readEntry("sortColumn", m_sortColumn);
-    const Qt::SortOrder sortOrder = Options::sortOrderStringToEnum(cg.readEntry("sortOrder", Options::sortOrderEnumToString(m_sortOrder)));
+    const Qt::SortOrder sortOrder = OptionsBase::sortOrderStringToEnum(cg.readEntry("sortOrder", OptionsBase::sortOrderEnumToString(m_sortOrder)));
     if ((m_sortColumn != sortColumn) || (m_sortOrder != m_sortOrder)) {
         m_sortColumn = sortColumn;
         m_sortOrder = sortOrder;
@@ -1641,7 +1641,7 @@ void FolderView::sortingOrderChanged(QAction *action)
         m_model->sort(m_sortColumn, order);
         m_model->setDynamicSortFilter(true);
         m_sortOrder = order;
-        config().writeEntry("sortOrder", Options::sortOrderEnumToString(m_sortOrder));
+        config().writeEntry("sortOrder", OptionsBase::sortOrderEnumToString(m_sortOrder));
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
     }
