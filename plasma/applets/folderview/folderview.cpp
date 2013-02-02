@@ -554,7 +554,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
        }
     }
 
-    // Custom not handled in the dropdown
     for (int i = 0; i < uiLocation.titleCombo->maxCount(); i++) {
        if (m_labelType == uiLocation.titleCombo->itemData(i).toInt()) {
            uiLocation.titleCombo->setCurrentIndex(i);
