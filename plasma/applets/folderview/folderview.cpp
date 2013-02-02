@@ -494,10 +494,11 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiLocation.titleCombo->addItem(i18n("Full Path"), FolderView::FullPath);
     uiLocation.titleCombo->addItem(i18n("Custom title"), FolderView::Custom);
 
-    uiLocation.titleEdit->setEnabled(m_labelType == FolderView::Custom);
-
     if (m_labelType == FolderView::Custom) {
+        uiLocation.titleEdit->setEnabled(true);
         uiLocation.titleEdit->setText(m_customLabel);
+    } else {
+        uiLocation.titleEdit->setEnabled(false);
     }
 
     // The label is not shown when the applet is acting as a containment,
