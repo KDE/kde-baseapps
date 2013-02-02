@@ -34,7 +34,7 @@ class FilterPage : public PageBase
     Q_OBJECT
 
 public:
-    FilterPage(KConfigDialog *parent, Settings *settings);
+    FilterPage(KConfigDialog *parent, Options *settings);
 
 protected:
     virtual void preSetupUi();

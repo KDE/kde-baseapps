@@ -22,7 +22,7 @@
 
 #include "../proxymodel.h"
 
-FilterPage::FilterPage(KConfigDialog* parent, Settings* settings): PageBase(parent, settings)
+FilterPage::FilterPage(KConfigDialog* parent, Options* settings): PageBase(parent, settings)
 {
 }
 
