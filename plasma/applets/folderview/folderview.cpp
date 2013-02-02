@@ -489,10 +489,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     pMimeModel->setSourceModel(mimeModel);
     uiFilter.filterFilesList->setModel(pMimeModel);
 
-    uiLocation.titleCombo->addItem(i18n("None"), FolderView::None);
-    uiLocation.titleCombo->addItem(i18n("Default"), FolderView::PlaceName);
-    uiLocation.titleCombo->addItem(i18n("Full Path"), FolderView::FullPath);
-    uiLocation.titleCombo->addItem(i18n("Custom title"), FolderView::Custom);
+    uiLocation.titleCombo->addItem(i18n("None"), QVariant::fromValue(FolderView::None));
+    uiLocation.titleCombo->addItem(i18n("Default"), QVariant::fromValue(FolderView::PlaceName));
+    uiLocation.titleCombo->addItem(i18n("Full Path"), QVariant::fromValue(FolderView::FullPath));
+    uiLocation.titleCombo->addItem(i18n("Custom title"), QVariant::fromValue(FolderView::Custom));
 
     if (m_labelType == FolderView::Custom) {
         uiLocation.titleEdit->setEnabled(true);
@@ -556,7 +556,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     for (int i = 0; i < uiLocation.titleCombo->maxCount(); i++) {
-       if (m_labelType == uiLocation.titleCombo->itemData(i).toInt()) {
+       if (m_labelType == uiLocation.titleCombo->itemData(i).value<FolderView::LabelType>()) {
            uiLocation.titleCombo->setCurrentIndex(i);
            break;
        }
@@ -691,7 +691,8 @@ void FolderView::configAccepted()
     cg.writeEntry("filterFiles", uiFilter.filterFilesPattern->text());
     cg.writeEntry("filter", uiFilter.filterCombo->currentIndex());
 
-    const FolderView::LabelType labelType = static_cast<FolderView::LabelType>(uiLocation.titleCombo->itemData(uiLocation.titleCombo->currentIndex()).toInt());
+    const FolderView::LabelType labelType =
+    uiLocation.titleCombo->itemData(uiLocation.titleCombo->currentIndex()).value<FolderView::LabelType>();
     QString customTitle;
     if (labelType == FolderView::Custom) {
         customTitle = uiLocation.titleEdit->text();
@@ -1948,7 +1949,7 @@ QSizeF FolderView::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 
 void FolderView::setTitleEditEnabled(int index)
 {
-    if (uiLocation.titleCombo->itemData(index).toInt() == FolderView::Custom) {
+    if (uiLocation.titleCombo->itemData(index).value<FolderView::LabelType>() == FolderView::Custom) {
         uiLocation.titleEdit->setEnabled(true);
         uiLocation.titleEdit->setFocus();
     } else {
