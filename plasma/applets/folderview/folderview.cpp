@@ -523,10 +523,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_type")->text()), KDirModel::Type);
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_date")->text()), KDirModel::ModifiedTime);
 
-    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), IconView::TopToBottom);
-    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), IconView::TopToBottomRightToLeft);
-    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), IconView::LeftToRight);
-    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), IconView::RightToLeft);
+    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), QVariant::fromValue(IconView::TopToBottom));
+    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), QVariant::fromValue(IconView::TopToBottomRightToLeft));
+    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), QVariant::fromValue(IconView::LeftToRight));
+    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), QVariant::fromValue(IconView::RightToLeft));
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
     uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
@@ -549,7 +549,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     for (int i = 0; i < uiDisplay.flowCombo->maxCount(); i++) {
-       if (m_flow == uiDisplay.flowCombo->itemData(i).toInt()) {
+       if (m_flow == uiDisplay.flowCombo->itemData(i).value<IconView::Flow>()) {
            uiDisplay.flowCombo->setCurrentIndex(i);
            break;
        }
@@ -680,8 +680,8 @@ void FolderView::configAccepted()
     const int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
     cg.writeEntry("sortColumn", sortColumn);
 
-    const int flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).toInt();
-    cg.writeEntry("flow", flow);
+    const IconView::Flow flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).value<IconView::Flow>();
+    cg.writeEntry("flow", static_cast<int>(flow));
 
     cg.writeEntry("alignToGrid", uiDisplay.alignToGrid->isChecked());
     cg.writeEntry("clickForFolderPreviews", uiDisplay.clickToView->isChecked());
