@@ -55,10 +55,10 @@ void DisplayPage::setupUi()
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_type")->text()), KDirModel::Type);
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_date")->text()), KDirModel::ModifiedTime);
 
-    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), IconView::TopToBottom);
-    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), IconView::TopToBottomRightToLeft);
-    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), IconView::LeftToRight);
-    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), IconView::RightToLeft);
+    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), QVariant::fromValue(IconView::TopToBottom));
+    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), QVariant::fromValue(IconView::TopToBottomRightToLeft));
+    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), QVariant::fromValue(IconView::LeftToRight));
+    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), QVariant::fromValue(IconView::RightToLeft));
 
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
     uiDisplay.clickToView->setChecked(m_clickToView);
@@ -77,10 +77,17 @@ void DisplayPage::setupUi()
     }
 
     for (int i = 0; i < uiDisplay.flowCombo->maxCount(); i++) {
-       if (m_flow == uiDisplay.flowCombo->itemData(i).toInt()) {
+       if (m_flow == uiDisplay.flowCombo->itemData(i).value<IconView::Flow>()) {
            uiDisplay.flowCombo->setCurrentIndex(i);
            break;
        }
+    }
+
+    // Hide the icon arrangement controls when we're not acting as a containment,
+    // since this option doesn't make much sense in the applet.
+    if (!isContainment()) {
+        uiDisplay.flowLabel->hide();
+        uiDisplay.flowCombo->hide();
     }
 }
 
