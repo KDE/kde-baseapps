@@ -80,10 +80,10 @@
 #include "iconwidget.h"
 #include "label.h"
 #include "settings/optionsbase.h"
-#include "settings/previewpluginsmodel.h"
-#include "settings/mimemodel.h"
-#include "settings/proxymimemodel.h"
-#include "settings/placesfiltermodel.h"
+#include "settings/models/previewpluginsmodel.h"
+#include "settings/models/mimemodel.h"
+#include "settings/models/proxymimemodel.h"
+#include "settings/models/placesfiltermodel.h"
 
 
 K_EXPORT_PLASMA_APPLET(folderview, FolderView)
