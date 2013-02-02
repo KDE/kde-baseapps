@@ -25,7 +25,7 @@
 #include "../iconview.h"
 #include "previewpluginsmodel.h"
 
-DisplayPage::DisplayPage(KConfigDialog* parent, Options* settings): PageBase(parent, settings)
+DisplayPage::DisplayPage(KConfigDialog* parent, OptionsBase* settings): PageBase(parent, settings)
 {
 }
 

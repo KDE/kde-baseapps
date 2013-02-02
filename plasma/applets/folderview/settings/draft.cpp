@@ -1,0 +1,58 @@
+m_customLabel         = QString();
+m_customIconSize      = 0;
+m_showPreviews        = true;
+m_drawShadows         = true;
+m_numTextLines        = 2;
+m_textColor           = QColor(Qt::transparent);
+m_iconsLocked         = false;
+m_alignToGrid         = false;
+m_clickToView         = true;
+m_previewPlugins      = QStringList() << "imagethumbnail" << "jpegthumbnail";
+m_sortDirsFirst       = true;
+m_sortColumn          = int(KDirModel::Name);
+m_sortOrder           = Qt::AscendingOrder;
+m_filterFiles         = "*";
+m_filterType          = ProxyModel::NoFilter;
+m_filterFilesMimeList = QStringList();
+m_showSelectionMarker = KGlobalSettings::singleClick();
+
+KUrl m_url;
+FolderView::LabelType m_labelType;
+QString m_customLabel;
+
+QColor m_textColor;
+int m_sortColumn;
+Qt::SortOrder m_sortOrder;
+bool m_sortDirsFirst;
+bool m_showPreviews;
+bool m_drawShadows;
+bool m_iconsLocked;
+bool m_alignToGrid;
+bool m_clickToView;
+bool m_showSelectionMarker;
+QStringList m_previewPlugins;
+int m_customIconSize;
+int m_numTextLines;
+IconView::Flow m_flow;
+
+ProxyModel::FilterMode m_filterType;
+QString m_filterFiles;
+QStringList m_filterFilesMimeList;
+
+m_customLabel         = cg.readEntry("customLabel", m_customLabel);
+m_customIconSize      = cg.readEntry("customIconSize", m_customIconSize);
+m_showPreviews        = cg.readEntry("showPreviews", m_showPreviews);
+m_drawShadows         = cg.readEntry("drawShadows", m_drawShadows);
+m_numTextLines        = cg.readEntry("numTextLines", m_numTextLines);
+m_textColor           = cg.readEntry("textColor", m_textColor);
+m_iconsLocked         = cg.readEntry("iconsLocked", m_iconsLocked);
+m_alignToGrid         = cg.readEntry("alignToGrid", m_alignToGrid);
+m_clickToView         = cg.readEntry("clickForFolderPreviews", m_clickToView);
+m_previewPlugins      = cg.readEntry("previewPlugins", m_previewPlugins);
+m_sortDirsFirst       = cg.readEntry("sortDirsFirst", m_sortDirsFirst);
+m_sortColumn          = cg.readEntry("sortColumn", m_sortColumn);
+m_sortOrder           = sortOrderStringToEnum(cg.readEntry("sortOrder", sortOrderEnumToString(m_sortOrder)));
+m_filterFiles         = cg.readEntry("filterFiles", m_filterFiles);
+m_filterType          = filterModeStringToEnum(cg.readEntry("filter", filterModeEnumToString(m_filterType)));
+m_filterFilesMimeList = cg.readEntry("mimeFilter", m_filterFilesMimeList);
+m_showSelectionMarker = KGlobalSettings::singleClick();

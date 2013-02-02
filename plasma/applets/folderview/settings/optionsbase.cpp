@@ -18,13 +18,13 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#include "options.h"
+#include "optionsbase.h"
 
 #include <KGlobalSettings>
 #include <KDirModel>
 
 
-QString Options::sortOrderEnumToString(Qt::SortOrder order)
+QString OptionsBase::sortOrderEnumToString(Qt::SortOrder order)
 {
     if (order == Qt::AscendingOrder) {
         return "ascending";
@@ -33,7 +33,7 @@ QString Options::sortOrderEnumToString(Qt::SortOrder order)
     }
 }
 
-Qt::SortOrder Options::sortOrderStringToEnum(const QString& order)
+Qt::SortOrder OptionsBase::sortOrderStringToEnum(const QString& order)
 {
     if (order == "ascending") {
        return Qt::AscendingOrder;
@@ -42,7 +42,7 @@ Qt::SortOrder Options::sortOrderStringToEnum(const QString& order)
     }
 }
 
-QString Options::iconFlowEnumToString(IconView::Flow flow)
+QString OptionsBase::iconFlowEnumToString(IconView::Flow flow)
 {
     switch (flow) {
         case IconView::LeftToRight:
@@ -60,7 +60,7 @@ QString Options::iconFlowEnumToString(IconView::Flow flow)
     }
 }
 
-IconView::Flow Options::iconFlowStringToEnum(const QString& flow)
+IconView::Flow OptionsBase::iconFlowStringToEnum(const QString& flow)
 {
     if (flow == "leftToRight") {
         return IconView::LeftToRight;
@@ -73,7 +73,7 @@ IconView::Flow Options::iconFlowStringToEnum(const QString& flow)
     }
 }
 
-QString Options::filterModeEnumToString(ProxyModel::FilterMode mode)
+QString OptionsBase::filterModeEnumToString(ProxyModel::FilterMode mode)
 {
     switch (mode) {
         case ProxyModel::NoFilter:
@@ -88,7 +88,7 @@ QString Options::filterModeEnumToString(ProxyModel::FilterMode mode)
     }
 }
 
-ProxyModel::FilterMode Options::filterModeStringToEnum(const QString& mode)
+ProxyModel::FilterMode OptionsBase::filterModeStringToEnum(const QString& mode)
 {
     if (mode == "noFilter") {
         return ProxyModel::NoFilter;
@@ -99,7 +99,7 @@ ProxyModel::FilterMode Options::filterModeStringToEnum(const QString& mode)
     }
 }
 
-QString Options::labelTypeEnumToString(FolderView::LabelType type)
+QString OptionsBase::labelTypeEnumToString(FolderView::LabelType type)
 {
     switch (type) {
         case FolderView::None:
@@ -117,7 +117,7 @@ QString Options::labelTypeEnumToString(FolderView::LabelType type)
     }
 }
 
-FolderView::LabelType Options::labelTypeStringToEnum(const QString& type)
+FolderView::LabelType OptionsBase::labelTypeStringToEnum(const QString& type)
 {
     if (type == "none") {
         return FolderView::None;
@@ -130,56 +130,9 @@ FolderView::LabelType Options::labelTypeStringToEnum(const QString& type)
     }
 }
 
-Options::Options()
+OptionsBase::OptionsBase()
     : QObject()
 {
 }
 
-void Options::loadDefaults()
-{
-    m_customLabel         = QString();
-    m_customIconSize      = 0;
-    m_showPreviews        = true;
-    m_drawShadows         = true;
-    m_numTextLines        = 2;
-    m_textColor           = QColor(Qt::transparent);
-    m_iconsLocked         = false;
-    m_alignToGrid         = false;
-    m_clickToView         = true;
-    m_previewPlugins      = QStringList() << "imagethumbnail" << "jpegthumbnail";
-    m_sortDirsFirst       = true;
-    m_sortColumn          = int(KDirModel::Name);
-    m_sortOrder           = Qt::AscendingOrder;
-    m_filterFiles         = "*";
-    m_filterType          = ProxyModel::NoFilter;
-    m_filterFilesMimeList = QStringList();
-    m_blankLabel          = false;
-    m_userSelectedShowAllFiles = m_filterType;
-    m_showSelectionMarker = KGlobalSettings::singleClick();
-}
-
-void Options::loadSettings(KConfigGroup& cg)
-{
-    m_customLabel         = cg.readEntry("customLabel", m_customLabel);
-    m_customIconSize      = cg.readEntry("customIconSize", m_customIconSize);
-    m_showPreviews        = cg.readEntry("showPreviews", m_showPreviews);
-    m_drawShadows         = cg.readEntry("drawShadows", m_drawShadows);
-    m_numTextLines        = cg.readEntry("numTextLines", m_numTextLines);
-    m_textColor           = cg.readEntry("textColor", m_textColor);
-    m_iconsLocked         = cg.readEntry("iconsLocked", m_iconsLocked);
-    m_alignToGrid         = cg.readEntry("alignToGrid", m_alignToGrid);
-    m_clickToView         = cg.readEntry("clickForFolderPreviews", m_clickToView);
-    m_previewPlugins      = cg.readEntry("previewPlugins", m_previewPlugins);
-    m_sortDirsFirst       = cg.readEntry("sortDirsFirst", m_sortDirsFirst);
-    m_sortColumn          = cg.readEntry("sortColumn", m_sortColumn);
-    m_sortOrder           = sortOrderStringToEnum(cg.readEntry("sortOrder", sortOrderEnumToString(m_sortOrder)));
-    m_filterFiles         = cg.readEntry("filterFiles", m_filterFiles);
-    m_filterType          = filterModeStringToEnum(cg.readEntry("filter", filterModeEnumToString(m_filterType)));
-    m_filterFilesMimeList = cg.readEntry("mimeFilter", m_filterFilesMimeList);
-    m_blankLabel          = cg.readEntry("blankLabel", m_blankLabel);
-    m_userSelectedShowAllFiles = m_filterType;
-    m_showSelectionMarker = KGlobalSettings::singleClick();
-}
-
-
-#include "options.moc"
+#include "optionsbase.moc"

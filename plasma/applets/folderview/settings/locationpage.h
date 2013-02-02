@@ -34,7 +34,7 @@ class LocationPage : public PageBase
     Q_OBJECT
 
 public:
-    LocationPage(KConfigDialog *parent, Options *settings);
+    LocationPage(KConfigDialog *parent, OptionsBase *settings);
 
 protected:
     virtual void preSetupUi();
