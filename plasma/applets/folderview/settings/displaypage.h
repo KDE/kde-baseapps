@@ -33,7 +33,7 @@ class DisplayPage : public PageBase
     Q_OBJECT
 
 public:
-    DisplayPage(KConfigDialog *parent, Settings *settings);
+    DisplayPage(KConfigDialog *parent, Options *settings);
 
 protected:
     virtual void preSetupUi();

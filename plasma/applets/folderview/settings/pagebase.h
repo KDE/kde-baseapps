@@ -23,14 +23,14 @@
 #include <KConfigDialog>
 
 
-class Settings;
+class Options;
 
 class PageBase : public QWidget
 {
     Q_OBJECT
 
 public:
-    PageBase(KConfigDialog *dialog, Settings *settings);
+    PageBase(KConfigDialog *dialog, Options *settings);
 
     /** Call to setup and initialize the page UI with settings. */
     void init();
@@ -48,7 +48,7 @@ protected:
     /** Write back the settings from the UI. */
     virtual void saveSettings() = 0;
 
-    Settings *m_settings;
+    Options *m_settings;
 };
 
 #endif
