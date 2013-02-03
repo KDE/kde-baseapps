@@ -26,9 +26,9 @@ PageBase::PageBase(KConfigDialog *dialog, OptionsBase *settings) : QWidget(dialo
 
 void PageBase::init()
 {
-    preSetupUi();
     setupUi();
-    postSetupUI();
+    loadSettings();
+    setupModificationSignals();
 }
 
 #include "pagebase.moc"

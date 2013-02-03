@@ -36,14 +36,14 @@ public:
     void init();
 
 protected:
-    /** Create models, widgets etc. */
-    virtual void preSetupUi() = 0;
-
-    /** Load settings into the page UI . */
+    /** Create models, setup widgets etc. */
     virtual void setupUi() = 0;
 
+    /** Load settings into the page UI . */
+    virtual void loadSettings() = 0;
+
     /** Connect field modification signals after the UI has been setup. */
-    virtual void postSetupUI() = 0;
+    virtual void setupModificationSignals() = 0;
 
     /** Write back the settings from the UI. */
     virtual void saveSettings() = 0;

@@ -21,10 +21,10 @@
 #ifndef FILTERPAGE_H
 #define FILTERPAGE_H
 
-#include "pagebase.h"
+#include "../pagebase.h"
 
-#include "mimemodel.h"
-#include "proxymimemodel.h"
+#include "../models/mimemodel.h"
+#include "../models/proxymimemodel.h"
 
 #include "ui_folderviewFilterConfig.h"
 
@@ -37,9 +37,9 @@ public:
     FilterPage(KConfigDialog *parent, OptionsBase *settings);
 
 protected:
-    virtual void preSetupUi();
     virtual void setupUi();
-    virtual void postSetupUI();
+    virtual void loadSettings();
+    virtual void setupModificationSignals();
     void saveSettings();
 
 private slots:

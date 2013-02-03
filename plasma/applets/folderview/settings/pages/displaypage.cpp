@@ -22,27 +22,19 @@
 
 #include <KDirModel>
 
-#include "../iconview.h"
+#include "iconview.h"
 #include "previewpluginsmodel.h"
 
 DisplayPage::DisplayPage(KConfigDialog* parent, OptionsBase* settings): PageBase(parent, settings)
 {
 }
 
-void DisplayPage::preSetupUi()
+void DisplayPage::setupUi()
 {
     uiDisplay.setupUi(this);
 
-    m_titleLineEdit = new KLineEdit(this);
-    m_titleLineEdit->setClearButtonShown(false);
-    m_titleLineEdit->setClickMessage(i18n("Title"));
-}
-
-void DisplayPage::setupUi()
-{
     const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
     uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
-    uiDisplay.sizeSlider->setValue(iconSizes.indexOf(iconSize().width()));
 
 //     Let iconview always be there for now
 //     // Only add "Unsorted" as an option when we're showing an icon view, since the list view
@@ -59,6 +51,18 @@ void DisplayPage::setupUi()
     uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), QVariant::fromValue(IconView::TopToBottomRightToLeft));
     uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), QVariant::fromValue(IconView::LeftToRight));
     uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), QVariant::fromValue(IconView::RightToLeft));
+
+    // Hide the icon arrangement controls when we're not acting as a containment,
+    // since this option doesn't make much sense in the applet.
+    if (!isContainment()) {
+        uiDisplay.flowLabel->hide();
+        uiDisplay.flowCombo->hide();
+    }
+}
+
+void DisplayPage::loadSettings()
+{
+    uiDisplay.sizeSlider->setValue(iconSizes.indexOf(iconSize().width()));
 
     uiDisplay.alignToGrid->setChecked(m_alignToGrid);
     uiDisplay.clickToView->setChecked(m_clickToView);
@@ -82,16 +86,9 @@ void DisplayPage::setupUi()
            break;
        }
     }
-
-    // Hide the icon arrangement controls when we're not acting as a containment,
-    // since this option doesn't make much sense in the applet.
-    if (!isContainment()) {
-        uiDisplay.flowLabel->hide();
-        uiDisplay.flowCombo->hide();
-    }
 }
 
-void DisplayPage::postSetupUI()
+void DisplayPage::setupModificationSignals()
 {
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
