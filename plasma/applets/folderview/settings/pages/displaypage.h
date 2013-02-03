@@ -20,7 +20,7 @@
 #ifndef DISPLAYPAGE_H
 #define DISPLAYPAGE_H
 
-#include "pagebase.h"
+#include "../pagebase.h"
 
 #include <KLineEdit>
 
@@ -36,16 +36,15 @@ public:
     DisplayPage(KConfigDialog *parent, OptionsBase *settings);
 
 protected:
-    virtual void preSetupUi();
     virtual void setupUi();
-    virtual void postSetupUI();
+    virtual void loadSettings();
+    virtual void setupModificationSignals();
     void saveSettings();
 
 protected slots:
     void showPreviewConfigDialog();
 
 private:
-    QPointer<KLineEdit> m_titleLineEdit;
     Ui::folderviewDisplayConfig uiDisplay;
     Ui::folderviewPreviewConfig uiPreviewConfig;
 };
