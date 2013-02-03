@@ -70,8 +70,8 @@ void FilterPage::setupModificationSignals()
 {
     connect(uiFilter.searchMimetype, SIGNAL(textChanged(QString)), m_proxyMimeModel, SLOT(setFilter(QString)));
     connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
-    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectAllMimetypes()));
+    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(deselectAllMimeTypes()));
 
     connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), parent(), SLOT(settingsModified()));
     connect(uiFilter.filterFilesPattern, SIGNAL(textChanged(QString)), parent(), SLOT(settingsModified()));
@@ -80,9 +80,18 @@ void FilterPage::setupModificationSignals()
 
 // ==========Helper functions========
 
-void FilterPage::selectUnselectAll()
+void FilterPage::selectAllMimetypes()
 {
-    Qt::CheckState state = sender() == uiFilter.selectAll ? Qt::Checked : Qt::Unchecked;
+    toggleAllMimetypes(Qt::Checked);
+}
+
+void FilterPage::deselectAllMimeTypes()
+{
+    toggleAllMimetypes(Qt::Unchecked);
+}
+
+void FilterPage::toggleAllMimetypes(Qt::CheckState state)
+{
     for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);

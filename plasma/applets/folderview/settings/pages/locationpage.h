@@ -42,7 +42,7 @@ protected:
     virtual void setupModificationSignals();
     void saveSettings();
 
-private slots:
+protected slots:
     void setTitleEditEnabled(int);
 
 private:

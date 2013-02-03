@@ -117,7 +117,8 @@ protected slots:
 
     void configAccepted();
     void filterChanged(int index);
-    void selectUnselectAll();
+    void selectAllMimetypes();
+    void deselectAllMimeTypes();
     void fontSettingsChanged();
     void iconSettingsChanged(int group);
     void clickSettingsChanged(int category);
@@ -147,6 +148,7 @@ private:
     void timerEvent(QTimerEvent *event);
     void recreateLayout();
     void setAppletTitle();
+    void toggleAllMimetypes(Qt::CheckState);
 
 private:
 
