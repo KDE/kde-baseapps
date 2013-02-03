@@ -108,7 +108,7 @@ void FilterPage::filterChanged(int index)
     uiFilter.filterFilesList->setEnabled(filterActive);
     uiFilter.selectAll->setEnabled(filterActive);
     uiFilter.deselectAll->setEnabled(filterActive);
-    if ((filterActive) && (m_userSelectedShowAllFiles == 0)) {
+    if (filterActive) {
       for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
