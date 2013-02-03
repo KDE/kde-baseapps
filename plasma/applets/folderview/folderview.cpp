@@ -597,8 +597,8 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));
     connect(uiLocation.titleCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(setTitleEditEnabled(int)));
     connect(uiFilter.filterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(filterChanged(int)));
-    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
-    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(selectUnselectAll()));
+    connect(uiFilter.selectAll, SIGNAL(clicked(bool)), this, SLOT(selectAllMimetypes()));
+    connect(uiFilter.deselectAll, SIGNAL(clicked(bool)), this, SLOT(deselectAllMimeTypes()));
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
@@ -1676,15 +1676,23 @@ void FolderView::filterChanged(int index)
     }
 }
 
-void FolderView::selectUnselectAll()
+void FolderView::selectAllMimetypes()
 {
-    Qt::CheckState state = sender() == uiFilter.selectAll ? Qt::Checked : Qt::Unchecked;
+    toggleAllMimetypes(Qt::Checked);
+}
+
+void FolderView::deselectAllMimeTypes()
+{
+    toggleAllMimetypes(Qt::Unchecked);
+}
+
+void FolderView::toggleAllMimetypes(Qt::CheckState state)
+{
     for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
         const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
         uiFilter.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);
     }
 }
-
 void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(buttons)
