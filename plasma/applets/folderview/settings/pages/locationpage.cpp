@@ -22,14 +22,14 @@
 
 #include <KGlobalSettings>
 
-#include "../folderview.h"
+#include "folderview.h"
 
 
 LocationPage::LocationPage(KConfigDialog *dialog, OptionsBase *settings) : PageBase(dialog, settings)
 {
 }
 
-void LocationPage::preSetupUi()
+void LocationPage::setupUi()
 {
     uiLocation.setupUi(this);
 
@@ -38,9 +38,22 @@ void LocationPage::preSetupUi()
     m_placesFilterModel->setSourceModel(m_placesModel);
     uiLocation.placesCombo->setModel(m_placesFilterModel);
     uiLocation.lineEdit->setMode(KFile::Directory);
+
+    uiLocation.titleCombo->addItem(i18n("None"), QVariant::fromValue(FolderView::None));
+    uiLocation.titleCombo->addItem(i18n("Default"), QVariant::fromValue(FolderView::PlaceName));
+    uiLocation.titleCombo->addItem(i18n("Full Path"), QVariant::fromValue(FolderView::FullPath));
+    uiLocation.titleCombo->addItem(i18n("Custom title"), QVariant::fromValue(FolderView::Custom));
+
+    // The label is not shown when the applet is acting as a containment,
+    // so don't confuse the user by making it editable.
+    if (isContainment()) {
+        uiLocation.titleLabel->hide();
+        uiLocation.titleCombo->hide();
+        uiLocation.titleEdit->hide();
+    }
 }
 
-void LocationPage::setupUi()
+void LocationPage::loadSettings()
 {
     QDir desktopFolder(KGlobalSettings::desktopPath());
     const bool desktopVisible = desktopFolder != QDir::homePath() && desktopFolder.exists();
@@ -73,24 +86,11 @@ void LocationPage::setupUi()
         }
     }
 
-    uiLocation.titleCombo->addItem(i18n("None"), QVariant::fromValue(FolderView::None));
-    uiLocation.titleCombo->addItem(i18n("Default"), QVariant::fromValue(FolderView::PlaceName));
-    uiLocation.titleCombo->addItem(i18n("Full Path"), QVariant::fromValue(FolderView::FullPath));
-    uiLocation.titleCombo->addItem(i18n("Custom title"), QVariant::fromValue(FolderView::Custom));
-
     if (m_labelType == FolderView::Custom) {
         uiLocation.titleEdit->setEnabled(true);
         uiLocation.titleEdit->setText(m_customLabel);
     } else {
         uiLocation.titleEdit->setEnabled(false);
-    }
-
-    // The label is not shown when the applet is acting as a containment,
-    // so don't confuse the user by making it editable.
-    if (isContainment()) {
-        uiLocation.titleLabel->hide();
-        uiLocation.titleCombo->hide();
-        uiLocation.titleEdit->hide();
     }
 
     for (int i = 0; i < uiLocation.titleCombo->maxCount(); i++) {
@@ -101,7 +101,7 @@ void LocationPage::setupUi()
     }
 }
 
-void LocationPage::postSetupUI()
+void LocationPage::setupModificationSignals()
 {
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), uiLocation.placesCombo, SLOT(setEnabled(bool)));
     connect(uiLocation.showCustomFolder, SIGNAL(toggled(bool)), uiLocation.lineEdit, SLOT(setEnabled(bool)));

@@ -21,11 +21,11 @@
 #ifndef LOCATIONPAGE_H
 #define LOCATIONPAGE_H
 
-#include "pagebase.h"
+#include "../pagebase.h"
 
 #include <KFilePlacesModel>
 
-#include "placesfiltermodel.h"
+#include "../models/placesfiltermodel.h"
 #include "ui_folderviewLocationConfig.h"
 
 
@@ -37,9 +37,9 @@ public:
     LocationPage(KConfigDialog *parent, OptionsBase *settings);
 
 protected:
-    virtual void preSetupUi();
     virtual void setupUi();
-    virtual void postSetupUI();
+    virtual void loadSettings();
+    virtual void setupModificationSignals();
     void saveSettings();
 
 private slots:
