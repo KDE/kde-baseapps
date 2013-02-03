@@ -42,9 +42,13 @@ protected:
     virtual void setupModificationSignals();
     void saveSettings();
 
-private slots:
-    void selectUnselectAll();
+protected slots:
+    void selectAllMimetypes();
+    void deselectAllMimeTypes();
     void filterChanged(int);
+
+protected:
+    void toggleAllMimetypes(Qt::CheckState);
 
 private:
     QPointer<MimeModel> m_mimeModel;
