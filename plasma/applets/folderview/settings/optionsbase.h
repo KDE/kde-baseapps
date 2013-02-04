@@ -23,21 +23,20 @@
 
 #include <KConfigGroup>
 
-#include "../iconview.h"
-#include "../proxymodel.h"
-#include "../folderview.h"
+#include "iconview.h"
+#include "proxymodel.h"
+#include "folderview.h"
 
 /**
  * Base class for the different config pane option classes.
  * Also contains the static helper enum <-> string functions.
  */
-class OptionsBase : public QObject
+class OptionsBase
 {
-    Q_OBJECT
 
 public:
 
-    OptionsBase();
+    OptionsBase() {}
 
     /** Load default option values before reading from a configuration group. */
     virtual void loadDefaults() = 0;

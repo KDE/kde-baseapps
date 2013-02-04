@@ -129,10 +129,3 @@ FolderView::LabelType OptionsBase::labelTypeStringToEnum(const QString& type)
         return FolderView::Custom;
     }
 }
-
-OptionsBase::OptionsBase()
-    : QObject()
-{
-}
-
-#include "optionsbase.moc"
