@@ -33,18 +33,18 @@ void GeneralOptions::loadDefaults()
     m_customLabel           = "";
 }
 
-void GeneralOptions::writeSettings(KConfigGroup& cg)
-{
-    cg.writeEntry("url", m_url);
-    cg.writeEntry("labelType", static_cast<int>(m_labelType));
-//     cg.writeEntry("labelType", labelTypeEnumToString(m_labelType)); // TODO - kconfigupdate
-    cg.writeEntry("customLabel", m_customLabel);
-}
-
 void GeneralOptions::loadSettings(KConfigGroup& cg)
 {
     m_url = cg.readEntry("url", m_url);
     m_labelType = static_cast<FolderView::LabelType>(cg.readEntry("labelType", static_cast<int>(m_labelType)));
 //     m_labelType = labelTypeStringToEnum(cg.readEntry("labelType", labelTypeEnumToString(m_labelType))); // TODO - kconfigupdate
     m_customLabel = cg.readEntry("customLabel", m_customLabel);
+}
+
+void GeneralOptions::writeSettings(KConfigGroup& cg)
+{
+    cg.writeEntry("url", m_url);
+    cg.writeEntry("labelType", static_cast<int>(m_labelType));
+//     cg.writeEntry("labelType", labelTypeEnumToString(m_labelType)); // TODO - kconfigupdate
+    cg.writeEntry("customLabel", m_customLabel);
 }
