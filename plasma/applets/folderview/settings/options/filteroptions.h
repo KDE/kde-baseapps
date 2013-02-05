@@ -25,22 +25,23 @@
 
 class FilterOptions : public OptionsBase
 {
+    Q_OBJECT
 
 public:
-    FilterOptions();
+    FilterOptions(KConfigGroup *group);
 
 public:
     ProxyModel::FilterMode filterMode() const { return m_filterType; }
     QString filterFiles() const { return m_filterFiles; }
-    QString filterFilesMimeList() const { return m_filterFilesMimeList; }
+    QStringList filterFilesMimeList() const { return m_filterFilesMimeList; }
 
     void setFilterMode(ProxyModel::FilterMode mode) { m_filterType = mode; }
     void setFilterFiles(const QString& files) { m_filterFiles = files; }
-    void setFilterFilesMimeList(const QString& list) { m_filterFilesMimeList = list; }
+    void setFilterFilesMimeList(const QStringList& list) { m_filterFilesMimeList = list; }
 
     virtual void loadDefaults();
-    virtual void loadSettings(KConfigGroup&);
-    virtual void writeSettings(KConfigGroup&);
+    virtual void loadSettings();
+    virtual void writeSettings();
 
 protected:
     ProxyModel::FilterMode m_filterType;

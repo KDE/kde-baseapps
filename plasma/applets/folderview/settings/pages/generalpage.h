@@ -18,23 +18,21 @@
  *   Boston, MA 02110-1301, USA.
  */
 
-#ifndef LOCATIONPAGE_H
-#define LOCATIONPAGE_H
+#ifndef GENERALPAGE_H
+#define GENERALPAGE_H
 
-#include "../pagebase.h"
+#include "settings/pagebase.h"
 
-#include <KFilePlacesModel>
-
-#include "../models/placesfiltermodel.h"
+#include "settings/models/placesfiltermodel.h"
 #include "ui_folderviewLocationConfig.h"
 
 
-class LocationPage : public PageBase
+class GeneralPage : public PageBase
 {
     Q_OBJECT
 
 public:
-    LocationPage(KConfigDialog *parent, OptionsBase *settings);
+    GeneralPage(KConfigDialog *parent, OptionsBase *settings);
 
 protected:
     virtual void setupUi();
@@ -45,10 +43,28 @@ protected:
 protected slots:
     void setTitleEditEnabled(int);
 
-private:
+protected:
     QPointer<KFilePlacesModel> m_placesModel;
     QPointer<PlacesFilterModel> m_placesFilterModel;
     Ui::folderviewLocationConfig uiLocation;
+};
+
+
+class AppletGeneralPage : public GeneralPage
+{
+public:
+    AppletGeneralPage(KConfigDialog* parent, OptionsBase* settings);
+};
+
+/**
+ * Helper class, encapsulates the absence of the Title configuration UI in the containment version of the page
+ */
+class ContainmentGeneralPage : public GeneralPage
+{
+public:
+    ContainmentGeneralPage(KConfigDialog* parent, OptionsBase* settings);
+protected:
+    virtual void setupUi();
 };
 
 #endif

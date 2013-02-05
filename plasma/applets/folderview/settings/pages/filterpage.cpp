@@ -20,7 +20,11 @@
 
 #include "filterpage.h"
 
+#include "settings/options/filteroptions.h"
+
 #include "proxymodel.h"
+
+Q_DECLARE_METATYPE(ProxyModel::FilterMode)
 
 FilterPage::FilterPage(KConfigDialog* parent, OptionsBase* settings): PageBase(parent, settings)
 {
@@ -43,24 +47,28 @@ void FilterPage::setupUi()
 
 void FilterPage::loadSettings()
 {
-    uiFilter.filterFilesPattern->setText(m_filterFiles);
+    FilterOptions *options= static_cast<FilterOptions*>(m_options);
+
+    uiFilter.filterFilesPattern->setText(options->filterFiles());
 
     for (int i = 0; i < uiFilter.filterCombo->maxCount(); i++) {
-       if (m_filterType == uiFilter.filterCombo->itemData(i).value<ProxyModel::FilterMode>()) {
+       if (options->filterMode() == uiFilter.filterCombo->itemData(i).value<ProxyModel::FilterMode>()) {
            uiFilter.filterCombo->setCurrentIndex(i);
            break;
        }
     }
 
-    filterChanged(m_filterType);
+    filterChanged(options->filterMode());
 
-    if (m_filterFilesMimeList.count()) {
+    QStringList mimeList = options->filterFilesMimeList();
+    if (mimeList.count()) {
         for (int i = 0; i < m_proxyMimeModel->rowCount(); i++) {
             const QModelIndex index = m_proxyMimeModel->index(i, 0);
             const KMimeType *mime = static_cast<KMimeType*>(m_proxyMimeModel->mapToSource(index).internalPointer());
-            if (mime && m_filterFilesMimeList.contains(mime->name())) {
-                m_filterFilesMimeList.removeAll(mime->name());
+            if (mime && mimeList.contains(mime->name())) {
+                mimeList.removeAll(mime->name());
                 uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
+                options->setFilterFilesMimeList(mimeList);
             }
         }
     }
@@ -118,7 +126,30 @@ void FilterPage::filterChanged(int index)
 
 void FilterPage::saveSettings()
 {
-    // TODO
+    FilterOptions *options= static_cast<FilterOptions*>(m_options);
+
+    options->setFilterFiles(uiFilter.filterFilesPattern->text());
+
+    const ProxyModel::FilterMode filterMode =
+    uiFilter.filterCombo->itemData(uiFilter.filterCombo->currentIndex()).value<ProxyModel::FilterMode>();
+    options->setFilterMode(filterMode);
+
+    // Now, we have to iterate over all items (not only the filtered ones). For that reason we have
+    // to ask the source model, not the proxy model.
+    QStringList selectedItems;
+    ProxyMimeModel *proxyModel = static_cast<ProxyMimeModel*>(uiFilter.filterFilesList->model());
+    for (int i = 0; i < proxyModel->sourceModel()->rowCount(); i++) {
+        const QModelIndex index = proxyModel->sourceModel()->index(i, 0);
+        if (index.model()->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) {
+            KMimeType *mime = static_cast<KMimeType*>(index.internalPointer());
+            if (mime) {
+                selectedItems << mime->name();
+            }
+        }
+    }
+    options->setFilterFilesMimeList(selectedItems);
+
+    options->writeSettings();
 }
 
 #include "filterpage.moc"

@@ -31,12 +31,12 @@
  * Base class for the different config pane option classes.
  * Also contains the static helper enum <-> string functions.
  */
-class OptionsBase
+class OptionsBase : public QObject
 {
+    Q_OBJECT
 
 public:
-
-    OptionsBase() {}
+    OptionsBase(KConfigGroup *);
 
     /** Load default option values before reading from a configuration group. */
     virtual void loadDefaults() = 0;
@@ -44,12 +44,12 @@ public:
     /**
      * Read option values from a configuration group using current values as the default ones.
      */
-    virtual void loadSettings(KConfigGroup &) = 0;
+    virtual void loadSettings() = 0;
 
     /**
      * Write option values to a configuration group.
      */
-    virtual void writeSettings(KConfigGroup &) = 0;
+    virtual void writeSettings() = 0;
 
     /** 
      * Helper functions for reliable writing and reading of enums from configuration files.
@@ -66,6 +66,8 @@ public:
     static QString labelTypeEnumToString(FolderView::LabelType);
     static FolderView::LabelType labelTypeStringToEnum(const QString &);
 
+protected:
+    KConfigGroup *m_cg;
 };
 
 #endif

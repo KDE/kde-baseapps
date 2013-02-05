@@ -27,7 +27,7 @@ class DisplayOptions : public OptionsBase
 {
 
 public:
-    DisplayOptions();
+    DisplayOptions(KConfigGroup *group);
 
 public:
     // getters
@@ -67,8 +67,8 @@ public:
     void setNumTextLines(int number) { m_numTextLines = number; }
 
     virtual void loadDefaults();
-    virtual void loadSettings(KConfigGroup& );
-    virtual void writeSettings(KConfigGroup& );
+    virtual void loadSettings();
+    virtual void writeSettings();
 
 protected:
     int m_sortColumn;

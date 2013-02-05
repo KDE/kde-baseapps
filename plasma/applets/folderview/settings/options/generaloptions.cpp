@@ -21,7 +21,7 @@
 #include "generaloptions.h"
 
 
-GeneralOptions::GeneralOptions()
+GeneralOptions::GeneralOptions(KConfigGroup *group) : OptionsBase(group)
 {
     loadDefaults();
 }
@@ -33,18 +33,20 @@ void GeneralOptions::loadDefaults()
     m_customLabel           = "";
 }
 
-void GeneralOptions::loadSettings(KConfigGroup& cg)
+void GeneralOptions::loadSettings()
 {
-    m_url = cg.readEntry("url", m_url);
-    m_labelType = static_cast<FolderView::LabelType>(cg.readEntry("labelType", static_cast<int>(m_labelType)));
+    m_url = m_cg->readEntry("url", m_url);
+    m_labelType = static_cast<FolderView::LabelType>(m_cg->readEntry("labelType", static_cast<int>(m_labelType)));
 //     m_labelType = labelTypeStringToEnum(cg.readEntry("labelType", labelTypeEnumToString(m_labelType))); // TODO - kconfigupdate
-    m_customLabel = cg.readEntry("customLabel", m_customLabel);
+    m_customLabel = m_cg->readEntry("customLabel", m_customLabel);
 }
 
-void GeneralOptions::writeSettings(KConfigGroup& cg)
+void GeneralOptions::writeSettings()
 {
-    cg.writeEntry("url", m_url);
-    cg.writeEntry("labelType", static_cast<int>(m_labelType));
+    m_cg->writeEntry("url", m_url);
+    m_cg->writeEntry("labelType", static_cast<int>(m_labelType));
 //     cg.writeEntry("labelType", labelTypeEnumToString(m_labelType)); // TODO - kconfigupdate
-    cg.writeEntry("customLabel", m_customLabel);
+    m_cg->writeEntry("customLabel", m_customLabel);
 }
+
+#include "generaloptions.moc"
