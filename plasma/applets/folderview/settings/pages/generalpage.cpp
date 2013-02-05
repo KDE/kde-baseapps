@@ -27,7 +27,7 @@
 
 Q_DECLARE_METATYPE(FolderView::LabelType)
 
-GeneralPage::GeneralPage(KConfigDialog *dialog, OptionsBase *settings) : PageBase(dialog, settings)
+GeneralPage::GeneralPage(KConfigDialog *dialog, GeneralOptions *options) : PageBase(dialog), m_options(options)
 {
 }
 
@@ -49,16 +49,14 @@ void GeneralPage::setupUi()
 
 void GeneralPage::loadSettings()
 {
-    GeneralOptions *options = static_cast<GeneralOptions*>(m_options);
-
     QDir desktopFolder(KGlobalSettings::desktopPath());
     const bool desktopVisible = desktopFolder != QDir::homePath() && desktopFolder.exists();
     uiLocation.showDesktopFolder->setVisible(desktopVisible);
-    if (desktopVisible && options->url() == KUrl("desktop:/")) {
+    if (desktopVisible && m_options->url() == KUrl("desktop:/")) {
         uiLocation.showDesktopFolder->setChecked(true);
         uiLocation.placesCombo->setEnabled(false);
         uiLocation.lineEdit->setEnabled(false);
-    } else if (options->url() == KUrl("activities:/current/")) {
+    } else if (m_options->url() == KUrl("activities:/current/")) {
         uiLocation.showActivity->setChecked(true);
         uiLocation.placesCombo->setEnabled(false);
         uiLocation.lineEdit->setEnabled(false);
@@ -66,7 +64,7 @@ void GeneralPage::loadSettings()
         QModelIndex index;
         for (int i = 0; i < m_placesFilterModel->rowCount(); i++) {
             const KUrl url = m_placesModel->url(m_placesFilterModel->mapToSource(m_placesFilterModel->index(i, 0)));
-            if (url.equals(options->url(), KUrl::CompareWithoutTrailingSlash)) {
+            if (url.equals(m_options->url(), KUrl::CompareWithoutTrailingSlash)) {
                 index = m_placesFilterModel->index(i, 0);
                 break;
             }
@@ -77,20 +75,20 @@ void GeneralPage::loadSettings()
             uiLocation.lineEdit->setEnabled(false);
         } else {
             uiLocation.showCustomFolder->setChecked(true);
-            uiLocation.lineEdit->setUrl(options->url());
+            uiLocation.lineEdit->setUrl(m_options->url());
             uiLocation.placesCombo->setEnabled(false);
         }
     }
 
-    if (options->labelType()== FolderView::Custom) {
+    if (m_options->labelType()== FolderView::Custom) {
         uiLocation.titleEdit->setEnabled(true);
-        uiLocation.titleEdit->setText(options->customLabel());
+        uiLocation.titleEdit->setText(m_options->customLabel());
     } else {
         uiLocation.titleEdit->setEnabled(false);
     }
 
     for (int i = 0; i < uiLocation.titleCombo->maxCount(); i++) {
-       if (options->labelType()== uiLocation.titleCombo->itemData(i).value<FolderView::LabelType>()) {
+       if (m_options->labelType()== uiLocation.titleCombo->itemData(i).value<FolderView::LabelType>()) {
            uiLocation.titleCombo->setCurrentIndex(i);
            break;
        }
@@ -115,8 +113,6 @@ void GeneralPage::setupModificationSignals()
 
 void GeneralPage::saveSettings()
 {
-    GeneralOptions *options = static_cast<GeneralOptions*>(m_options);
-
     KUrl url;
 
     if (uiLocation.showDesktopFolder->isChecked()) {
@@ -135,7 +131,7 @@ void GeneralPage::saveSettings()
         url = KUrl(QDir::homePath());
     }
 
-    options->setUrl(url);
+    m_options->setUrl(url);
 
     const FolderView::LabelType labelType =
     uiLocation.titleCombo->itemData(uiLocation.titleCombo->currentIndex()).value<FolderView::LabelType>();
@@ -146,10 +142,10 @@ void GeneralPage::saveSettings()
         customTitle.clear();
     }
 
-    options->setLabelType(labelType);
-    options->setCustomLabel(customTitle);
+    m_options->setLabelType(labelType);
+    m_options->setCustomLabel(customTitle);
 
-    options->writeSettings();
+    m_options->writeSettings();
 }
 
 void GeneralPage::setTitleEditEnabled(int index)
@@ -163,11 +159,11 @@ void GeneralPage::setTitleEditEnabled(int index)
 }
 
 
-AppletGeneralPage::AppletGeneralPage(KConfigDialog* parent, OptionsBase* settings): GeneralPage(parent, settings)
+AppletGeneralPage::AppletGeneralPage(KConfigDialog* parent, GeneralOptions* options): GeneralPage(parent, options)
 {
 }
 
-ContainmentGeneralPage::ContainmentGeneralPage(KConfigDialog* parent, OptionsBase* settings): GeneralPage(parent, settings)
+ContainmentGeneralPage::ContainmentGeneralPage(KConfigDialog* parent, GeneralOptions* options): GeneralPage(parent, options)
 {
 }
 

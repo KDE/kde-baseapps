@@ -26,6 +26,7 @@
 
 #include "ui_folderviewDisplayConfig.h"
 #include "ui_folderviewPreviewConfig.h"
+#include "settings/options/displayoptions.h"
 
 
 class DisplayPage : public PageBase
@@ -47,6 +48,8 @@ protected slots:
 private:
     Ui::folderviewDisplayConfig uiDisplay;
     Ui::folderviewPreviewConfig uiPreviewConfig;
+
+    DisplayOptions m_options;
 };
 
 #endif

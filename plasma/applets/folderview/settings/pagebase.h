@@ -30,7 +30,7 @@ class PageBase : public QWidget
     Q_OBJECT
 
 public:
-    PageBase(KConfigDialog *dialog, OptionsBase *settings);
+    PageBase(KConfigDialog *dialog);
 
     /** Call to setup and initialize the page UI with settings. */
     void init();
@@ -47,8 +47,6 @@ protected:
 
     /** Write back the settings from the UI. */
     virtual void saveSettings() = 0;
-
-    OptionsBase *m_options;
 };
 
 #endif

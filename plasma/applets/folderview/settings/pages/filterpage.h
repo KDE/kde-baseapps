@@ -27,6 +27,7 @@
 #include "../models/proxymimemodel.h"
 
 #include "ui_folderviewFilterConfig.h"
+#include "settings/options/filteroptions.h"
 
 
 class FilterPage : public PageBase
@@ -34,7 +35,7 @@ class FilterPage : public PageBase
     Q_OBJECT
 
 public:
-    FilterPage(KConfigDialog *parent, OptionsBase *settings);
+    FilterPage(KConfigDialog *parent, FilterOptions *options);
 
 protected:
     virtual void setupUi();
@@ -53,7 +54,9 @@ protected:
 private:
     QPointer<MimeModel> m_mimeModel;
     QPointer<ProxyMimeModel> m_proxyMimeModel;
+
     Ui::folderviewFilterConfig uiFilter;
+    FilterOptions* m_options;
 };
 
 #endif
