@@ -22,7 +22,7 @@
 
 #include <KDirModel>
 
-DisplayOptions::DisplayOptions()
+DisplayOptions::DisplayOptions(KConfigGroup *group) : OptionsBase(group)
 {
     loadDefaults();
 }
@@ -47,45 +47,45 @@ void DisplayOptions::loadDefaults()
     m_numTextLines          = 2;
 }
 
-void DisplayOptions::loadSettings(KConfigGroup& cg)
+void DisplayOptions::loadSettings()
 {
-    m_sortColumn = cg.readEntry("sortColumn", m_sortColumn);
-    m_sortOrder = sortOrderStringToEnum(cg.readEntry("sortOrder", sortOrderEnumToString(m_sortOrder)));
-    m_sortDirsFirst = cg.readEntry("sortDirsFirst", m_sortDirsFirst);
+    m_sortColumn = m_cg->readEntry("sortColumn", m_sortColumn);
+    m_sortOrder = sortOrderStringToEnum(m_cg->readEntry("sortOrder", sortOrderEnumToString(m_sortOrder)));
+    m_sortDirsFirst = m_cg->readEntry("sortDirsFirst", m_sortDirsFirst);
 
-    m_flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
-//     m_flow = iconFlowStringToEnum(cg.readEntry("flow", iconFlowEnumToString(m_flow))); // TODO - kconfigupdate
-    m_showPreviews = cg.readEntry("showPreviews", m_showPreviews);
-    m_previewPlugins = cg.readEntry("previewPlugins", m_previewPlugins);
+    m_flow = static_cast<IconView::Flow>(m_cg.readEntry("flow", static_cast<int>(m_flow)));
+//     m_flow = iconFlowStringToEnum(m_cg->readEntry("flow", iconFlowEnumToString(m_flow))); // TODO - kconfigupdate
+    m_showPreviews = m_cg->readEntry("showPreviews", m_showPreviews);
+    m_previewPlugins = m_cg->readEntry("previewPlugins", m_previewPlugins);
 
-    m_textColor = cg.readEntry("textColor", m_textColor);
-    m_drawShadows = cg.readEntry("drawShadows", m_drawShadows);
-    m_iconsLocked = cg.readEntry("iconsLocked", m_iconsLocked);
-    m_alignToGrid = cg.readEntry("alignToGrid", m_alignToGrid);
-    m_clickToView = cg.readEntry("clickForFolderPreviews", m_clickToView);
+    m_textColor = m_cg->readEntry("textColor", m_textColor);
+    m_drawShadows = m_cg->readEntry("drawShadows", m_drawShadows);
+    m_iconsLocked = m_cg->readEntry("iconsLocked", m_iconsLocked);
+    m_alignToGrid = m_cg->readEntry("alignToGrid", m_alignToGrid);
+    m_clickToView = m_cg->readEntry("clickForFolderPreviews", m_clickToView);
     m_showSelectionMarker = KGlobalSettings::singleClick();
-    m_customIconSize = cg.readEntry("customIconSize", m_customIconSize);
-    m_numTextLines = cg.readEntry("numTextLines", m_numTextLines);
+    m_customIconSize = m_cg->readEntry("customIconSize", m_customIconSize);
+    m_numTextLines = m_cg->readEntry("numTextLines", m_numTextLines);
 }
 
-void DisplayOptions::writeSettings(KConfigGroup& cg)
+void DisplayOptions::writeSettings()
 {
-    cg.writeEntry("sortColumn", m_sortColumn);
-    cg.writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
-    cg.writeEntry("sortDirsFirst", m_sortDirsFirst);
+    m_cg->writeEntry("sortColumn", m_sortColumn);
+    m_cg->writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
+    m_cg->writeEntry("sortDirsFirst", m_sortDirsFirst);
 
-    cg.writeEntry("flow", static_cast<int>(m_flow));
-//     cg.writeEntry("flow", iconFlowEnumToString(m_flow)); // TODO -kconfigupdate
-    cg.writeEntry("showPreviews", m_showPreviews);
-    cg.writeEntry("previewPlugins", m_previewPlugins);
+    m_cg->writeEntry("flow", static_cast<int>(m_flow));
+//     m_cg->writeEntry("flow", iconFlowEnumToString(m_flow)); // TODO -kconfigupdate
+    m_cg->writeEntry("showPreviews", m_showPreviews);
+    m_cg->writeEntry("previewPlugins", m_previewPlugins);
 
-    cg.writeEntry("textColor", m_textColor);
-    cg.writeEntry("drawShadows", m_drawShadows);
-    cg.writeEntry("iconsLocked", m_iconsLocked);
-    cg.writeEntry("alignToGrid", m_alignToGrid);
-    cg.writeEntry("clickForFolderPreviews", m_clickToView);
-    cg.writeEntry("showSelectionMarker", m_showSelectionMarker);
-    cg.writeEntry("customIconSize", m_customIconSize);
-    cg.writeEntry("numTextLines", m_numTextLines);
+    m_cg->writeEntry("textColor", m_textColor);
+    m_cg->writeEntry("drawShadows", m_drawShadows);
+    m_cg->writeEntry("iconsLocked", m_iconsLocked);
+    m_cg->writeEntry("alignToGrid", m_alignToGrid);
+    m_cg->writeEntry("clickForFolderPreviews", m_clickToView);
+    m_cg->writeEntry("showSelectionMarker", m_showSelectionMarker);
+    m_cg->writeEntry("customIconSize", m_customIconSize);
+    m_cg->writeEntry("numTextLines", m_numTextLines);
 }
 

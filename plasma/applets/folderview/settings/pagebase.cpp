@@ -20,7 +20,7 @@
 #include "pagebase.h"
 
 
-PageBase::PageBase(KConfigDialog *dialog, OptionsBase *settings) : QWidget(dialog), m_settings(settings)
+PageBase::PageBase(KConfigDialog *dialog, OptionsBase *settings) : QWidget(dialog), m_options(settings)
 {
 }
 

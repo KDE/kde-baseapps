@@ -48,7 +48,7 @@ protected:
     /** Write back the settings from the UI. */
     virtual void saveSettings() = 0;
 
-    OptionsBase *m_settings;
+    OptionsBase *m_options;
 };
 
 #endif

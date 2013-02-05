@@ -25,9 +25,10 @@
 
 class GeneralOptions : public OptionsBase
 {
+    Q_OBJECT
 
 public:
-    GeneralOptions();
+    GeneralOptions(KConfigGroup *group);
 
 public:
     KUrl url() const { return m_url; }
@@ -39,8 +40,8 @@ public:
     void setCustomLabel(const QString& customLabel) { m_customLabel = customLabel; }
 
     virtual void loadDefaults();
-    virtual void loadSettings(KConfigGroup&);
-    virtual void writeSettings(KConfigGroup&);
+    virtual void loadSettings();
+    virtual void writeSettings();
 
 protected:
     KUrl m_url;

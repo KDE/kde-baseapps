@@ -23,6 +23,14 @@
 #include <KGlobalSettings>
 #include <KDirModel>
 
+// Q_DECLARE_METATYPE(Qt::SortOrder)
+// Q_DECLARE_METATYPE(IconView::Flow)
+// Q_DECLARE_METATYPE(ProxyModel::FilterMode)
+// Q_DECLARE_METATYPE(FolderView::LabelType)
+
+OptionsBase::OptionsBase(KConfigGroup *group) : QObject(), m_cg(group)
+{
+}
 
 QString OptionsBase::sortOrderEnumToString(Qt::SortOrder order)
 {
@@ -129,3 +137,5 @@ FolderView::LabelType OptionsBase::labelTypeStringToEnum(const QString& type)
         return FolderView::Custom;
     }
 }
+
+#include "optionsbase.moc"
