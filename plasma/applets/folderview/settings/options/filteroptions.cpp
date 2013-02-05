@@ -21,7 +21,7 @@
 #include "filteroptions.h"
 
 
-FilterOptions::FilterOptions()
+FilterOptions::FilterOptions(KConfigGroup *group) : OptionsBase(group)
 {
     loadDefaults();
 }
@@ -33,18 +33,20 @@ void FilterOptions::loadDefaults()
     m_filterFilesMimeList   = QStringList();
 }
 
-void FilterOptions::loadSettings(KConfigGroup& cg)
+void FilterOptions::loadSettings()
 {
-    m_filterType = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(m_filterType)));
-//     m_filterType = filterModeStringToEnum(cg.readEntry("filter", filterModeEnumToString(m_filterType))); TODO - kconfigupdate
-    m_filterFiles = cg.readEntry("filterFiles", m_filterFiles);
-    m_filterFilesMimeList = cg.readEntry("mimeFilter", m_filterFilesMimeList);
+    m_filterType = static_cast<ProxyModel::FilterMode>(m_cg->readEntry("filter", static_cast<int>(m_filterType)));
+//     m_filterType = filterModeStringToEnum(m_cg->readEntry("filter", filterModeEnumToString(m_filterType))); TODO - kconfigupdate
+    m_filterFiles = m_cg->readEntry("filterFiles", m_filterFiles);
+    m_filterFilesMimeList = m_cg->readEntry("mimeFilter", m_filterFilesMimeList);
 }
 
-void FilterOptions::writeSettings(KConfigGroup& cg)
+void FilterOptions::writeSettings()
 {
-    cg.writeEntry("filter", static_cast<int>(m_filterType));
-//     cg.writeEntry("filter", filterModeEnumToString(m_filterType)); // TODO - kconfigupdate
-    cg.writeEntry("flterFiles", m_filterFiles);
-    cg.writeEntry("mimeFilter", m_filterFilesMimeList);
+    m_cg->writeEntry("filter", static_cast<int>(m_filterType));
+//     m_cg->writeEntry("filter", filterModeEnumToString(m_filterType)); // TODO - kconfigupdate
+    m_cg->writeEntry("flterFiles", m_filterFiles);
+    m_cg->writeEntry("mimeFilter", m_filterFilesMimeList);
 }
+
+#include "filteroptions.moc"

@@ -24,7 +24,11 @@ set(folderview_SRCS
     settings/pagebase.cpp
     settings/models/previewpluginsmodel.cpp
     settings/models/mimemodel.cpp
-    settings/models/proxymimemodel.cpp)
+    settings/models/proxymimemodel.cpp
+    settings/options/generaloptions.cpp
+    settings/options/filteroptions.cpp
+    settings/pages/generalpage.cpp
+    settings/pages/filterpage.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   settings/ui/folderviewFilterConfig.ui
