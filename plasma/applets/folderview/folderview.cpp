@@ -244,7 +244,7 @@ void FolderView::init()
 
 void FolderView::networkAvailable()
 {
-    if (KProtocolInfo::protocolClass(m_url.protocol()) == ":local") {
+    if (KProtocolInfo::protocolClass(m_url.protocol()) != ":local") {
         m_dirLister->openUrl(m_url);
     }
 }
