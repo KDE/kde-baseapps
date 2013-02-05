@@ -123,7 +123,6 @@ protected slots:
     void iconSettingsChanged(int group);
     void clickSettingsChanged(int category);
     void plasmaThemeChanged();
-    void networkStatusChanged(Solid::Networking::Status status);
     //void clipboardDataChanged();
     void updateScreenRegion();
     void showPreviewConfigDialog();

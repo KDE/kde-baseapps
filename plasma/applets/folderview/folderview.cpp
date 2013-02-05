@@ -152,8 +152,7 @@ void FolderView::init()
     connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), SLOT(plasmaThemeChanged()));
 
     // Find out about network availability changes
-    connect(Solid::Networking::notifier(), SIGNAL(statusChanged(Solid::Networking::Status)),
-            SLOT(networkStatusChanged(Solid::Networking::Status)));
+    connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), SLOT(networkAvailable()));
 
     KConfigGroup cg = config();
     m_customLabel         = cg.readEntry("customLabel", "");
@@ -974,14 +973,6 @@ void FolderView::plasmaThemeChanged()
     }
 }
 
-void FolderView::networkStatusChanged(Solid::Networking::Status status)
-{
-    if (status == Solid::Networking::Connected && !m_url.isLocalFile() &&
-        m_url.protocol() != "desktop") {
-        refreshIcons();
-    }
-}
-
 /*
 // TODO Mark the cut icons as cut, but test performance!
 void FolderView::clipboardDataChanged()
@@ -1176,19 +1167,11 @@ void FolderView::setUrl(const KUrl &url)
     setAssociatedApplicationUrls(KUrl::List() << m_url);
 
     if (KProtocolInfo::protocolClass(m_url.protocol()) == ":local") {
-        disconnect(Solid::Networking::notifier(), 0, this, 0);
         m_dirLister->openUrl(m_url);
-    } else {
-        //If host is connected to the network and url is remote, list the remote files
-        connect(Solid::Networking::notifier(), SIGNAL(shouldConnect()), this,
-                SLOT(networkAvailable()), Qt::UniqueConnection);
-        //Check if network is not in the "Connected" state
-        if (Solid::Networking::status() == Solid::Networking::Connected) {
-             //FIXME: Remove the comment when KDE 4.9 development starts
-            //QString networkStatus(i18n("Network is not reachable"));
-            //showMessage(KIcon("dialog-warning"), networkStatus, Plasma::ButtonOk);
-            m_dirLister->openUrl(m_url);
-        }
+    } else if (Solid::Networking::status() == Solid::Networking::Connected) {
+        QString networkStatus(i18n("Network is not reachable"));
+        showMessage(KIcon("dialog-warning"), networkStatus, Plasma::ButtonOk);
+        m_dirLister->openUrl(m_url);
     }
 
     // Only parse desktop files when sorting if we're showing the desktop folder
