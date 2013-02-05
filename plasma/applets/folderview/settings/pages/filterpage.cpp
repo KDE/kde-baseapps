@@ -28,15 +28,15 @@ Q_DECLARE_METATYPE(ProxyModel::FilterMode)
 
 FilterPage::FilterPage(KConfigDialog* parent, OptionsBase* settings): PageBase(parent, settings)
 {
+    m_mimeModel = new MimeModel(uiFilter.filterFilesList);
+    m_proxyMimeModel = new ProxyMimeModel(uiFilter.filterFilesList);
+    m_proxyMimeModel->setSourceModel(m_mimeModel);
 }
 
 void FilterPage::setupUi()
 {
     uiFilter.setupUi(this);
 
-    m_mimeModel = new MimeModel(uiFilter.filterFilesList);
-    m_proxyMimeModel = new ProxyMimeModel(uiFilter.filterFilesList);
-    m_proxyMimeModel->setSourceModel(m_mimeModel);
     uiFilter.filterFilesList->setModel(m_proxyMimeModel);
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
