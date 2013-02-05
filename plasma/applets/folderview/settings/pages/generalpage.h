@@ -24,7 +24,9 @@
 #include "settings/pagebase.h"
 
 #include "settings/models/placesfiltermodel.h"
+
 #include "ui_folderviewLocationConfig.h"
+#include "settings/options/generaloptions.h"
 
 
 class GeneralPage : public PageBase
@@ -32,7 +34,7 @@ class GeneralPage : public PageBase
     Q_OBJECT
 
 public:
-    GeneralPage(KConfigDialog *parent, OptionsBase *settings);
+    GeneralPage(KConfigDialog *parent, GeneralOptions *options);
 
 protected:
     virtual void setupUi();
@@ -46,14 +48,16 @@ protected slots:
 protected:
     QPointer<KFilePlacesModel> m_placesModel;
     QPointer<PlacesFilterModel> m_placesFilterModel;
+
     Ui::folderviewLocationConfig uiLocation;
+    GeneralOptions* m_options;
 };
 
 
 class AppletGeneralPage : public GeneralPage
 {
 public:
-    AppletGeneralPage(KConfigDialog* parent, OptionsBase* settings);
+    AppletGeneralPage(KConfigDialog* parent, GeneralOptions* options);
 };
 
 /**
@@ -62,7 +66,7 @@ public:
 class ContainmentGeneralPage : public GeneralPage
 {
 public:
-    ContainmentGeneralPage(KConfigDialog* parent, OptionsBase* settings);
+    ContainmentGeneralPage(KConfigDialog* parent, GeneralOptions* options);
 protected:
     virtual void setupUi();
 };
