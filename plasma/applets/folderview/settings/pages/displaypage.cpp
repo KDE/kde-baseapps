@@ -22,19 +22,19 @@
 
 #include <KDirModel>
 
-#include "iconview.h"
+#include "settings/options/displayoptions.h"
 #include "previewpluginsmodel.h"
 
 DisplayPage::DisplayPage(KConfigDialog* parent, DisplayOptions* options): PageBase(parent), m_options(options)
 {
+    m_iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
 }
 
 void DisplayPage::setupUi()
 {
     uiDisplay.setupUi(this);
 
-    const QList<int> iconSizes = QList<int>() << 16 << 22 << 32 << 48 << 64 << 128;
-    uiDisplay.sizeSlider->setRange(0, iconSizes.size() - 1);
+    uiDisplay.sizeSlider->setRange(0, m_iconSizes.size() - 1);
 
 //     Let iconview always be there for now
 //     // Only add "Unsorted" as an option when we're showing an icon view, since the list view
@@ -51,37 +51,30 @@ void DisplayPage::setupUi()
     uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), QVariant::fromValue(IconView::TopToBottomRightToLeft));
     uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), QVariant::fromValue(IconView::LeftToRight));
     uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), QVariant::fromValue(IconView::RightToLeft));
-
-    // Hide the icon arrangement controls when we're not acting as a containment,
-    // since this option doesn't make much sense in the applet.
-    if (!isContainment()) {
-        uiDisplay.flowLabel->hide();
-        uiDisplay.flowCombo->hide();
-    }
 }
 
 void DisplayPage::loadSettings()
 {
-    uiDisplay.sizeSlider->setValue(iconSizes.indexOf(iconSize().width()));
+    uiDisplay.sizeSlider->setValue(m_iconSizes.indexOf(iconSize().width()));
 
-    uiDisplay.alignToGrid->setChecked(m_alignToGrid);
-    uiDisplay.clickToView->setChecked(m_clickToView);
-    uiDisplay.lockInPlace->setChecked(m_iconsLocked);
-    uiDisplay.drawShadows->setChecked(m_drawShadows);
-    uiDisplay.showPreviews->setChecked(m_showPreviews);
-    uiDisplay.previewsAdvanced->setEnabled(m_showPreviews);
-    uiDisplay.numLinesEdit->setValue(m_numTextLines);
+    uiDisplay.alignToGrid->setChecked(m_options->alignToGrid());
+    uiDisplay.clickToView->setChecked(m_options->clickToView());
+    uiDisplay.lockInPlace->setChecked(m_options->iconsLocked());
+    uiDisplay.drawShadows->setChecked(m_options->drawShadows());
+    uiDisplay.showPreviews->setChecked(m_options->showPreviews());
+    uiDisplay.previewsAdvanced->setEnabled(m_options->showPreviews());
+    uiDisplay.numLinesEdit->setValue(m_options->numTextLines());
     uiDisplay.colorButton->setColor(textColor());
 
     for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
-       if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
+       if (m_options->sortColumn() == uiDisplay.sortCombo->itemData(i).toInt()) {
            uiDisplay.sortCombo->setCurrentIndex(i);
            break;
        }
     }
 
     for (int i = 0; i < uiDisplay.flowCombo->maxCount(); i++) {
-       if (m_flow == uiDisplay.flowCombo->itemData(i).value<IconView::Flow>()) {
+       if (m_options->flow() == uiDisplay.flowCombo->itemData(i).value<IconView::Flow>()) {
            uiDisplay.flowCombo->setCurrentIndex(i);
            break;
        }
@@ -113,7 +106,7 @@ void DisplayPage::showPreviewConfigDialog()
     uiPreviewConfig.setupUi(widget);
 
     PreviewPluginsModel *model = new PreviewPluginsModel(this);
-    model->setCheckedPlugins(m_previewPlugins);
+    model->setCheckedPlugins(m_options->previewPlugins());
 
     uiPreviewConfig.listView->setModel(model);
 
@@ -121,7 +114,7 @@ void DisplayPage::showPreviewConfigDialog()
     dialog->setMainWidget(widget);
 
     if (dialog->exec() == KDialog::Accepted) {
-        m_previewPlugins = model->checkedPlugins();
+       m_options->setPreviewPlugins(model->checkedPlugins());
     }
 
     delete widget;
@@ -133,5 +126,24 @@ void DisplayPage::saveSettings()
 {
     // TODO
 }
+
+
+AppletDisplayPage::AppletDisplayPage(KConfigDialog* parent, DisplayPage* options): DisplayPage(parent, options)
+{
+}
+
+void AppletDisplayPage::setupUi()
+{
+    DisplayPage::setupUi();
+
+    uiDisplay.flowLabel->hide();
+    uiDisplay.flowCombo->hide();
+}
+
+
+ContainmentDisplayPage::ContainmentDisplayPage(KConfigDialog* parent, DisplayOptions* options): DisplayPage(parent, options)
+{
+}
+
 
 #include "displaypage.moc"

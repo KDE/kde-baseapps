@@ -34,7 +34,7 @@ class DisplayPage : public PageBase
     Q_OBJECT
 
 public:
-    DisplayPage(KConfigDialog *parent, OptionsBase *settings);
+    DisplayPage(KConfigDialog *parent, DisplayOptions *options);
 
 protected:
     virtual void setupUi();
@@ -45,11 +45,30 @@ protected:
 protected slots:
     void showPreviewConfigDialog();
 
-private:
+protected:
+    QList<int> m_iconSizes;
     Ui::folderviewDisplayConfig uiDisplay;
     Ui::folderviewPreviewConfig uiPreviewConfig;
 
-    DisplayOptions m_options;
+    DisplayOptions* m_options;
+};
+
+
+/**
+ * Helper class, encapsulates the absence of the Flow configuration UI in the applet version of the page
+ */
+class AppletDisplayPage : public DisplayPage
+{
+public:
+    AppletDisplayPage(KConfigDialog* parent, DisplayOptions* options);
+protected:
+    virtual void setupUi();
+};
+
+class ContainmentDisplayPage : public DisplayPage
+{
+public:
+    ContainmentDisplayPage(KConfigDialog* parent, DisplayOptions* options);
 };
 
 #endif
