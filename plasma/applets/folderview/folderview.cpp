@@ -564,7 +564,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
        }
     }
 
-    filterChanged(m_filterType);
+    filterChanged(uiFilter.filterCombo->currentIndex());
 
     if (m_filterFilesMimeList.count()) {
         for (int i = 0; i < pMimeModel->rowCount(); i++) {
