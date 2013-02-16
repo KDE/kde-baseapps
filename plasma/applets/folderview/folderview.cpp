@@ -1653,6 +1653,7 @@ void FolderView::filterChanged(int index)
     uiFilter.deselectAll->setEnabled(filterActive);
     if (filterActive) {
         selectAllMimetypes();
+      }
     }
 }
 
@@ -1673,7 +1674,6 @@ void FolderView::toggleAllMimetypes(Qt::CheckState state)
         uiFilter.filterFilesList->model()->setData(index, state, Qt::CheckStateRole);
     }
 }
-
 void FolderView::moveToTrash(Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
 {
     Q_UNUSED(buttons)
