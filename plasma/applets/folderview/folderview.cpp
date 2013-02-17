@@ -334,7 +334,7 @@ void FolderView::configChanged()
 
     const int sortColumn = cg.readEntry("sortColumn", m_sortColumn);
     const Qt::SortOrder sortOrder = OptionsBase::sortOrderStringToEnum(cg.readEntry("sortOrder", OptionsBase::sortOrderEnumToString(m_sortOrder)));
-    if ((m_sortColumn != sortColumn) || (m_sortOrder != m_sortOrder)) {
+    if ((m_sortColumn != sortColumn) || (m_sortOrder != sortOrder)) {
         m_sortColumn = sortColumn;
         m_sortOrder = sortOrder;
         if (m_sortColumn != -1) {
