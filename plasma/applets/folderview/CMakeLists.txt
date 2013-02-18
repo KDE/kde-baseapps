@@ -1,5 +1,7 @@
 project(plasma-folderview)
 
+find_package(X11 REQUIRED)
+
 set(folderview_SRCS
     folderview.cpp
     abstractitemview.cpp
