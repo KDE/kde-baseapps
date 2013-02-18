@@ -43,10 +43,27 @@ void FilterOptions::loadSettings()
 
 void FilterOptions::writeSettings()
 {
+}
+
+void FilterOptions::setFilterMode(ProxyModel::FilterMode mode)
+{
+    m_filterType = mode;
     m_cg->writeEntry("filter", static_cast<int>(m_filterType));
 //     m_cg->writeEntry("filter", filterModeEnumToString(m_filterType)); // TODO - kconfigupdate
+}
+
+void FilterOptions::setFilterFiles(const QString& files)
+{
+    m_filterFiles = files;
     m_cg->writeEntry("flterFiles", m_filterFiles);
-    m_cg->writeEntry("mimeFilter", m_filterFilesMimeList);
+}
+
+void FilterOptions::setFilterFilesMimeList(const QStringList& list)
+{
+    if (m_filterFilesMimeList != list) {
+        m_filterFilesMimeList = list;
+        m_cg->writeEntry("mimeFilter", m_filterFilesMimeList);
+    }
 }
 
 #include "filteroptions.moc"

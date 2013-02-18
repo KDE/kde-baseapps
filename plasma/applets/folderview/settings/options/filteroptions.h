@@ -35,9 +35,9 @@ public:
     QString filterFiles() const { return m_filterFiles; }
     QStringList filterFilesMimeList() const { return m_filterFilesMimeList; }
 
-    void setFilterMode(ProxyModel::FilterMode mode) { m_filterType = mode; }
-    void setFilterFiles(const QString& files) { m_filterFiles = files; }
-    void setFilterFilesMimeList(const QStringList& list) { m_filterFilesMimeList = list; }
+    void setFilterMode(ProxyModel::FilterMode mode);
+    void setFilterFiles(const QString& files);
+    void setFilterFilesMimeList(const QStringList& list);
 
     virtual void loadDefaults();
     virtual void loadSettings();

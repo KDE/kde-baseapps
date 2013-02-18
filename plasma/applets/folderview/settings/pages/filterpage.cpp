@@ -42,7 +42,6 @@ void FilterPage::setupUi()
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
     uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
     uiFilter.filterCombo->addItem(i18n("Hide Files Matching"), QVariant::fromValue(ProxyModel::FilterHideMatches));
-
 }
 
 void FilterPage::loadSettings()
@@ -106,8 +105,6 @@ void FilterPage::saveSettings()
         }
     }
     m_options->setFilterFilesMimeList(selectedItems);
-
-    m_options->writeSettings();
 }
 
 // ==========Helper functions========
@@ -141,10 +138,7 @@ void FilterPage::filterChanged(int index)
     uiFilter.selectAll->setEnabled(filterActive);
     uiFilter.deselectAll->setEnabled(filterActive);
     if (filterActive) {
-      for (int i = 0; i < uiFilter.filterFilesList->model()->rowCount(); i++) {
-        const QModelIndex index = uiFilter.filterFilesList->model()->index(i, 0);
-        uiFilter.filterFilesList->model()->setData(index, Qt::Checked, Qt::CheckStateRole);
-      }
+        selectAllMimetypes();
     }
 }
 
