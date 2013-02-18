@@ -1653,7 +1653,6 @@ void FolderView::filterChanged(int index)
     uiFilter.deselectAll->setEnabled(filterActive);
     if (filterActive) {
         selectAllMimetypes();
-      }
     }
 }
 
