@@ -23,12 +23,11 @@
 
 GeneralOptions::GeneralOptions(KConfigGroup *group) : OptionsBase(group)
 {
-    loadDefaults();
 }
 
 void GeneralOptions::loadDefaults()
 {
-    m_url                   = KUrl();
+    m_url                   = KUrl(QDir::homePath());
     m_labelType             = FolderView::None;
     m_customLabel           = "";
 }
@@ -58,6 +57,30 @@ void GeneralOptions::setLabelType(FolderView::LabelType labelType)
 {
     m_labelType = labelType;
     m_cg->writeEntry("customLabel", m_customLabel);
+}
+
+
+AppletGeneralOptions::AppletGeneralOptions(KConfigGroup* group): GeneralOptions(group)
+{
+}
+
+ContainmentGeneralOptions::ContainmentGeneralOptions(KConfigGroup* group): GeneralOptions(group)
+{
+}
+
+void ContainmentGeneralOptions::loadDefaults()
+{
+    GeneralOptions::loadDefaults();
+
+    QString path = QDir::homePath();
+    const QString desktopPath = KGlobalSettings::desktopPath();
+    const QDir desktopFolder(desktopPath);
+
+    if (desktopPath != QDir::homePath() && desktopFolder.exists()) {
+        path = QString("desktop:/");
+    }
+
+    m_url = KUrl(path);
 }
 
 #include "generaloptions.moc"

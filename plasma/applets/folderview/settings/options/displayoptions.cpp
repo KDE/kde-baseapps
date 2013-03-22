@@ -24,7 +24,6 @@
 
 DisplayOptions::DisplayOptions(KConfigGroup *group) : OptionsBase(group)
 {
-    loadDefaults();
 }
 
 void DisplayOptions::loadDefaults()

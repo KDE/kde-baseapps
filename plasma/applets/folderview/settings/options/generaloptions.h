@@ -48,4 +48,22 @@ protected:
     QString m_customLabel;
 };
 
+
+class AppletGeneralOptions : public GeneralOptions
+{
+public:
+    AppletGeneralOptions(KConfigGroup* group);
+};
+
+/**
+ * Helper class, encapsulates additional default URL calculation code in the containment version of the applet
+ */
+class ContainmentGeneralOptions : public GeneralOptions
+{
+public:
+    ContainmentGeneralOptions(KConfigGroup* group);
+
+    virtual void loadDefaults();
+};
+
 #endif

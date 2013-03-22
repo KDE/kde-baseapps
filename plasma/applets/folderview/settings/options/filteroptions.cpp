@@ -23,7 +23,6 @@
 
 FilterOptions::FilterOptions(KConfigGroup *group) : OptionsBase(group)
 {
-    loadDefaults();
 }
 
 void FilterOptions::loadDefaults()
