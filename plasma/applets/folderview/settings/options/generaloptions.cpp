@@ -41,11 +41,22 @@ void GeneralOptions::loadSettings()
     m_customLabel = m_cg->readEntry("customLabel", m_customLabel);
 }
 
-void GeneralOptions::writeSettings()
+void GeneralOptions::setUrl(const KUrl& url)
 {
+    m_url = url;
     m_cg->writeEntry("url", m_url);
+}
+
+void GeneralOptions::setCustomLabel(const QString& customLabel)
+{
+    m_customLabel = customLabel;
     m_cg->writeEntry("labelType", static_cast<int>(m_labelType));
 //     cg.writeEntry("labelType", labelTypeEnumToString(m_labelType)); // TODO - kconfigupdate
+}
+
+void GeneralOptions::setLabelType(FolderView::LabelType labelType)
+{
+    m_labelType = labelType;
     m_cg->writeEntry("customLabel", m_customLabel);
 }
 

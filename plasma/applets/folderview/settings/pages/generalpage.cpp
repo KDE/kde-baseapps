@@ -144,8 +144,6 @@ void GeneralPage::saveSettings()
 
     m_options->setLabelType(labelType);
     m_options->setCustomLabel(customTitle);
-
-    m_options->writeSettings();
 }
 
 void GeneralPage::setTitleEditEnabled(int index)

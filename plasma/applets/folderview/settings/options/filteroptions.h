@@ -41,7 +41,6 @@ public:
 
     virtual void loadDefaults();
     virtual void loadSettings();
-    virtual void writeSettings();
 
 protected:
     ProxyModel::FilterMode m_filterType;

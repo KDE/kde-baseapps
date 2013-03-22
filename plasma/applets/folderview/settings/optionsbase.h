@@ -46,11 +46,6 @@ public:
      */
     virtual void loadSettings() = 0;
 
-    /**
-     * Write option values to a configuration group.
-     */
-    virtual void writeSettings() = 0;
-
     /** 
      * Helper functions for reliable writing and reading of enums from configuration files.
      */

@@ -35,13 +35,12 @@ public:
     FolderView::LabelType labelType() const { return m_labelType; }
     QString customLabel() const { return m_customLabel; }
 
-    void setUrl(const KUrl& url) { m_url = url; }
-    void setLabelType(FolderView::LabelType labelType) { m_labelType = labelType; }
-    void setCustomLabel(const QString& customLabel) { m_customLabel = customLabel; }
+    void setUrl(const KUrl& url);
+    void setLabelType(FolderView::LabelType labelType);
+    void setCustomLabel(const QString& customLabel);
 
     virtual void loadDefaults();
     virtual void loadSettings();
-    virtual void writeSettings();
 
 protected:
     KUrl m_url;

@@ -41,10 +41,6 @@ void FilterOptions::loadSettings()
     m_filterFilesMimeList = m_cg->readEntry("mimeFilter", m_filterFilesMimeList);
 }
 
-void FilterOptions::writeSettings()
-{
-}
-
 void FilterOptions::setFilterMode(ProxyModel::FilterMode mode)
 {
     m_filterType = mode;

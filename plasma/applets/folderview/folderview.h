@@ -40,6 +40,8 @@
 #include "ui_folderviewLocationConfig.h"
 #include "ui_folderviewPreviewConfig.h"
 
+//#include "settings/pages/filterpage.h"
+
 class KDirModel;
 class KFileItemDelegate;
 class KFilePlacesModel;
@@ -209,6 +211,8 @@ private:
     QStringList m_filterFilesMimeList;
 
     // Configuration interface
+
+//    QPointer<FilterPage> m_filterPage;
 
     Ui::folderviewFilterConfig uiFilter;
     Ui::folderviewDisplayConfig uiDisplay;
