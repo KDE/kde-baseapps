@@ -396,7 +396,6 @@ void FolderView::configChanged()
 
         // So the KFileItemActions will be recreated for the new URL.
         delete m_itemActions;
-        m_itemActions = 0;
 
         setUrl(m_url);
     }
