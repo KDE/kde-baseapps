@@ -101,14 +101,14 @@ void AppletDisplayOptions::loadDefaults()
 {
     DisplayOptions::loadDefaults();
 
-    //m_flow = layoutDirection() == Qt::LeftToRight ? IconView::TopToBottom : IconView::TopToBottomRightToLeft;
+    m_flow = static_cast<QGraphicsWidget*>(parent)->layoutDirection() == Qt::LeftToRight ? IconView::TopToBottom : IconView::TopToBottomRightToLeft;
 }
 
 void ContainmentDisplayOptions::loadDefaults()
 {
     DisplayOptions::loadDefaults();
 
-    //m_flow = layoutDirection() == Qt::LeftToRight ? IconView::LeftToRight : IconView::RightToLeft;
+    m_flow = static_cast<QGraphicsWidget*>(parent)->layoutDirection() == Qt::LeftToRight ? IconView::LeftToRight : IconView::RightToLeft;
 }
 
 #include "displayoptions.moc"
