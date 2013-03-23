@@ -53,6 +53,8 @@ class AppletGeneralOptions : public GeneralOptions
 {
 public:
     AppletGeneralOptions(KConfigGroup* group);
+
+    virtual void loadDefaults();
 };
 
 /**

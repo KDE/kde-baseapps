@@ -27,7 +27,7 @@ GeneralOptions::GeneralOptions(KConfigGroup *group) : OptionsBase(group)
 
 void GeneralOptions::loadDefaults()
 {
-    m_url                   = KUrl(QDir::homePath());
+    m_url                   = /*KUrl(QDir::homePath())*/KUrl();
     m_labelType             = FolderView::None;
     m_customLabel           = "";
 }
@@ -66,6 +66,13 @@ AppletGeneralOptions::AppletGeneralOptions(KConfigGroup* group): GeneralOptions(
 
 ContainmentGeneralOptions::ContainmentGeneralOptions(KConfigGroup* group): GeneralOptions(group)
 {
+}
+
+void AppletGeneralOptions::loadDefaults()
+{
+    GeneralOptions::loadDefaults();
+
+    m_url = KUrl(QDir::homePath());
 }
 
 void ContainmentGeneralOptions::loadDefaults()
