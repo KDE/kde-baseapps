@@ -21,7 +21,7 @@
 #include "filteroptions.h"
 
 
-FilterOptions::FilterOptions(KConfigGroup *group) : OptionsBase(group)
+FilterOptions::FilterOptions(KConfigGroup *group, QObject *parent) : OptionsBase(group, parent)
 {
 }
 

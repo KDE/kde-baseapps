@@ -21,7 +21,7 @@
 #include "generaloptions.h"
 
 
-GeneralOptions::GeneralOptions(KConfigGroup *group) : OptionsBase(group)
+GeneralOptions::GeneralOptions(KConfigGroup *group, QObject *parent) : OptionsBase(group, parent)
 {
 }
 

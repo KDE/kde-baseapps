@@ -28,7 +28,7 @@ class GeneralOptions : public OptionsBase
     Q_OBJECT
 
 public:
-    GeneralOptions(KConfigGroup *group);
+    GeneralOptions(KConfigGroup *group, QObject *parent);
 
 public:
     KUrl url() const { return m_url; }

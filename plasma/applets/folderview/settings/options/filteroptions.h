@@ -28,7 +28,7 @@ class FilterOptions : public OptionsBase
     Q_OBJECT
 
 public:
-    FilterOptions(KConfigGroup *group);
+    FilterOptions(KConfigGroup *group, QObject *parent);
 
 public:
     ProxyModel::FilterMode filterMode() const { return m_filterType; }

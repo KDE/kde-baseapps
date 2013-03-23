@@ -22,7 +22,7 @@
 
 #include <KDirModel>
 
-DisplayOptions::DisplayOptions(KConfigGroup *group) : OptionsBase(group)
+DisplayOptions::DisplayOptions(KConfigGroup *group, QObject *parent) : OptionsBase(group, parent)
 {
 }
 

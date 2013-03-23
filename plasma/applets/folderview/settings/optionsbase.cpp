@@ -28,7 +28,7 @@
 // Q_DECLARE_METATYPE(ProxyModel::FilterMode)
 // Q_DECLARE_METATYPE(FolderView::LabelType)
 
-OptionsBase::OptionsBase(KConfigGroup *group) : QObject(), m_cg(group)
+OptionsBase::OptionsBase(KConfigGroup *group, QObject *parent) : QObject(parent), m_cg(group)
 {
 }
 

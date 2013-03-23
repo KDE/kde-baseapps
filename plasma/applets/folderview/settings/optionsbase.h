@@ -36,7 +36,7 @@ class OptionsBase : public QObject
     Q_OBJECT
 
 public:
-    OptionsBase(KConfigGroup *);
+    OptionsBase(KConfigGroup *, QObject *parent);
 
     /** Load default option values before reading from a configuration group. */
     virtual void loadDefaults() = 0;

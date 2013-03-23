@@ -27,7 +27,7 @@ class DisplayOptions : public OptionsBase
 {
 
 public:
-    DisplayOptions(KConfigGroup *group);
+    DisplayOptions(KConfigGroup *group, QObject *parent);
 
 public:
     // getters
