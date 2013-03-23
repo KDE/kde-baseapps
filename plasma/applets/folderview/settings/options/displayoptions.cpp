@@ -88,3 +88,27 @@ void DisplayOptions::writeSettings()
     m_cg->writeEntry("numTextLines", m_numTextLines);
 }
 
+
+AppletDisplayOptions::AppletDisplayOptions(KConfigGroup* group): DisplayOptions(group)
+{
+}
+
+ContainmentDisplayOptions::ContainmentDisplayOptions(KConfigGroup* group): DisplayOptions(group)
+{
+}
+
+void AppletDisplayOptions::loadDefaults()
+{
+    DisplayOptions::loadDefaults();
+
+    m_flow = layoutDirection() == Qt::LeftToRight ? IconView::TopToBottom : IconView::TopToBottomRightToLeft;
+}
+
+void ContainmentDisplayOptions::loadDefaults()
+{
+    DisplayOptions::loadDefaults();
+
+    m_flow = layoutDirection() == Qt::LeftToRight ? IconView::LeftToRight : IconView::RightToLeft;
+}
+
+#include "displayoptions.moc"

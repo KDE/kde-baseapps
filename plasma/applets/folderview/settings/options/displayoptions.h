@@ -89,4 +89,23 @@ protected:
     int m_numTextLines;
 };
 
+/**
+ * Helper class, encapsulates different default flow settings in the containment and applet version of the applet
+ */
+class AppletDisplayOptions : public DisplayOptions
+{
+public:
+    AppletDisplayOptions(KConfigGroup* group);
+
+    void loadDefaults();
+};
+
+class ContainmentDisplayOptions : public DisplayOptions
+{
+public:
+    ContainmentDisplayOptions(KConfigGroup* group);
+
+    void loadDefaults();
+};
+
 #endif
