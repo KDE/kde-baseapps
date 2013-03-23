@@ -60,11 +60,11 @@ void GeneralOptions::setLabelType(FolderView::LabelType labelType)
 }
 
 
-AppletGeneralOptions::AppletGeneralOptions(KConfigGroup* group): GeneralOptions(group)
+AppletGeneralOptions::AppletGeneralOptions(KConfigGroup* group, QObject *parent): GeneralOptions(group, parent)
 {
 }
 
-ContainmentGeneralOptions::ContainmentGeneralOptions(KConfigGroup* group): GeneralOptions(group)
+ContainmentGeneralOptions::ContainmentGeneralOptions(KConfigGroup* group, QObject *parent): GeneralOptions(group, parent)
 {
 }
 

@@ -95,7 +95,7 @@ protected:
 class AppletDisplayOptions : public DisplayOptions
 {
 public:
-    AppletDisplayOptions(KConfigGroup* group);
+    AppletDisplayOptions(KConfigGroup* group, Qobject *parent);
 
     void loadDefaults();
 };
@@ -103,7 +103,7 @@ public:
 class ContainmentDisplayOptions : public DisplayOptions
 {
 public:
-    ContainmentDisplayOptions(KConfigGroup* group);
+    ContainmentDisplayOptions(KConfigGroup* group, QObject *parent);
 
     void loadDefaults();
 };

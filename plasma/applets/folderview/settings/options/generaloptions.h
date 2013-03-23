@@ -52,7 +52,7 @@ protected:
 class AppletGeneralOptions : public GeneralOptions
 {
 public:
-    AppletGeneralOptions(KConfigGroup* group);
+    AppletGeneralOptions(KConfigGroup* group, QObject *parent);
 
     virtual void loadDefaults();
 };
@@ -63,7 +63,7 @@ public:
 class ContainmentGeneralOptions : public GeneralOptions
 {
 public:
-    ContainmentGeneralOptions(KConfigGroup* group);
+    ContainmentGeneralOptions(KConfigGroup* group, QObject *parent);
 
     virtual void loadDefaults();
 };

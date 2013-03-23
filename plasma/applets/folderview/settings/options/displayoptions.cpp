@@ -89,11 +89,11 @@ void DisplayOptions::writeSettings()
 }
 
 
-AppletDisplayOptions::AppletDisplayOptions(KConfigGroup* group): DisplayOptions(group)
+AppletDisplayOptions::AppletDisplayOptions(KConfigGroup* group, QObject *parent): DisplayOptions(group, parent)
 {
 }
 
-ContainmentDisplayOptions::ContainmentDisplayOptions(KConfigGroup* group): DisplayOptions(group)
+ContainmentDisplayOptions::ContainmentDisplayOptions(KConfigGroup* group, QObject *parent): DisplayOptions(group, parent)
 {
 }
 
