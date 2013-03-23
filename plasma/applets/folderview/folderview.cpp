@@ -129,7 +129,8 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
 
     // we are not calling setUrl here since m_dirLister does not exist
     if (args.count() > 0) {
-        m_url = KUrl(args.value(0).toString());
+        KUrl url = KUrl(args.value(0).toString());
+        config().writeEntry("url", url);
     }
 
     resize(600, 400);
@@ -194,24 +195,16 @@ void FolderView::init()
 
     m_dirModel->setDirLister(m_dirLister);
 
-    if (m_url.isValid()) {
-        // this means that we were passed a URL via the args list in the constructor
-        // we need to set it and save it in the config file
-        setUrl(m_url);
-        KConfigGroup cg = config();
-        cg.writeEntry("url", m_url);
-    } else {
-        QString path = QDir::homePath();
-        if (isContainment()) {
-            const QString desktopPath = KGlobalSettings::desktopPath();
-            const QDir desktopFolder(desktopPath);
-
-            if (desktopPath != QDir::homePath() && desktopFolder.exists()) {
-                path = QString("desktop:/");
-            }
+    QString path = QDir::homePath();
+    if (isContainment()) {
+        const QString desktopPath = KGlobalSettings::desktopPath();
+        const QDir desktopFolder(desktopPath);
+        if (desktopPath != QDir::homePath() && desktopFolder.exists()) {
+            path = QString("desktop:/");
         }
-        setUrl(cg.readEntry("url", KUrl(path)));
     }
+    KUrl defaultUrl = KUrl(path);
+    setUrl(cg.readEntry("url", defaultUrl));
 
     createActions();
 
