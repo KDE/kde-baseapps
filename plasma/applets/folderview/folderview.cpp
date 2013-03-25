@@ -570,6 +570,7 @@ void FolderView::configChanged()
     const int flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
     if (flow != m_flow) {
         m_flow = static_cast<IconView::Flow>(flow);
+        updateFlowActionsState();
     }
 
     const ProxyModel::FilterMode filterType = static_cast<ProxyModel::FilterMode>(cg.readEntry("filter", static_cast<int>(m_filterType)));
@@ -736,10 +737,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_type")->text()), KDirModel::Type);
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_date")->text()), KDirModel::ModifiedTime);
 
-    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Left to Right"), QVariant::fromValue(IconView::TopToBottom));
-    uiDisplay.flowCombo->addItem(i18n("Top to Bottom, Right to Left"), QVariant::fromValue(IconView::TopToBottomRightToLeft));
-    uiDisplay.flowCombo->addItem(i18n("Left to Right, Top to Bottom"), QVariant::fromValue(IconView::LeftToRight));
-    uiDisplay.flowCombo->addItem(i18n("Right to Left, Top to Bottom"), QVariant::fromValue(IconView::RightToLeft));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_ltr")->text()), QVariant::fromValue(IconView::TopToBottom));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_rtl")->text()), QVariant::fromValue(IconView::TopToBottomRightToLeft));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_ltr")->text()), QVariant::fromValue(IconView::LeftToRight));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_rtl")->text()), QVariant::fromValue(IconView::RightToLeft));
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
     uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
@@ -1553,6 +1554,25 @@ void FolderView::createActions()
         lockIcons->setChecked(m_iconsLocked);
         connect(lockIcons, SIGNAL(toggled(bool)), SLOT(toggleIconsLocked(bool)));
 
+        m_flowGroup = new QActionGroup(this);
+        connect(m_flowGroup, SIGNAL(triggered(QAction*)), SLOT(flowChanged(QAction*)));
+        QAction *arrangeHorLeftToRight = m_flowGroup->addAction(i18nc("Arrange icons", "Left to Right, Top to Bottom"));
+        QAction *arrangeHorRightToLeft = m_flowGroup->addAction(i18nc("Arrange icons", "Right to Left, Top to Bottom"));
+        QAction *arrangeVerLeftToRight = m_flowGroup->addAction(i18nc("Arrange icons", "Top to Bottom, Left to Right"));
+        QAction *arrangeVerRightToLeft= m_flowGroup->addAction(i18nc("Arrange icons", "Top to Bottom, Right to Left"));
+
+        arrangeHorLeftToRight->setCheckable(true);
+        arrangeHorLeftToRight->setData(QVariant::fromValue(IconView::LeftToRight));
+
+        arrangeHorRightToLeft->setCheckable(true);
+        arrangeHorRightToLeft->setData(QVariant::fromValue(IconView::RightToLeft));
+
+        arrangeVerLeftToRight->setCheckable(true);
+        arrangeVerLeftToRight->setData(QVariant::fromValue(IconView::TopToBottom));
+
+        arrangeVerRightToLeft->setCheckable(true);
+        arrangeVerRightToLeft->setData(QVariant::fromValue(IconView::TopToBottomRightToLeft));
+
         m_sortingGroup = new QActionGroup(this);
         connect(m_sortingGroup, SIGNAL(triggered(QAction*)), SLOT(sortingChanged(QAction*)));
         QAction *sortByName = m_sortingGroup->addAction(i18nc("Sort icons", "By Name"));
@@ -1588,6 +1608,12 @@ void FolderView::createActions()
         dirsFirst->setChecked(m_sortDirsFirst);
         connect(dirsFirst, SIGNAL(toggled(bool)), SLOT(toggleDirectoriesFirst(bool)));
 
+        QMenu *flowMenu = new QMenu(i18n("Arrange Icons"));
+        flowMenu->addAction(arrangeVerLeftToRight);
+        flowMenu->addAction(arrangeVerRightToLeft);
+        flowMenu->addAction(arrangeHorLeftToRight);
+        flowMenu->addAction(arrangeHorRightToLeft);
+
         QMenu *sortMenu = new QMenu(i18n("Sort Icons"));
         sortMenu->addAction(sortByName);
         sortMenu->addAction(sortBySize);
@@ -1600,6 +1626,7 @@ void FolderView::createActions()
         sortMenu->addAction(dirsFirst);
 
         QMenu *iconsMenu = new QMenu;
+        iconsMenu->addMenu(flowMenu);
         iconsMenu->addMenu(sortMenu);
         iconsMenu->addSeparator();
         iconsMenu->addAction(alignToGrid);
@@ -1618,6 +1645,10 @@ void FolderView::createActions()
         m_actionCollection.addAction("lock_icons", lockIcons);
         m_actionCollection.addAction("auto_align", alignToGrid);
         m_actionCollection.addAction("icons_menu", iconsMenuAction);
+        m_actionCollection.addAction("arrange_hor_ltr", arrangeHorLeftToRight);
+        m_actionCollection.addAction("arrange_hor_rtl", arrangeHorRightToLeft);
+        m_actionCollection.addAction("arrange_ver_ltr", arrangeVerLeftToRight);
+        m_actionCollection.addAction("arrange_ver_rtl", arrangeVerRightToLeft);
         m_actionCollection.addAction("sort_name", sortByName);
         m_actionCollection.addAction("sort_size", sortBySize);
         m_actionCollection.addAction("sort_type", sortByType);
@@ -1625,6 +1656,7 @@ void FolderView::createActions()
         m_actionCollection.addAction("sort_ascending", sortAscending);
         m_actionCollection.addAction("sort_descending", sortDescending);
 
+        updateFlowActionsState();
         updateSortActionsState();
     }
 }
@@ -1817,6 +1849,21 @@ void FolderView::toggleDirectoriesFirst(bool enable)
     m_delayedSaveTimer.start(5000, this);
 }
 
+void FolderView::flowChanged(QAction* action)
+{
+    const IconView::Flow flow = action->data().value<IconView::Flow>();
+
+    if (flow != m_flow) {
+        m_flow = flow;
+        if (m_iconView) {
+            m_iconView->setFlow(m_flow);
+        }
+        config().writeEntry("flow", static_cast<int>(m_flow));
+        emit configNeedsSaving();
+        m_delayedSaveTimer.start(5000, this);
+    }
+}
+
 void FolderView::sortingChanged(QAction *action)
 {
     const int column = action->data().toInt();
@@ -1844,6 +1891,13 @@ void FolderView::sortingOrderChanged(QAction *action)
         config().writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
+    }
+}
+
+void FolderView::updateFlowActionsState()
+{
+    foreach (QAction *action, m_flowGroup->actions()) {
+        action->setChecked(action->data().value<IconView::Flow>() == m_flow);
     }
 }
 
