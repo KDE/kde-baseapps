@@ -42,7 +42,6 @@
 #include <KProtocolInfo>
 #include <KStandardShortcut>
 #include <KMenu>
-#include <KCompletionBox>
 
 #include <kio/copyjob.h>
 #include <kio/fileundomanager.h>
