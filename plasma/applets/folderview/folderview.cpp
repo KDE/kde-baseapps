@@ -88,6 +88,7 @@ K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 
 Q_DECLARE_METATYPE(Qt::SortOrder)
 Q_DECLARE_METATYPE(ProxyModel::FilterMode)
+Q_DECLARE_METATYPE(IconView::Flow)
 
 MimeModel::MimeModel(QObject *parent)
     : QStringListModel(parent)
