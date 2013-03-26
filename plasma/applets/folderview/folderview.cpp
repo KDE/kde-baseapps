@@ -737,6 +737,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_type")->text()), KDirModel::Type);
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_date")->text()), KDirModel::ModifiedTime);
 
+    uiDisplay.directionCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_ascending")->text()), QVariant::fromValue(Qt::AscendingOrder));
+    uiDisplay.directionCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_descending")->text()), QVariant::fromValue(Qt::DescendingOrder));
+
     uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_ltr")->text()), QVariant::fromValue(IconView::VerLeftToRight));
     uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_rtl")->text()), QVariant::fromValue(IconView::VerRightToLeft));
     uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_ltr")->text()), QVariant::fromValue(IconView::HorLeftToRight));
@@ -822,6 +825,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
 
     connect(uiDisplay.flowCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.directionCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sizeSlider, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.lockInPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
@@ -892,6 +896,9 @@ void FolderView::configAccepted()
 
     const int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
     cg.writeEntry("sortColumn", sortColumn);
+
+    const Qt::SortOrder order = uiDisplay.directionCombo->itemData(uiDisplay.directionCombo->currentIndex()).value<Qt::SortOrder>();
+    cg.writeEntry("sortOrder", sortOrderEnumToString(order));
 
     const IconView::Flow flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).value<IconView::Flow>();
     cg.writeEntry("flow", static_cast<int>(flow));
