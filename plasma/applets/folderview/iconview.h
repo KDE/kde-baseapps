@@ -59,7 +59,7 @@ class IconView : public AbstractItemView
     Q_OBJECT
 
 public:
-    enum Flow { LeftToRight, TopToBottom, RightToLeft, TopToBottomRightToLeft };
+    enum Flow { HorLeftToRight, VerLeftToRight, HorRightToLeft, VerRightToLeft };
 
     Q_PROPERTY(QSize gridSize READ gridSize WRITE setGridSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)

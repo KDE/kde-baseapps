@@ -395,9 +395,9 @@ void FolderView::init()
     m_showSelectionMarker = KGlobalSettings::singleClick();
 
     if (isContainment()) {
-        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::TopToBottom : IconView::TopToBottomRightToLeft;
+        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::VerLeftToRight : IconView::VerRightToLeft;
     } else {
-        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::LeftToRight : IconView::RightToLeft;
+        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::HorLeftToRight : IconView::HorRightToLeft;
     }
     m_flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
 
@@ -737,10 +737,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_type")->text()), KDirModel::Type);
     uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_date")->text()), KDirModel::ModifiedTime);
 
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_ltr")->text()), QVariant::fromValue(IconView::TopToBottom));
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_rtl")->text()), QVariant::fromValue(IconView::TopToBottomRightToLeft));
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_ltr")->text()), QVariant::fromValue(IconView::LeftToRight));
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_rtl")->text()), QVariant::fromValue(IconView::RightToLeft));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_ltr")->text()), QVariant::fromValue(IconView::VerLeftToRight));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_rtl")->text()), QVariant::fromValue(IconView::VerRightToLeft));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_ltr")->text()), QVariant::fromValue(IconView::HorLeftToRight));
+    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_rtl")->text()), QVariant::fromValue(IconView::HorRightToLeft));
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
     uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
@@ -1562,16 +1562,16 @@ void FolderView::createActions()
         QAction *arrangeVerRightToLeft= m_flowGroup->addAction(i18nc("Arrange icons", "Top to Bottom, Right to Left"));
 
         arrangeHorLeftToRight->setCheckable(true);
-        arrangeHorLeftToRight->setData(QVariant::fromValue(IconView::LeftToRight));
+        arrangeHorLeftToRight->setData(QVariant::fromValue(IconView::HorLeftToRight));
 
         arrangeHorRightToLeft->setCheckable(true);
-        arrangeHorRightToLeft->setData(QVariant::fromValue(IconView::RightToLeft));
+        arrangeHorRightToLeft->setData(QVariant::fromValue(IconView::HorRightToLeft));
 
         arrangeVerLeftToRight->setCheckable(true);
-        arrangeVerLeftToRight->setData(QVariant::fromValue(IconView::TopToBottom));
+        arrangeVerLeftToRight->setData(QVariant::fromValue(IconView::VerLeftToRight));
 
         arrangeVerRightToLeft->setCheckable(true);
-        arrangeVerRightToLeft->setData(QVariant::fromValue(IconView::TopToBottomRightToLeft));
+        arrangeVerRightToLeft->setData(QVariant::fromValue(IconView::VerRightToLeft));
 
         m_sortingGroup = new QActionGroup(this);
         connect(m_sortingGroup, SIGNAL(triggered(QAction*)), SLOT(sortingChanged(QAction*)));
