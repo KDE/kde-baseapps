@@ -549,6 +549,10 @@ void FolderView::configChanged()
         if (m_sortColumn != -1) {
             m_model->invalidate();
         }
+
+        if (QAction *action = m_actionCollection.action("dirs_first")) {
+            action->setChecked(m_sortDirsFirst);
+        }
     }
 
     const int sortColumn = cg.readEntry("sortColumn", m_sortColumn);
@@ -755,6 +759,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.drawShadows->setChecked(m_drawShadows);
     uiDisplay.showPreviews->setChecked(m_showPreviews);
     uiDisplay.previewsAdvanced->setEnabled(m_showPreviews);
+    uiDisplay.foldersFirst->setChecked(m_sortDirsFirst);
     uiDisplay.numLinesEdit->setValue(m_numTextLines);
     uiDisplay.colorButton->setColor(textColor());
 
@@ -831,6 +836,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiDisplay.lockInPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.alignToGrid, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.clickToView, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.foldersFirst, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.numLinesEdit, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.colorButton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
     connect(uiDisplay.drawShadows, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
@@ -899,6 +905,9 @@ void FolderView::configAccepted()
 
     const Qt::SortOrder order = uiDisplay.directionCombo->itemData(uiDisplay.directionCombo->currentIndex()).value<Qt::SortOrder>();
     cg.writeEntry("sortOrder", sortOrderEnumToString(order));
+
+    const bool dirsFirst = uiDisplay.foldersFirst->isChecked();
+    cg.writeEntry("sortDirsFirst", dirsFirst);
 
     const IconView::Flow flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).value<IconView::Flow>();
     cg.writeEntry("flow", static_cast<int>(flow));
@@ -1651,6 +1660,7 @@ void FolderView::createActions()
 
         m_actionCollection.addAction("lock_icons", lockIcons);
         m_actionCollection.addAction("auto_align", alignToGrid);
+        m_actionCollection.addAction("dirs_first", dirsFirst);
         m_actionCollection.addAction("icons_menu", iconsMenuAction);
         m_actionCollection.addAction("arrange_hor_ltr", arrangeHorLeftToRight);
         m_actionCollection.addAction("arrange_hor_rtl", arrangeHorRightToLeft);

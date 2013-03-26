@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
-    <height>430</height>
+    <width>451</width>
+    <height>455</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" colspan="2">
+   <item row="0" column="0">
     <widget class="QLabel" name="iconsTitle">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -132,7 +132,7 @@
      </property>
     </spacer>
    </item>
-   <item row="4" column="1">
+   <item row="4" column="2">
     <widget class="QLabel" name="sizeSliderLabel">
      <property name="text">
       <string>Size:</string>
@@ -188,7 +188,7 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="1" colspan="2">
+   <item row="5" column="2">
     <widget class="QLabel" name="previewsAdvancedLabel">
      <property name="text">
       <string>Previews:</string>
@@ -235,7 +235,7 @@
      </item>
     </layout>
    </item>
-   <item row="6" column="1" colspan="2">
+   <item row="6" column="2">
     <widget class="QLabel" name="lockInPlaceLabel">
      <property name="text">
       <string>Lock in place:</string>
@@ -257,7 +257,7 @@ This option is useful if you want to avoid accidentally moving the icons while i
      </property>
     </widget>
    </item>
-   <item row="7" column="1" colspan="2">
+   <item row="7" column="2">
     <widget class="QLabel" name="alignToGridLabel">
      <property name="text">
       <string>Align to grid:</string>
@@ -299,7 +299,27 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="9" column="0" colspan="3">
+   <item row="9" column="2">
+    <widget class="QLabel" name="foldersFirstLabel">
+     <property name="text">
+      <string>Folders first:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="3">
+    <widget class="QCheckBox" name="foldersFirst">
+     <property name="whatsThis">
+      <string>Check this option if you want folder previews to appear only when clicked. When this option is turned off, folder previews will appear automatically when the mouse hovers over a folder.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0" colspan="2">
     <widget class="QLabel" name="iconTextTitle">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -318,7 +338,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="10" column="1">
+   <item row="11" column="2">
     <widget class="QLabel" name="numLinesEditLabel">
      <property name="text">
       <string>Lines:</string>
@@ -331,7 +351,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="10" column="3">
+   <item row="11" column="3">
     <widget class="KIntSpinBox" name="numLinesEdit">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -356,7 +376,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
+   <item row="12" column="0">
     <spacer name="horizontalSpacer_4">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -372,7 +392,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </spacer>
    </item>
-   <item row="11" column="1">
+   <item row="12" column="2">
     <widget class="QLabel" name="colorButtonLabel">
      <property name="text">
       <string>Color:</string>
@@ -385,7 +405,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="11" column="3">
+   <item row="12" column="3">
     <widget class="KColorButton" name="colorButton">
      <property name="whatsThis">
       <string>Click this button to choose the color which is used for the text labels in the view.</string>
@@ -395,7 +415,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="12" column="1" colspan="2">
+   <item row="13" column="2">
     <widget class="QLabel" name="drawShadowsLabel">
      <property name="text">
       <string>Shadows:</string>
@@ -408,7 +428,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="12" column="3">
+   <item row="13" column="3">
     <widget class="QCheckBox" name="drawShadows">
      <property name="whatsThis">
       <string>&lt;html&gt;&lt;body&gt;&lt;p&gt;Check this option if you want the text labels to cast a shadow on the background.&lt;/p&gt;
@@ -422,7 +442,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </widget>
    </item>
-   <item row="13" column="5">
+   <item row="14" column="5">
     <spacer name="verticalSpacer_2">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -464,6 +484,7 @@ When this option is checked, icons will automatically snap to the nearest grid c
   <tabstop>lockInPlace</tabstop>
   <tabstop>alignToGrid</tabstop>
   <tabstop>clickToView</tabstop>
+  <tabstop>foldersFirst</tabstop>
   <tabstop>numLinesEdit</tabstop>
   <tabstop>colorButton</tabstop>
   <tabstop>drawShadows</tabstop>
