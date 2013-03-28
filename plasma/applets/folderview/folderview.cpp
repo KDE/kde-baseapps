@@ -736,18 +736,18 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     if (m_iconView) {
         uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), -1);
     }
-    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_name")->text()), KDirModel::Name);
-    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_size")->text()), KDirModel::Size);
-    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_type")->text()), KDirModel::Type);
-    uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_date")->text()), KDirModel::ModifiedTime);
 
-    uiDisplay.directionCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_ascending")->text()), QVariant::fromValue(Qt::AscendingOrder));
-    uiDisplay.directionCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("sort_descending")->text()), QVariant::fromValue(Qt::DescendingOrder));
+    foreach (QAction *action, m_sortingGroup->actions()) {
+        uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data().value<int>());
+    }
 
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_ltr")->text()), QVariant::fromValue(IconView::VerLeftToRight));
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_ver_rtl")->text()), QVariant::fromValue(IconView::VerRightToLeft));
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_ltr")->text()), QVariant::fromValue(IconView::HorLeftToRight));
-    uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(m_actionCollection.action("arrange_hor_rtl")->text()), QVariant::fromValue(IconView::HorRightToLeft));
+    foreach (QAction *action, m_sortingOrderGroup->actions()) {
+        uiDisplay.directionCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
+    }
+
+    foreach (QAction *action, m_flowGroup->actions()) {
+        uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
+    }
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
     uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
