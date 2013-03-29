@@ -738,7 +738,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     foreach (QAction *action, m_sortingGroup->actions()) {
-        uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data().value<int>());
+        uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
     }
 
     foreach (QAction *action, m_sortingOrderGroup->actions()) {
