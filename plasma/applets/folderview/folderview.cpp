@@ -763,8 +763,8 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.numLinesEdit->setValue(m_numTextLines);
     uiDisplay.colorButton->setColor(textColor());
 
-    for (int i = 0; i < uiDisplay.sortCombo->count(); i++) {
-       if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
+    for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
+       if (m_sortColumn == uiDisplay.sortCombo->itemData(i).value<int>()) {
            uiDisplay.sortCombo->setCurrentIndex(i);
            break;
        }
