@@ -162,6 +162,7 @@ private slots:
 private:
     void updatePasteAction();
     void addActions(AbstractItemView *view);
+    void addActionGroupToCombo(QActionGroup *group, QComboBox *combo);
     QColor textColor() const;
     void setupIconView();
     void setUrl(const KUrl &url);

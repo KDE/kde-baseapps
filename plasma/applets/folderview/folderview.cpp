@@ -737,17 +737,9 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), -1);
     }
 
-    foreach (QAction *action, m_sortingGroup->actions()) {
-        uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
-    }
-
-    foreach (QAction *action, m_sortingOrderGroup->actions()) {
-        uiDisplay.directionCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
-    }
-
-    foreach (QAction *action, m_flowGroup->actions()) {
-        uiDisplay.flowCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
-    }
+    addActionGroupToCombo(m_sortingGroup, uiDisplay.sortCombo);
+    addActionGroupToCombo(m_sortingOrderGroup, uiDisplay.directionCombo);
+    addActionGroupToCombo(m_flowGroup, uiDisplay.flowCombo);
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
     uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
@@ -1087,6 +1079,15 @@ void FolderView::addActions(AbstractItemView *view)
     view->addAction(m_actionCollection.action("refresh"));
     view->addAction(m_actionCollection.action("trash"));
     view->addAction(m_actionCollection.action("del"));
+}
+
+void FolderView::addActionGroupToCombo(QActionGroup* group, QComboBox* combo)
+{
+    if (group && combo) {
+        foreach (QAction *action, group->actions()) {
+            combo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
+        }
+    }
 }
 
 void FolderView::setupIconView()
