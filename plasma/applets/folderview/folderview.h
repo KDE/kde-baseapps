@@ -163,6 +163,8 @@ private:
     void updatePasteAction();
     void addActions(AbstractItemView *view);
     void addActionGroupToCombo(QActionGroup *group, QComboBox *combo);
+    template <typename T>
+    void setCurrentItem(QComboBox *combo, T current);
     QColor textColor() const;
     void setupIconView();
     void setUrl(const KUrl &url);

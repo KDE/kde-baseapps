@@ -755,33 +755,11 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.numLinesEdit->setValue(m_numTextLines);
     uiDisplay.colorButton->setColor(textColor());
 
-    for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
-       if (m_sortColumn == uiDisplay.sortCombo->itemData(i).value<int>()) {
-           uiDisplay.sortCombo->setCurrentIndex(i);
-           break;
-       }
-    }
-
-    for (int i = 0; i < uiDisplay.flowCombo->count(); i++) {
-       if (m_flow == uiDisplay.flowCombo->itemData(i).value<IconView::Flow>()) {
-           uiDisplay.flowCombo->setCurrentIndex(i);
-           break;
-       }
-    }
-
-    for (int i = 0; i < uiLocation.titleCombo->count(); i++) {
-       if (m_labelType == uiLocation.titleCombo->itemData(i).value<FolderView::LabelType>()) {
-           uiLocation.titleCombo->setCurrentIndex(i);
-           break;
-       }
-    }
-
-    for (int i = 0; i < uiFilter.filterCombo->count(); i++) {
-       if (m_filterType == uiFilter.filterCombo->itemData(i).value<ProxyModel::FilterMode>()) {
-           uiFilter.filterCombo->setCurrentIndex(i);
-           break;
-       }
-    }
+    setCurrentItem(uiDisplay.sortCombo, m_sortColumn);
+    setCurrentItem(uiDisplay.directionCombo, m_sortOrder);
+    setCurrentItem(uiDisplay.flowCombo, m_flow);
+    setCurrentItem(uiLocation.titleCombo, m_labelType);
+    setCurrentItem(uiFilter.filterCombo, m_filterType);
 
     filterChanged(uiFilter.filterCombo->currentIndex());
 
@@ -1086,6 +1064,22 @@ void FolderView::addActionGroupToCombo(QActionGroup* group, QComboBox* combo)
     if (group && combo) {
         foreach (QAction *action, group->actions()) {
             combo->addItem(KGlobal::locale()->removeAcceleratorMarker(action->text()), action->data());
+        }
+    }
+}
+
+// We can not use QComboBox::findData() since in qt4, comparing QVariant's containing
+// enums (user types) fails even if the enums contained in the QVariant's are equal
+template <typename T>
+void FolderView::setCurrentItem(QComboBox* combo, T current)
+{
+    if (!combo)
+        return;
+
+    for (int i = 0; i < combo->maxCount(); i++) {
+        if (current == combo->itemData(i).value<T>()) {
+            combo->setCurrentIndex(i);
+            break;
         }
     }
 }
