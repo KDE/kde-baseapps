@@ -196,9 +196,15 @@ void PopupView::init()
     m_model->setSortLocaleAware(m_parentViewModel->isSortLocaleAware());
     m_model->setParseDesktopFiles(m_parentViewModel->parseDesktopFiles());
     m_model->setFilterMode(m_parentViewModel->ProxyModel::NoFilter);
-    m_model->setSortDirectoriesFirst(m_parentViewModel->sortDirectoriesFirst());
-    m_model->setDynamicSortFilter(m_parentViewModel->dynamicSortFilter());
-    m_model->sort(m_parentViewModel->sortColumn(), m_parentViewModel->sortOrder());
+    m_model->setDynamicSortFilter(true);
+
+    if (!m_parentViewModel->dynamicSortFilter()) {
+        m_model->setSortDirectoriesFirst(true);
+        m_model->sort(int(KDirModel::Name), Qt::AscendingOrder);
+    } else {
+        m_model->setSortDirectoriesFirst(m_parentViewModel->sortDirectoriesFirst());
+        m_model->sort(m_parentViewModel->sortColumn(), m_parentViewModel->sortOrder());
+    }
 
     m_delegate = new KFileItemDelegate(this);
     m_selectionModel = new QItemSelectionModel(m_model, this);
