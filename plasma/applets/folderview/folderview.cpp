@@ -385,7 +385,6 @@ void FolderView::init()
     m_alignToGrid         = cg.readEntry("alignToGrid", false);
     m_clickToView         = cg.readEntry("clickForFolderPreviews", true);
     m_previewPlugins      = cg.readEntry("previewPlugins", QStringList() << "imagethumbnail" << "jpegthumbnail");
-    m_customIconSize      = cg.readEntry("customIconSize", 0);
     m_sortDirsFirst       = cg.readEntry("sortDirsFirst", true);
     m_sortColumn          = cg.readEntry("sortColumn", int(KDirModel::Name));
     m_sortOrder           = sortOrderStringToEnum(cg.readEntry("sortOrder", "ascending"));
@@ -491,9 +490,8 @@ void FolderView::configChanged()
     }
 
     //Reload m_customIconSize values
-    const int size = m_customIconSize;
     m_customIconSize = cg.readEntry("customIconSize", m_customIconSize);
-    if (size != iconSize().width()) {
+    if (m_customIconSize != iconSize().width()) {
         needReload = true;
     }
 
@@ -1958,6 +1956,15 @@ void FolderView::indexesMoved(const QModelIndexList &indexes)
         updateSortActionsState();
         config().writeEntry("sortColumn", m_sortColumn);
         emit configNeedsSaving();
+
+        if (isUserConfiguring()) {
+            for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
+                if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
+                    uiDisplay.sortCombo->setCurrentIndex(i);
+                    break;
+                }
+            }
+        }
     }
 
     m_delayedSaveTimer.start(5000, this);
