@@ -2020,20 +2020,15 @@ void FolderView::indexesMoved(const QModelIndexList &indexes)
         m_sortColumn = -1;
         m_model->setDynamicSortFilter(false);
         updateSortActionsState();
-        config().writeEntry("sortColumn", m_sortColumn);
-        emit configNeedsSaving();
 
         if (isUserConfiguring()) {
-            for (int i = 0; i < uiDisplay.sortCombo->count(); i++) {
-                if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
-                    uiDisplay.sortCombo->setCurrentIndex(i);
-                    break;
-                }
-            }
+            setCurrentItem(uiDisplay.sortCombo, -1);
         }
-    }
 
-    m_delayedSaveTimer.start(5000, this);
+        config().writeEntry("sortColumn", m_sortColumn);
+        emit configNeedsSaving();
+        m_delayedSaveTimer.start(5000, this);
+    }
 }
 
 void FolderView::contextMenuRequest(QWidget *widget, const QPoint &screenPos)
