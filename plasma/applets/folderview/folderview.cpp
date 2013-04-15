@@ -1870,6 +1870,9 @@ void FolderView::flowChanged(QAction* action)
         if (m_iconView) {
             m_iconView->setFlow(m_flow);
         }
+        if (isUserConfiguring()) {
+            setCurrentItem(uiDisplay.flowCombo, m_flow);
+        }
         config().writeEntry("flow", static_cast<int>(m_flow));
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
@@ -1885,6 +1888,9 @@ void FolderView::sortingChanged(QAction *action)
         m_model->sort(column, m_sortOrder);
         m_model->setDynamicSortFilter(true);
         m_sortColumn = column;
+        if (isUserConfiguring()) {
+            setCurrentItem(uiDisplay.sortCombo, m_sortColumn);
+        }
         config().writeEntry("sortColumn", m_sortColumn);
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
@@ -1900,6 +1906,9 @@ void FolderView::sortingOrderChanged(QAction *action)
         m_model->sort(m_sortColumn, order);
         m_model->setDynamicSortFilter(true);
         m_sortOrder = order;
+        if (isUserConfiguring()) {
+            setCurrentItem(uiDisplay.directionCombo, m_sortOrder);
+        }
         config().writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
