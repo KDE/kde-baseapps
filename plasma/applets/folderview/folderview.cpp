@@ -1813,6 +1813,9 @@ void FolderView::toggleIconsLocked(bool locked)
     if (m_iconView) {
         m_iconView->setIconsMoveable(!locked);
     }
+    if (isUserConfiguring()) {
+        uiDisplay.lockInPlace->setChecked(locked);
+    }
 
     config().writeEntry("iconsLocked", locked);
     emit configNeedsSaving();
@@ -1824,6 +1827,9 @@ void FolderView::toggleAlignToGrid(bool align)
 
     if (m_iconView) {
         m_iconView->setAlignToGrid(align);
+    }
+    if (isUserConfiguring()) {
+        uiDisplay.alignToGrid->setChecked(align);
     }
 
     config().writeEntry("alignToGrid", align);
@@ -1839,6 +1845,9 @@ void FolderView::toggleClickToViewFolders(bool enable)
     if (m_iconView) {
         m_iconView->setClickToViewFolders(enable);
     }
+    if (isUserConfiguring()) {
+        uiDisplay.clickToView->setChecked(enable);
+    }
 
     config().writeEntry("clickForFolderPreviews", enable);
     emit configNeedsSaving();
@@ -1853,6 +1862,9 @@ void FolderView::toggleDirectoriesFirst(bool enable)
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
     if (m_sortColumn != -1) {
         m_model->invalidate();
+    }
+    if (isUserConfiguring()) {
+        uiDisplay.foldersFirst->setChecked(enable);
     }
 
     config().writeEntry("sortDirsFirst", m_sortDirsFirst);
