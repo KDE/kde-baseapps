@@ -766,21 +766,21 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.numLinesEdit->setValue(m_numTextLines);
     uiDisplay.colorButton->setColor(textColor());
 
-    for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
+    for (int i = 0; i < uiDisplay.sortCombo->count(); i++) {
        if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
            uiDisplay.sortCombo->setCurrentIndex(i);
            break;
        }
     }
 
-    for (int i = 0; i < uiDisplay.flowCombo->maxCount(); i++) {
+    for (int i = 0; i < uiDisplay.flowCombo->count(); i++) {
        if (m_flow == uiDisplay.flowCombo->itemData(i).value<IconView::Flow>()) {
            uiDisplay.flowCombo->setCurrentIndex(i);
            break;
        }
     }
 
-    for (int i = 0; i < uiFilter.filterCombo->maxCount(); i++) {
+    for (int i = 0; i < uiFilter.filterCombo->count(); i++) {
        if (m_filterType == uiFilter.filterCombo->itemData(i).value<ProxyModel::FilterMode>()) {
            uiFilter.filterCombo->setCurrentIndex(i);
            break;
@@ -1969,7 +1969,7 @@ void FolderView::indexesMoved(const QModelIndexList &indexes)
         emit configNeedsSaving();
 
         if (isUserConfiguring()) {
-            for (int i = 0; i < uiDisplay.sortCombo->maxCount(); i++) {
+            for (int i = 0; i < uiDisplay.sortCombo->count(); i++) {
                 if (m_sortColumn == uiDisplay.sortCombo->itemData(i).toInt()) {
                     uiDisplay.sortCombo->setCurrentIndex(i);
                     break;
