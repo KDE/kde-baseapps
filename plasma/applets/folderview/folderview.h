@@ -89,6 +89,7 @@ class FolderView : public Plasma::Containment
 
 public:
     enum LabelType { None = 0, PlaceName, FullPath, Custom };
+    enum { Unsorted = -1 };
 
 public:
     FolderView(QObject *parent, const QVariantList &args);

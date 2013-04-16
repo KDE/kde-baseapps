@@ -405,8 +405,8 @@ void FolderView::init()
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
     m_model->setFileNameFilter(m_filterFiles);
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
-    m_model->setDynamicSortFilter(m_sortColumn != -1);
-    m_model->sort(m_sortColumn != -1 ? m_sortColumn : KDirModel::Name, m_sortOrder);
+    m_model->setDynamicSortFilter(m_sortColumn != int(FolderView::Unsorted));
+    m_model->sort(m_sortColumn != int(FolderView::Unsorted) ? m_sortColumn : KDirModel::Name, m_sortOrder);
 
     m_dirLister = new DirLister(this);
     m_dirLister->setDelayedMimeTypes(true);
@@ -546,7 +546,7 @@ void FolderView::configChanged()
         m_sortDirsFirst = sortDirsFirst;
 
         m_model->setSortDirectoriesFirst(m_sortDirsFirst);
-        if (m_sortColumn != -1) {
+        if (m_sortColumn != int(FolderView::Unsorted)) {
             m_model->invalidate();
         }
 
@@ -560,7 +560,7 @@ void FolderView::configChanged()
     if ((m_sortColumn != sortColumn) || (m_sortOrder != sortOrder)) {
         m_sortColumn = sortColumn;
         m_sortOrder = sortOrder;
-        if (m_sortColumn != -1) {
+        if (m_sortColumn != int(FolderView::Unsorted)) {
             m_model->invalidate();
             m_model->sort(m_sortColumn, m_sortOrder);
             m_model->setDynamicSortFilter(true);
@@ -734,7 +734,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     // Only add "Unsorted" as an option when we're showing an icon view, since the list view
     // doesn't allow the user to rearrange the icons.
     if (m_iconView) {
-        uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), -1);
+        uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), int(FolderView::Unsorted));
     }
 
     addActionGroupToCombo(m_sortingGroup, uiDisplay.sortCombo);
@@ -1860,7 +1860,7 @@ void FolderView::toggleDirectoriesFirst(bool enable)
     m_sortDirsFirst = enable;
 
     m_model->setSortDirectoriesFirst(m_sortDirsFirst);
-    if (m_sortColumn != -1) {
+    if (m_sortColumn != int(FolderView::Unsorted)) {
         m_model->invalidate();
     }
     if (isUserConfiguring()) {
@@ -2037,13 +2037,13 @@ void FolderView::indexesMoved(const QModelIndexList &indexes)
     Q_UNUSED(indexes)
 
     // If the user has rearranged the icons, the view is no longer sorted
-    if (m_sortColumn != -1) {
-        m_sortColumn = -1;
+    if (m_sortColumn != int(FolderView::Unsorted)) {
+        m_sortColumn = int(FolderView::Unsorted);
         m_model->setDynamicSortFilter(false);
         updateSortActionsState();
 
         if (isUserConfiguring()) {
-            setCurrentItem(uiDisplay.sortCombo, -1);
+            setCurrentItem(uiDisplay.sortCombo, int(FolderView::Unsorted));
         }
 
         config().writeEntry("sortColumn", m_sortColumn);
