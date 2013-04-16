@@ -1076,7 +1076,7 @@ void FolderView::setCurrentItem(QComboBox* combo, T current)
     if (!combo)
         return;
 
-    for (int i = 0; i < combo->maxCount(); i++) {
+    for (int i = 0; i < combo->count(); i++) {
         if (current == combo->itemData(i).value<T>()) {
             combo->setCurrentIndex(i);
             break;
