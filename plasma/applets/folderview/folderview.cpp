@@ -733,8 +733,11 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
 
     // Only add "Unsorted" as an option when we're showing an icon view, since the list view
     // doesn't allow the user to rearrange the icons.
-    if (m_iconView) {
-        uiDisplay.sortCombo->addItem(i18nc("Sort Icons", "Unsorted"), int(FolderView::Unsorted));
+    if (m_iconView && m_sortColumn == int(FolderView::Unsorted)) {
+        QAction *unsorted = m_actionCollection.action("unsorted");
+        if (unsorted) {
+            uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(unsorted->text()), unsorted->data());
+        }
     }
 
     addActionGroupToCombo(m_sortingGroup, uiDisplay.sortCombo);
@@ -1584,6 +1587,9 @@ void FolderView::createActions()
         arrangeVerRightToLeft->setCheckable(true);
         arrangeVerRightToLeft->setData(QVariant::fromValue(IconView::VerRightToLeft));
 
+        KAction *unsorted = new KAction(i18nc("Sort icons", "Unsorted"), this);
+        unsorted->setData(int(FolderView::Unsorted));
+
         m_sortingGroup = new QActionGroup(this);
         connect(m_sortingGroup, SIGNAL(triggered(QAction*)), SLOT(sortingChanged(QAction*)));
         QAction *sortByName = m_sortingGroup->addAction(i18nc("Sort icons", "By Name"));
@@ -1661,6 +1667,7 @@ void FolderView::createActions()
         m_actionCollection.addAction("arrange_hor_rtl", arrangeHorRightToLeft);
         m_actionCollection.addAction("arrange_ver_ltr", arrangeVerLeftToRight);
         m_actionCollection.addAction("arrange_ver_rtl", arrangeVerRightToLeft);
+        m_actionCollection.addAction("unsorted", unsorted);
         m_actionCollection.addAction("sort_name", sortByName);
         m_actionCollection.addAction("sort_size", sortBySize);
         m_actionCollection.addAction("sort_type", sortByType);
@@ -2043,6 +2050,10 @@ void FolderView::indexesMoved(const QModelIndexList &indexes)
         updateSortActionsState();
 
         if (isUserConfiguring()) {
+            QAction *unsorted = m_actionCollection.action("unsorted");
+            if (unsorted) {
+                uiDisplay.sortCombo->addItem(KGlobal::locale()->removeAcceleratorMarker(unsorted->text()), unsorted->data());
+            }
             setCurrentItem(uiDisplay.sortCombo, int(FolderView::Unsorted));
         }
 
