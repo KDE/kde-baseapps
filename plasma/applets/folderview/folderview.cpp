@@ -89,6 +89,8 @@ K_EXPORT_PLASMA_APPLET(folderview, FolderView)
 Q_DECLARE_METATYPE(Qt::SortOrder)
 Q_DECLARE_METATYPE(ProxyModel::FilterMode)
 Q_DECLARE_METATYPE(IconView::Flow)
+Q_DECLARE_METATYPE(IconView::Layout)
+Q_DECLARE_METATYPE(IconView::Alignment)
 Q_DECLARE_METATYPE(FolderView::LabelType)
 
 MimeModel::MimeModel(QObject *parent)
@@ -394,12 +396,10 @@ void FolderView::init()
     m_labelType           = static_cast<FolderView::LabelType>(cg.readEntry("labelType", static_cast<int>(FolderView::None)));
     m_showSelectionMarker = KGlobalSettings::singleClick();
 
-    if (isContainment()) {
-        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::VerLeftToRight : IconView::VerRightToLeft;
-    } else {
-        m_flow = layoutDirection() == Qt::LeftToRight ? IconView::HorLeftToRight : IconView::HorRightToLeft;
-    }
-    m_flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
+    m_layout = isContainment() ? IconView::Columns : IconView::Rows;
+    m_alignment = layoutDirection() == Qt::LeftToRight ? IconView::Left : IconView::Right;
+    m_layout = static_cast<IconView::Layout>(cg.readEntry("layout", static_cast<int>(m_layout)));
+    m_alignment = static_cast<IconView::Alignment>(cg.readEntry("alignment", static_cast<int>(m_alignment)));
 
     m_model->setFilterMode(m_filterType);
     m_model->setMimeTypeFilterList(m_filterFilesMimeList);
@@ -571,9 +571,11 @@ void FolderView::configChanged()
         updateSortActionsState();
     }
 
-    const int flow = static_cast<IconView::Flow>(cg.readEntry("flow", static_cast<int>(m_flow)));
-    if (flow != m_flow) {
-        m_flow = static_cast<IconView::Flow>(flow);
+    const IconView::Layout layout = static_cast<IconView::Layout>(cg.readEntry("layout", static_cast<int>(m_layout)));
+    const IconView::Alignment alignment = static_cast<IconView::Alignment>(cg.readEntry("alignment", static_cast<int>(m_alignment)));
+    if ((m_layout != layout) || (m_alignment != alignment)) {
+        m_layout = layout;
+        m_alignment = alignment;
         updateFlowActionsState();
     }
 
@@ -742,7 +744,8 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
 
     addActionGroupToCombo(m_sortingGroup, uiDisplay.sortCombo);
     addActionGroupToCombo(m_sortingOrderGroup, uiDisplay.directionCombo);
-    addActionGroupToCombo(m_flowGroup, uiDisplay.flowCombo);
+    addActionGroupToCombo(m_layoutGroup, uiDisplay.layoutCombo);
+    addActionGroupToCombo(m_alignmentGroup, uiDisplay.alignmentCombo);
 
     uiFilter.filterCombo->addItem(i18n("Show All Files"), QVariant::fromValue(ProxyModel::NoFilter));
     uiFilter.filterCombo->addItem(i18n("Show Files Matching"), QVariant::fromValue(ProxyModel::FilterShowMatches));
@@ -760,7 +763,8 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
 
     setCurrentItem(uiDisplay.sortCombo, m_sortColumn);
     setCurrentItem(uiDisplay.directionCombo, m_sortOrder);
-    setCurrentItem(uiDisplay.flowCombo, m_flow);
+    setCurrentItem(uiDisplay.layoutCombo, m_layout);
+    setCurrentItem(uiDisplay.alignmentCombo, m_alignment);
     setCurrentItem(uiLocation.titleCombo, m_labelType);
     setCurrentItem(uiFilter.filterCombo, m_filterType);
 
@@ -780,8 +784,10 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     // Hide the icon arrangement controls when we're not acting as a containment,
     // since this option doesn't make much sense in the applet.
     if (!isContainment()) {
-        uiDisplay.flowLabel->hide();
-        uiDisplay.flowCombo->hide();
+        uiDisplay.layoutLabel->hide();
+        uiDisplay.layoutCombo->hide();
+        uiDisplay.alignmentLabel->hide();
+        uiDisplay.alignmentCombo->hide();
     }
 
     parent->addPage(widgetLocation, i18nc("Title of the page that lets the user choose which location should the folderview show", "Location"), "folder");
@@ -801,7 +807,8 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiDisplay.previewsAdvanced, SIGNAL(clicked()), this, SLOT(showPreviewConfigDialog()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), uiDisplay.previewsAdvanced, SLOT(setEnabled(bool)));
 
-    connect(uiDisplay.flowCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.layoutCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.alignmentCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.directionCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sizeSlider, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
@@ -882,8 +889,11 @@ void FolderView::configAccepted()
     const bool dirsFirst = uiDisplay.foldersFirst->isChecked();
     cg.writeEntry("sortDirsFirst", dirsFirst);
 
-    const IconView::Flow flow = uiDisplay.flowCombo->itemData(uiDisplay.flowCombo->currentIndex()).value<IconView::Flow>();
-    cg.writeEntry("flow", static_cast<int>(flow));
+    const IconView::Layout layout = uiDisplay.layoutCombo->itemData(uiDisplay.layoutCombo->currentIndex()).value<IconView::Layout>();
+    cg.writeEntry("layout", static_cast<int>(layout));
+
+    const IconView::Alignment alignment = uiDisplay.alignmentCombo->itemData(uiDisplay.alignmentCombo->currentIndex()).value<IconView::Alignment>();
+    cg.writeEntry("alignment", static_cast<int>(alignment));
 
     cg.writeEntry("alignToGrid", uiDisplay.alignToGrid->isChecked());
     cg.writeEntry("clickForFolderPreviews", uiDisplay.clickToView->isChecked());
@@ -1034,7 +1044,8 @@ void FolderView::updateIconViewState()
     m_iconView->setDrawShadows(m_drawShadows);
     m_iconView->setIconSize(iconSize());
     m_iconView->setTextLineCount(m_numTextLines);
-    m_iconView->setFlow(m_flow);
+    m_iconView->setLayout(m_layout);
+    m_iconView->setAlignment(m_alignment);
     m_iconView->setWordWrap(m_numTextLines > 1);
     m_iconView->setAlignToGrid(m_alignToGrid);
     m_iconView->setIconsMoveable(!m_iconsLocked);
@@ -1568,24 +1579,27 @@ void FolderView::createActions()
         lockIcons->setChecked(m_iconsLocked);
         connect(lockIcons, SIGNAL(toggled(bool)), SLOT(toggleIconsLocked(bool)));
 
-        m_flowGroup = new QActionGroup(this);
-        connect(m_flowGroup, SIGNAL(triggered(QAction*)), SLOT(flowChanged(QAction*)));
-        QAction *arrangeHorLeftToRight = m_flowGroup->addAction(i18nc("Arrange icons", "Left to Right, Top to Bottom"));
-        QAction *arrangeHorRightToLeft = m_flowGroup->addAction(i18nc("Arrange icons", "Right to Left, Top to Bottom"));
-        QAction *arrangeVerLeftToRight = m_flowGroup->addAction(i18nc("Arrange icons", "Top to Bottom, Left to Right"));
-        QAction *arrangeVerRightToLeft= m_flowGroup->addAction(i18nc("Arrange icons", "Top to Bottom, Right to Left"));
+        m_layoutGroup = new QActionGroup(this);
+        connect(m_layoutGroup, SIGNAL(triggered(QAction*)), SLOT(layoutChanged(QAction*)));
+        QAction *layoutRows = m_layoutGroup->addAction(i18nc("Layout icons", "In rows"));
+        QAction *layoutColumns = m_layoutGroup->addAction(i18nc("Layout icons", "In columns"));
 
-        arrangeHorLeftToRight->setCheckable(true);
-        arrangeHorLeftToRight->setData(QVariant::fromValue(IconView::HorLeftToRight));
+        layoutRows->setCheckable(true);
+        layoutRows->setData(QVariant::fromValue(IconView::Rows));
 
-        arrangeHorRightToLeft->setCheckable(true);
-        arrangeHorRightToLeft->setData(QVariant::fromValue(IconView::HorRightToLeft));
+        layoutColumns->setCheckable(true);
+        layoutColumns->setData(QVariant::fromValue(IconView::Columns));
 
-        arrangeVerLeftToRight->setCheckable(true);
-        arrangeVerLeftToRight->setData(QVariant::fromValue(IconView::VerLeftToRight));
+        m_alignmentGroup = new QActionGroup(this);
+        connect(m_alignmentGroup, SIGNAL(triggered(QAction*)), SLOT(alignmentChanged(QAction*)));
+        QAction *alignLeft = m_alignmentGroup->addAction(i18nc("Align icons", "To the left"));
+        QAction *alignRight = m_alignmentGroup->addAction(i18nc("Align icons", "To the right"));
 
-        arrangeVerRightToLeft->setCheckable(true);
-        arrangeVerRightToLeft->setData(QVariant::fromValue(IconView::VerRightToLeft));
+        alignLeft->setCheckable(true);
+        alignLeft->setData(QVariant::fromValue(IconView::Left));
+
+        alignRight->setCheckable(true);
+        alignRight->setData(QVariant::fromValue(IconView::Right));
 
         KAction *unsorted = new KAction(i18nc("Sort icons", "Unsorted"), this);
         unsorted->setData(int(FolderView::Unsorted));
@@ -1626,10 +1640,11 @@ void FolderView::createActions()
         connect(dirsFirst, SIGNAL(toggled(bool)), SLOT(toggleDirectoriesFirst(bool)));
 
         QMenu *flowMenu = new QMenu(i18n("Arrange Icons"));
-        flowMenu->addAction(arrangeVerLeftToRight);
-        flowMenu->addAction(arrangeVerRightToLeft);
-        flowMenu->addAction(arrangeHorLeftToRight);
-        flowMenu->addAction(arrangeHorRightToLeft);
+        flowMenu->addAction(layoutRows);
+        flowMenu->addAction(layoutColumns);
+        flowMenu->addSeparator();
+        flowMenu->addAction(alignLeft);
+        flowMenu->addAction(alignRight);
 
         QMenu *sortMenu = new QMenu(i18n("Sort Icons"));
         sortMenu->addAction(sortByName);
@@ -1663,10 +1678,10 @@ void FolderView::createActions()
         m_actionCollection.addAction("auto_align", alignToGrid);
         m_actionCollection.addAction("dirs_first", dirsFirst);
         m_actionCollection.addAction("icons_menu", iconsMenuAction);
-        m_actionCollection.addAction("arrange_hor_ltr", arrangeHorLeftToRight);
-        m_actionCollection.addAction("arrange_hor_rtl", arrangeHorRightToLeft);
-        m_actionCollection.addAction("arrange_ver_ltr", arrangeVerLeftToRight);
-        m_actionCollection.addAction("arrange_ver_rtl", arrangeVerRightToLeft);
+        m_actionCollection.addAction("layout_rows", layoutRows);
+        m_actionCollection.addAction("layout_columns", layoutColumns);
+        m_actionCollection.addAction("align_left", alignLeft);
+        m_actionCollection.addAction("align_right", alignRight);
         m_actionCollection.addAction("unsorted", unsorted);
         m_actionCollection.addAction("sort_name", sortByName);
         m_actionCollection.addAction("sort_size", sortBySize);
@@ -1880,19 +1895,37 @@ void FolderView::toggleDirectoriesFirst(bool enable)
     m_delayedSaveTimer.start(5000, this);
 }
 
-void FolderView::flowChanged(QAction* action)
+void FolderView::layoutChanged(QAction* action)
 {
-    const IconView::Flow flow = action->data().value<IconView::Flow>();
+    const IconView::Layout layout = action->data().value<IconView::Layout>();
 
-    if (flow != m_flow) {
-        m_flow = flow;
+    if (layout != m_layout) {
+        m_layout = layout;
         if (m_iconView) {
-            m_iconView->setFlow(m_flow);
+            m_iconView->setLayout(m_layout);
         }
         if (isUserConfiguring()) {
-            setCurrentItem(uiDisplay.flowCombo, m_flow);
+            setCurrentItem(uiDisplay.layoutCombo, m_layout);
         }
-        config().writeEntry("flow", static_cast<int>(m_flow));
+        config().writeEntry("layout", static_cast<int>(m_layout));
+        emit configNeedsSaving();
+        m_delayedSaveTimer.start(5000, this);
+    }
+}
+
+void FolderView::alignmentChanged(QAction* action)
+{
+    const IconView::Alignment alignment = action->data().value<IconView::Alignment>();
+
+    if (alignment != m_alignment) {
+        m_alignment = alignment;
+        if (m_iconView) {
+            m_iconView->setAlignment(m_alignment);
+        }
+        if (isUserConfiguring()) {
+            setCurrentItem(uiDisplay.alignmentCombo, m_alignment);
+        }
+        config().writeEntry("alignment", static_cast<int>(m_alignment));
         emit configNeedsSaving();
         m_delayedSaveTimer.start(5000, this);
     }
@@ -1936,8 +1969,11 @@ void FolderView::sortingOrderChanged(QAction *action)
 
 void FolderView::updateFlowActionsState()
 {
-    foreach (QAction *action, m_flowGroup->actions()) {
-        action->setChecked(action->data().value<IconView::Flow>() == m_flow);
+    foreach (QAction *action, m_layoutGroup->actions()) {
+        action->setChecked(action->data().value<IconView::Layout>() == m_layout);
+    }
+    foreach (QAction *action, m_alignmentGroup->actions()) {
+        action->setChecked(action->data().value<IconView::Alignment>() == m_alignment);
     }
 }
 

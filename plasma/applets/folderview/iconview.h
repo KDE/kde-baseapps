@@ -60,6 +60,8 @@ class IconView : public AbstractItemView
 
 public:
     enum Flow { HorLeftToRight, VerLeftToRight, HorRightToLeft, VerRightToLeft };
+    enum Layout { Rows, Columns };
+    enum Alignment { Left, Right };
 
     Q_PROPERTY(QSize gridSize READ gridSize WRITE setGridSize)
     Q_PROPERTY(bool wordWrap READ wordWrap WRITE setWordWrap)
@@ -68,7 +70,8 @@ public:
     Q_PROPERTY(bool showSelectionMarker READ showSelectionMarker WRITE setShowSelectionMarker)
     Q_PROPERTY(bool iconsMoveable READ iconsMoveable WRITE setIconsMoveable)
     Q_PROPERTY(bool customLayout READ customLayout WRITE setCustomLayout)
-    Q_PROPERTY(Flow flow READ flow WRITE setFlow)
+    Q_PROPERTY(Layout layout READ layout WRITE setLayout)
+    Q_PROPERTY(Alignment alignment READ alignment WRITE setAlignment)
 
 public:
     IconView(QGraphicsWidget *parent);
@@ -87,8 +90,11 @@ public:
     void setTextLineCount(int rows);
     int textLineCount() const;
 
-    void setFlow(Flow flow);
-    Flow flow() const;
+    void setLayout(Layout layout);
+    Layout layout() const;
+
+    void setAlignment(Alignment alignment);
+    Alignment alignment() const;
 
     void setAlignToGrid(bool on);
     bool alignToGrid() const;
@@ -261,7 +267,8 @@ private:
     QPointF m_buttonDownPos;
     QPointF m_mouseMovedPos;
     QTime m_pressTime;
-    Flow m_flow;
+    Layout m_layout;
+    Alignment m_alignment;
     QString m_errorMessage;
     QPoint m_lastDeletedPos;
     QPoint m_currentLayoutPos;

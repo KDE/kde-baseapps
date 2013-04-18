@@ -133,7 +133,8 @@ protected slots:
     void toggleAlignToGrid(bool align);
     void toggleClickToViewFolders(bool enable);
     void toggleDirectoriesFirst(bool enable);
-    void flowChanged(QAction *action);
+    void layoutChanged(QAction *action);
+    void alignmentChanged(QAction *action);
     void sortingChanged(QAction *action);
     void sortingOrderChanged(QAction *action);
     void aboutToShowCreateNew();
@@ -205,7 +206,8 @@ private:
     QStringList m_filterFilesMimeList;
     QPointer<KNewFileMenu> m_newMenu;
     KActionCollection m_actionCollection;
-    QActionGroup *m_flowGroup;
+    QActionGroup *m_layoutGroup;
+    QActionGroup *m_alignmentGroup;
     QActionGroup *m_sortingGroup;
     QActionGroup *m_sortingOrderGroup;
     int m_sortColumn;
@@ -226,7 +228,8 @@ private:
     QStringList m_previewPlugins;
     int m_customIconSize;
     int m_numTextLines;
-    IconView::Flow m_flow;
+    IconView::Layout m_layout;
+    IconView::Alignment m_alignment;
     QBasicTimer m_delayedSaveTimer;
     DirLister *m_dirLister;
 };
