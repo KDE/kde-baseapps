@@ -1581,8 +1581,8 @@ void FolderView::createActions()
 
         m_layoutGroup = new QActionGroup(this);
         connect(m_layoutGroup, SIGNAL(triggered(QAction*)), SLOT(layoutChanged(QAction*)));
-        QAction *layoutRows = m_layoutGroup->addAction(i18nc("Layout icons", "In rows"));
-        QAction *layoutColumns = m_layoutGroup->addAction(i18nc("Layout icons", "In columns"));
+        QAction *layoutRows = m_layoutGroup->addAction(i18nc("Arrange icons", "In rows"));
+        QAction *layoutColumns = m_layoutGroup->addAction(i18nc("Arrange icons", "In columns"));
 
         layoutRows->setCheckable(true);
         layoutRows->setData(QVariant::fromValue(IconView::Rows));
