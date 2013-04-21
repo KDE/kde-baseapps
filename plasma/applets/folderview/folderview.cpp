@@ -1592,8 +1592,8 @@ void FolderView::createActions()
 
         m_alignmentGroup = new QActionGroup(this);
         connect(m_alignmentGroup, SIGNAL(triggered(QAction*)), SLOT(alignmentChanged(QAction*)));
-        QAction *alignLeft = m_alignmentGroup->addAction(i18nc("Align icons", "To the left"));
-        QAction *alignRight = m_alignmentGroup->addAction(i18nc("Align icons", "To the right"));
+        QAction *alignLeft = m_alignmentGroup->addAction(i18nc("Align icons", "Left"));
+        QAction *alignRight = m_alignmentGroup->addAction(i18nc("Align icons", "Right"));
 
         alignLeft->setCheckable(true);
         alignLeft->setData(QVariant::fromValue(IconView::Left));
