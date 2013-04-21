@@ -33,7 +33,7 @@
    <item row="1" column="1">
     <widget class="QLabel" name="sortLabel">
      <property name="text">
-      <string>Sorting:</string>
+      <string>Sort:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
