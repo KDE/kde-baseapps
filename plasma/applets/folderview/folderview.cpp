@@ -1636,7 +1636,7 @@ void FolderView::createActions()
         arrangeMenu->addAction(layoutRows);
         arrangeMenu->addAction(layoutColumns);
 
-        QMenu *alignMenu = new QMenu(i18n("Align Icons"));
+        QMenu *alignMenu = new QMenu(i18n("Align"));
         alignMenu->addAction(alignLeft);
         alignMenu->addAction(alignRight);
 
