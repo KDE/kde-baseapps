@@ -1580,8 +1580,8 @@ void FolderView::createActions()
 
         m_layoutGroup = new QActionGroup(this);
         connect(m_layoutGroup, SIGNAL(triggered(QAction*)), SLOT(layoutChanged(QAction*)));
-        QAction *layoutRows = m_layoutGroup->addAction(i18nc("Arrange icons", "In rows"));
-        QAction *layoutColumns = m_layoutGroup->addAction(i18nc("Arrange icons", "In columns"));
+        QAction *layoutRows = m_layoutGroup->addAction(i18nc("Arrange icons in", "Rows"));
+        QAction *layoutColumns = m_layoutGroup->addAction(i18nc("Arrange icons in", "Columns"));
 
         layoutRows->setCheckable(true);
         layoutRows->setData(QVariant::fromValue(IconView::Rows));
@@ -1632,7 +1632,7 @@ void FolderView::createActions()
         dirsFirst->setChecked(m_sortDirsFirst);
         connect(dirsFirst, SIGNAL(toggled(bool)), SLOT(toggleDirectoriesFirst(bool)));
 
-        QMenu *arrangeMenu = new QMenu(i18n("Arrange Icons"));
+        QMenu *arrangeMenu = new QMenu(i18n("Arrange In"));
         arrangeMenu->addAction(layoutRows);
         arrangeMenu->addAction(layoutColumns);
 

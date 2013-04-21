@@ -109,7 +109,7 @@
    <item row="5" column="1">
     <widget class="QLabel" name="layoutLabel">
      <property name="text">
-      <string>Arrange:</string>
+      <string>Arrange In:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
