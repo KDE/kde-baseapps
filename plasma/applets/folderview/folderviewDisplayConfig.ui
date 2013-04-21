@@ -33,7 +33,7 @@
    <item row="1" column="1">
     <widget class="QLabel" name="sortLabel">
      <property name="text">
-      <string>Sort:</string>
+      <string>Sorting:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -64,22 +64,12 @@
     </spacer>
    </item>
    <item row="2" column="1">
-    <widget class="QLabel" name="directionLabel">
+    <widget class="QLabel" name="sortDescendingLabel">
      <property name="text">
-      <string>Direction:</string>
+      <string>Descending:</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-     <property name="buddy">
-      <cstring>directionCombo</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2">
-    <widget class="KComboBox" name="directionCombo">
-     <property name="whatsThis">
-      <string>Use this control to choose the criteria by which the icons will be sorted in the view.</string>
      </property>
     </widget>
    </item>
@@ -442,6 +432,13 @@ When this option is checked, icons will automatically snap to the nearest grid c
      </property>
     </spacer>
    </item>
+   <item row="2" column="2">
+    <widget class="QCheckBox" name="sortDescending">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -462,9 +459,20 @@ When this option is checked, icons will automatically snap to the nearest grid c
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>sortCombo</tabstop>
+  <tabstop>sortDescending</tabstop>
+  <tabstop>foldersFirst</tabstop>
+  <tabstop>layoutCombo</tabstop>
+  <tabstop>alignmentCombo</tabstop>
+  <tabstop>lockInPlace</tabstop>
+  <tabstop>alignToGrid</tabstop>
   <tabstop>sizeSlider</tabstop>
   <tabstop>showPreviews</tabstop>
   <tabstop>previewsAdvanced</tabstop>
+  <tabstop>clickToView</tabstop>
+  <tabstop>numLinesEdit</tabstop>
+  <tabstop>colorButton</tabstop>
+  <tabstop>drawShadows</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -743,7 +743,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     addActionGroupToCombo(m_sortingGroup, uiDisplay.sortCombo);
-    addActionGroupToCombo(m_sortingOrderGroup, uiDisplay.directionCombo);
     addActionGroupToCombo(m_layoutGroup, uiDisplay.layoutCombo);
     addActionGroupToCombo(m_alignmentGroup, uiDisplay.alignmentCombo);
 
@@ -757,12 +756,12 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     uiDisplay.drawShadows->setChecked(m_drawShadows);
     uiDisplay.showPreviews->setChecked(m_showPreviews);
     uiDisplay.previewsAdvanced->setEnabled(m_showPreviews);
+    uiDisplay.sortDescending->setChecked(m_sortOrder == Qt::DescendingOrder);
     uiDisplay.foldersFirst->setChecked(m_sortDirsFirst);
     uiDisplay.numLinesEdit->setValue(m_numTextLines);
     uiDisplay.colorButton->setColor(textColor());
 
     setCurrentItem(uiDisplay.sortCombo, m_sortColumn);
-    setCurrentItem(uiDisplay.directionCombo, m_sortOrder);
     setCurrentItem(uiDisplay.layoutCombo, m_layout);
     setCurrentItem(uiDisplay.alignmentCombo, m_alignment);
     setCurrentItem(uiLocation.titleCombo, m_labelType);
@@ -810,12 +809,12 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiDisplay.layoutCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.alignmentCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sortCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
-    connect(uiDisplay.directionCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.sizeSlider, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.showPreviews, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.lockInPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.alignToGrid, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.clickToView, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
+    connect(uiDisplay.sortDescending, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.foldersFirst, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiDisplay.numLinesEdit, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(uiDisplay.colorButton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
@@ -883,7 +882,7 @@ void FolderView::configAccepted()
     const int sortColumn = uiDisplay.sortCombo->itemData(uiDisplay.sortCombo->currentIndex()).toInt();
     cg.writeEntry("sortColumn", sortColumn);
 
-    const Qt::SortOrder order = uiDisplay.directionCombo->itemData(uiDisplay.directionCombo->currentIndex()).value<Qt::SortOrder>();
+    const Qt::SortOrder order = uiDisplay.sortDescending->isChecked() ? Qt::DescendingOrder : Qt::AscendingOrder;
     cg.writeEntry("sortOrder", sortOrderEnumToString(order));
 
     const bool dirsFirst = uiDisplay.foldersFirst->isChecked();
@@ -1623,28 +1622,23 @@ void FolderView::createActions()
         sortByDate->setCheckable(true);
         sortByDate->setData(int(KDirModel::ModifiedTime));
 
-        m_sortingOrderGroup = new QActionGroup(this);
-        connect(m_sortingOrderGroup, SIGNAL(triggered(QAction*)), SLOT(sortingOrderChanged(QAction*)));
-        QAction *sortAscending = m_sortingOrderGroup->addAction(i18nc("Sort icons", "Ascending"));
-        QAction *sortDescending = m_sortingOrderGroup->addAction(i18nc("Sort icons", "Descending"));
-
-        sortAscending->setCheckable(true);
-        sortAscending->setData(QVariant::fromValue(Qt::AscendingOrder));
-
+        KAction *sortDescending = new KAction(i18nc("Sort icons", "Descending"), this);
         sortDescending->setCheckable(true);
-        sortDescending->setData(QVariant::fromValue(Qt::DescendingOrder));
+        sortDescending->setChecked(m_sortOrder == Qt::DescendingOrder);
+        connect(sortDescending, SIGNAL(toggled(bool)), SLOT(toggleSortDescending(bool)));
 
         KAction *dirsFirst = new KAction(i18nc("Sort icons", "Folders First"), this);
         dirsFirst->setCheckable(true);
         dirsFirst->setChecked(m_sortDirsFirst);
         connect(dirsFirst, SIGNAL(toggled(bool)), SLOT(toggleDirectoriesFirst(bool)));
 
-        QMenu *flowMenu = new QMenu(i18n("Arrange Icons"));
-        flowMenu->addAction(layoutRows);
-        flowMenu->addAction(layoutColumns);
-        flowMenu->addSeparator();
-        flowMenu->addAction(alignLeft);
-        flowMenu->addAction(alignRight);
+        QMenu *arrangeMenu = new QMenu(i18n("Arrange Icons"));
+        arrangeMenu->addAction(layoutRows);
+        arrangeMenu->addAction(layoutColumns);
+
+        QMenu *alignMenu = new QMenu(i18n("Align Icons"));
+        alignMenu->addAction(alignLeft);
+        alignMenu->addAction(alignRight);
 
         QMenu *sortMenu = new QMenu(i18n("Sort Icons"));
         sortMenu->addAction(sortByName);
@@ -1652,13 +1646,12 @@ void FolderView::createActions()
         sortMenu->addAction(sortByType);
         sortMenu->addAction(sortByDate);
         sortMenu->addSeparator();
-        sortMenu->addAction(sortAscending);
         sortMenu->addAction(sortDescending);
-        sortMenu->addSeparator();
         sortMenu->addAction(dirsFirst);
 
         QMenu *iconsMenu = new QMenu;
-        iconsMenu->addMenu(flowMenu);
+        iconsMenu->addMenu(arrangeMenu);
+        iconsMenu->addMenu(alignMenu);
         iconsMenu->addMenu(sortMenu);
         iconsMenu->addSeparator();
         iconsMenu->addAction(alignToGrid);
@@ -1676,6 +1669,7 @@ void FolderView::createActions()
 
         m_actionCollection.addAction("lock_icons", lockIcons);
         m_actionCollection.addAction("auto_align", alignToGrid);
+        m_actionCollection.addAction("sort_desc", sortDescending);
         m_actionCollection.addAction("dirs_first", dirsFirst);
         m_actionCollection.addAction("icons_menu", iconsMenuAction);
         m_actionCollection.addAction("layout_rows", layoutRows);
@@ -1687,8 +1681,6 @@ void FolderView::createActions()
         m_actionCollection.addAction("sort_size", sortBySize);
         m_actionCollection.addAction("sort_type", sortByType);
         m_actionCollection.addAction("sort_date", sortByDate);
-        m_actionCollection.addAction("sort_ascending", sortAscending);
-        m_actionCollection.addAction("sort_descending", sortDescending);
 
         updateFlowActionsState();
         updateSortActionsState();
@@ -1877,6 +1869,23 @@ void FolderView::toggleClickToViewFolders(bool enable)
     m_delayedSaveTimer.start(5000, this);
 }
 
+void FolderView::toggleSortDescending(bool enable)
+{
+    m_sortOrder = enable ? Qt::DescendingOrder : Qt::AscendingOrder;
+
+    m_model->invalidate();
+    m_model->sort(m_sortColumn, m_sortOrder);
+    m_model->setDynamicSortFilter(true);
+    if (isUserConfiguring()) {
+        uiDisplay.sortDescending->setChecked(enable);
+    }
+
+    config().writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
+    emit configNeedsSaving();
+
+    m_delayedSaveTimer.start(5000, this);
+}
+
 void FolderView::toggleDirectoriesFirst(bool enable)
 {
     m_sortDirsFirst = enable;
@@ -1949,24 +1958,6 @@ void FolderView::sortingChanged(QAction *action)
     }
 }
 
-void FolderView::sortingOrderChanged(QAction *action)
-{
-    const Qt::SortOrder order = action->data().value<Qt::SortOrder>();
-
-    if (order != m_sortOrder) {
-        m_model->invalidate();
-        m_model->sort(m_sortColumn, order);
-        m_model->setDynamicSortFilter(true);
-        m_sortOrder = order;
-        if (isUserConfiguring()) {
-            setCurrentItem(uiDisplay.directionCombo, m_sortOrder);
-        }
-        config().writeEntry("sortOrder", sortOrderEnumToString(m_sortOrder));
-        emit configNeedsSaving();
-        m_delayedSaveTimer.start(5000, this);
-    }
-}
-
 void FolderView::updateFlowActionsState()
 {
     foreach (QAction *action, m_layoutGroup->actions()) {
@@ -1981,9 +1972,6 @@ void FolderView::updateSortActionsState()
 {
     foreach (QAction *action, m_sortingGroup->actions()) {
         action->setChecked(action->data() == int(m_sortColumn));
-    }
-    foreach (QAction *action, m_sortingOrderGroup->actions()) {
-        action->setChecked(action->data().value<Qt::SortOrder>() == m_sortOrder);
     }
 }
 

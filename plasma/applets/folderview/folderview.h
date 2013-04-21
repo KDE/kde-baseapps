@@ -132,11 +132,11 @@ protected slots:
     void toggleIconsLocked(bool locked);
     void toggleAlignToGrid(bool align);
     void toggleClickToViewFolders(bool enable);
+    void toggleSortDescending(bool enable);
     void toggleDirectoriesFirst(bool enable);
     void layoutChanged(QAction *action);
     void alignmentChanged(QAction *action);
     void sortingChanged(QAction *action);
-    void sortingOrderChanged(QAction *action);
     void aboutToShowCreateNew();
     void updateIconWidget();
     void iconWidgetClicked();
@@ -209,7 +209,6 @@ private:
     QActionGroup *m_layoutGroup;
     QActionGroup *m_alignmentGroup;
     QActionGroup *m_sortingGroup;
-    QActionGroup *m_sortingOrderGroup;
     int m_sortColumn;
     Qt::SortOrder m_sortOrder;
     Ui::folderviewFilterConfig uiFilter;
