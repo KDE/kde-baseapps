@@ -1605,10 +1605,10 @@ void FolderView::createActions()
 
         m_sortingGroup = new QActionGroup(this);
         connect(m_sortingGroup, SIGNAL(triggered(QAction*)), SLOT(sortingChanged(QAction*)));
-        QAction *sortByName = m_sortingGroup->addAction(i18nc("Sort icons", "By Name"));
-        QAction *sortBySize = m_sortingGroup->addAction(i18nc("Sort icons", "By Size"));
-        QAction *sortByType = m_sortingGroup->addAction(i18nc("Sort icons", "By Type"));
-        QAction *sortByDate = m_sortingGroup->addAction(i18nc("Sort icons", "By Date"));
+        QAction *sortByName = m_sortingGroup->addAction(i18nc("Sort icons by", "Name"));
+        QAction *sortBySize = m_sortingGroup->addAction(i18nc("Sort icons by", "Size"));
+        QAction *sortByType = m_sortingGroup->addAction(i18nc("Sort icons by", "Type"));
+        QAction *sortByDate = m_sortingGroup->addAction(i18nc("Sort icons by", "Date"));
 
         sortByName->setCheckable(true);
         sortByName->setData(int(KDirModel::Name));
@@ -1640,7 +1640,7 @@ void FolderView::createActions()
         alignMenu->addAction(alignLeft);
         alignMenu->addAction(alignRight);
 
-        QMenu *sortMenu = new QMenu(i18n("Sort Icons"));
+        QMenu *sortMenu = new QMenu(i18n("Sort By"));
         sortMenu->addAction(sortByName);
         sortMenu->addAction(sortBySize);
         sortMenu->addAction(sortByType);
