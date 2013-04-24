@@ -1,6 +1,8 @@
 project(plasma-folderview)
 
-find_package(X11 REQUIRED)
+if(Q_WS_X11)
+  find_package(X11 REQUIRED)
+endif(Q_WS_X11)
 
 set(folderview_SRCS
     folderview.cpp
