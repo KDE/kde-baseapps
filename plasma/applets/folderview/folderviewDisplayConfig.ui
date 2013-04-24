@@ -434,6 +434,9 @@ When this option is checked, icons will automatically snap to the nearest grid c
    </item>
    <item row="2" column="2">
     <widget class="QCheckBox" name="sortDescending">
+     <property name="whatsThis">
+      <string>Check this option if you want the icons to be sorted in a descending order.</string>
+     </property>
      <property name="text">
       <string/>
      </property>
