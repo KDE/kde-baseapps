@@ -790,7 +790,7 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     }
 
     parent->addPage(widgetLocation, i18nc("Title of the page that lets the user choose which location should the folderview show", "Location"), "folder");
-    parent->addPage(widgetDisplay, i18nc("Title of the page that lets the user choose how the folderview should be shown", "Display"), "preferences-desktop-display");
+    parent->addPage(widgetDisplay, i18nc("Title of the page that lets the user choose how the folderview should be shown", "Icons"), "preferences-desktop-icons");
     parent->addPage(widgetFilter, i18nc("Title of the page that lets the user choose how to filter the folderview contents", "Filter"), "view-filter");
 
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
