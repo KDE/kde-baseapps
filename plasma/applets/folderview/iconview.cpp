@@ -1067,19 +1067,18 @@ void IconView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option
 
     // Draw the icon
     // =============
-    const QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+    QIcon icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
     const QRect ir = QStyle::alignedRect(option.direction, Qt::AlignTop | Qt::AlignHCenter,
                                          option.decorationSize, r);
-
 
     if (selected) {
         const QColor color = option.palette.brush(QPalette::Normal, QPalette::Highlight).color();
         QImage image = icon.pixmap(ir.size()).toImage();
         KIconEffect::colorize(image, color, 0.8f);
-        painter->drawPixmap(ir, QPixmap::fromImage(image));
-    } else {
-        icon.paint(painter, ir);
+        icon = QIcon(QPixmap::fromImage(image));
     }
+
+    icon.paint(painter, ir);
 
     const QRect tr = r.adjusted(0, ir.bottom() - r.top() + 2, 0, 0);
 
