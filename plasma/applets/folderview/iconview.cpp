@@ -326,11 +326,76 @@ void IconView::updateGridSize()
         setMinimumSize(minSize);
     }
 
-    // Schedule a full relayout
-    if (m_validRows > 0 && size != m_gridSize) {
-        m_validRows = 0;
-        m_delayedLayoutTimer.start(10, this);
-        emit busy(true);
+    if (size != m_gridSize) {
+        const Plasma::Containment *containment = qobject_cast<Plasma::Containment*>(parentWidget());
+
+        if (m_layoutBroken && containment && containment->isContainment()) {
+            const int margin = 10;
+            const int spacing = 10;
+
+            if (m_alignToGrid)
+            {
+                int oldRowCount, oldColCount, newRowCount, newColCount;
+                const QRect oldCr = adjustedContentsRect(m_gridSize, &oldRowCount, &oldColCount);
+                const QRect newCr = adjustedContentsRect(size, &newRowCount, &newColCount);
+                const int lastRow = newRowCount - 1;
+                const int lastCol = newColCount - 1;
+                const QSize oldAdjustedGridSize = m_gridSize + QSize(spacing, spacing);
+                const QSize newAdjustedGridSize = size + QSize(spacing, spacing);
+                const int oldTopMargin = margin + oldCr.top();
+                const int oldLeftMargin = margin + oldCr.left();
+                const int newTopMargin = margin + newCr.top();
+                const int newLeftMargin = margin + newCr.left();
+
+                for (int i = 0; i < m_items.size(); i++) {
+                    const QPoint topLeft = m_items[i].rect.topLeft() - QPoint(oldLeftMargin, oldTopMargin);
+                    const int row = qBound(0, topLeft.y() / oldAdjustedGridSize.height(), lastRow);
+                    int col = topLeft.x() / oldAdjustedGridSize.width();
+
+                    if (m_flow == RightToLeft || m_flow == TopToBottomRightToLeft) {
+                        col = lastCol - ((oldColCount - 1) - col);
+                    }
+
+                    col = qBound(0, col, lastCol);
+
+                    m_items[i].rect = QRect(QPoint(newLeftMargin + col * newAdjustedGridSize.width(),
+                        newTopMargin + row * newAdjustedGridSize.height()), size);
+                    m_items[i].needSizeAdjust = true;
+                }
+            } else {
+                const QRect cr = contentsRect().toRect();
+                const int leftMargin = margin + cr.left();
+                const int topMargin = margin + cr.top();
+                const qreal scaleX = qreal(size.width()) / qreal(m_gridSize.width());
+                const qreal scaleY = qreal(size.height()) / qreal(m_gridSize.height());
+
+                for (int i = 0; i < m_items.size(); i++) {
+                    const QPoint topLeft = m_items[i].rect.topLeft();
+                    const int y = qBound(topMargin, qRound(scaleY * topLeft.y()),
+                        cr.bottom() - size.height() - margin);
+                    int x = topLeft.x();
+
+                    if (m_flow == RightToLeft || m_flow == TopToBottomRightToLeft) {
+                        x = cr.right() - qRound(scaleX * (cr.right() - x));
+                    } else {
+                        x = scaleX * x;
+                    }
+
+                    x = qBound(leftMargin, x, cr.right() - size.width() - margin);
+
+                    m_items[i].rect = QRect(QPoint(x, y), size);
+                    m_items[i].needSizeAdjust = true;
+                }
+            }
+
+            doLayoutSanityCheck();
+            m_regionCache.clear();
+            markAreaDirty(visibleArea());
+        } else if (m_validRows > 0) {
+            m_validRows = 0;
+            m_delayedLayoutTimer.start(10, this);
+            emit busy(true);
+        }
     }
 
     m_gridSize = size;
@@ -761,11 +826,11 @@ void IconView::layoutItems()
 
 // Returns the contents rect with the width and height snapped to the grid
 // and aligned according to the direction of the flow.
-QRect IconView::adjustedContentsRect(int *rowCount, int *colCount) const
+QRect IconView::adjustedContentsRect(const QSize &gridSize, int *rowCount, int *colCount) const
 {
     QRect r = contentsRect().toRect();
 
-    const QSize size = gridSize() + QSize(10, 10);
+    const QSize size = gridSize + QSize(10, 10);
     *colCount = qMax(1, (r.width() - 10) / size.width());
     *rowCount = qMax(1, (r.height() - 10) / size.height());
     int dx = r.width() - (*colCount * size.width() + 10);
@@ -784,7 +849,7 @@ QRect IconView::adjustedContentsRect(int *rowCount, int *colCount) const
 void IconView::alignIconsToGrid()
 {
     int rowCount, colCount;
-    const QRect cr = adjustedContentsRect(&rowCount, &colCount);
+    const QRect cr = adjustedContentsRect(gridSize(), &rowCount, &colCount);
 
     int lastRow = rowCount - 1;
     int lastCol = colCount - 1;
@@ -2345,7 +2410,7 @@ void IconView::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 
     int rowCount, colCount;
-    const QRect cr = m_alignToGrid ? adjustedContentsRect(&rowCount, &colCount)
+    const QRect cr = m_alignToGrid ? adjustedContentsRect(gridSize(), &rowCount, &colCount)
                             : contentsRect().toRect();
 
     boundingRect.adjust(-10, -10, 10, 10);
