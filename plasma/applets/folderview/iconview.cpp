@@ -372,7 +372,7 @@ void IconView::updateGridSize()
                     const int row = qBound(0, topLeft.y() / oldAdjustedGridSize.height(), lastRow);
                     int col = topLeft.x() / oldAdjustedGridSize.width();
 
-                    if (m_flow == RightToLeft || m_flow == TopToBottomRightToLeft) {
+                    if (m_alignment == Right) {
                         col = lastCol - ((oldColCount - 1) - col);
                     }
 
@@ -395,7 +395,7 @@ void IconView::updateGridSize()
                         cr.bottom() - size.height() - margin);
                     int x = topLeft.x();
 
-                    if (m_flow == RightToLeft || m_flow == TopToBottomRightToLeft) {
+                    if (m_alignment == Right) {
                         x = cr.right() - qRound(scaleX * (cr.right() - x));
                     } else {
                         x = scaleX * x;
