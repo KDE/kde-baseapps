@@ -1700,9 +1700,6 @@ void IconView::checkIfFolderResult(const QModelIndex &index, bool isFolder)
 
 void IconView::svgChanged()
 {
-    setIconPositionsData(iconPositionsData());
-    m_delayedCacheClearTimer.start(5000, this);
-
     for (int i = 0; i < m_validRows; ++i) {
         m_items[i].needSizeAdjust = true;
     }
