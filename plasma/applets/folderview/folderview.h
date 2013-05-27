@@ -183,6 +183,7 @@ private:
     KDirModel *m_dirModel;
     KFilePlacesModel *m_placesModel;
     KFileItemActions *m_itemActions;
+    KAction *m_openWithAction;
     IconView *m_iconView;
     ListView *m_listView;
     Label *m_label;

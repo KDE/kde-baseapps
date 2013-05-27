@@ -321,7 +321,8 @@ FolderView::FolderView(QObject *parent, const QVariantList &args)
     : Plasma::Containment(parent, args),
       m_previewGenerator(0),
       m_placesModel(0),
-      m_itemActions(0),
+      m_itemActions(new KFileItemActions(this)),
+      m_openWithAction(0),
       m_iconView(0),
       m_listView(0),
       m_label(0),
@@ -612,10 +613,6 @@ void FolderView::configChanged()
         if (preserveIconPositions && m_iconView) {
             m_iconView->setIconPositionsData(m_iconView->iconPositionsData());
         }
-
-        // So the KFileItemActions will be recreated for the new URL.
-        delete m_itemActions;
-        m_itemActions = 0;
 
         setUrl(m_url);
     }
@@ -1686,18 +1683,23 @@ QList<QAction*> FolderView::contextualActions()
 
         actions.append(m_actionCollection.action("refresh"));
 
-        // Add an action for opening the folder in the preferred application.
-        if (!m_itemActions) {
-            // Create a new KFileItem to prevent the target URL in the root item
-            // from being used. In this case we want the configured URL instead.
-            KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
+        // Create a new KFileItem to prevent the target URL in the root item
+        // from being used. In this case we want the configured URL instead.
+        KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
+        KFileItemListProperties itemList(KFileItemList() << item);
+        m_itemActions->setItemListProperties(itemList);
 
-            KFileItemListProperties itemList(KFileItemList() << item);
-
-            m_itemActions = new KFileItemActions(this);
-            m_itemActions->setItemListProperties(itemList);
+        // FIXME: The actions instanciated by KFileItemActions::preferredOpenWithAction()
+        // (see below) are eventually deleted in its constructor, but it would be better
+        // to find a way to not keep them around rather than just to hide them.
+        if (m_openWithAction) {
+            m_openWithAction->setVisible(false);
         }
-        actions.append(m_itemActions->preferredOpenWithAction(QString()));
+
+        // Add an action for opening the folder in the preferred application.
+        m_openWithAction = m_itemActions->preferredOpenWithAction(QString());
+        actions.append(m_openWithAction);
+
         if (m_url.protocol() == "trash") {
             KConfig trashConfig("trashrc", KConfig::SimpleConfig);
             m_actionCollection.action("empty_trash")->setEnabled(!trashConfig.group("Status")
