@@ -514,6 +514,7 @@ void FolderView::configChanged()
     if (color != m_textColor) {
         m_textColor = color;
         needReload = true;
+        preserveIconPositions = true;
     }
 
     const bool showPreviews = cg.readEntry("showPreviews", m_showPreviews);
