@@ -112,7 +112,7 @@ PopupView::PopupView(const QModelIndex &index, const QPoint &pos,
     }
 
     m_background = new Plasma::FrameSvg(this);
-    m_background->setImagePath("widgets/tooltip");
+    m_background->setImagePath("dialogs/background");
 
     int left   = m_background->marginSize(Plasma::LeftMargin);
     int top    = m_background->marginSize(Plasma::TopMargin);
@@ -539,8 +539,10 @@ void PopupView::resizeEvent(QResizeEvent *event)
     }
 }
 
-void PopupView::showEvent(QShowEvent * event)
+void PopupView::showEvent(QShowEvent *event)
 {
+    Q_UNUSED(event)
+
     DialogShadows::self()->addWindow(this);
 }
 
