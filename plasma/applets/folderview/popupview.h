@@ -60,7 +60,7 @@ public:
     static QTime lastOpenCloseTime() { return s_lastOpenClose; }
 
 protected:
-    void showEvent(QShowEvent * event);
+    void showEvent(QShowEvent *event);
     void paintEvent(QPaintEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
     void resizeEvent(QResizeEvent *event);
