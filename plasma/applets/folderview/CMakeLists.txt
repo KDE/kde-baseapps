@@ -23,7 +23,8 @@ set(folderview_SRCS
     itemeditor.cpp
     animator.cpp
     actionoverlay.cpp
-    asyncfiletester.cpp)
+    asyncfiletester.cpp
+    mimemodels.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   folderviewFilterConfig.ui
