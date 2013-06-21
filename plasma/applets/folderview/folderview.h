@@ -60,29 +60,6 @@ class Label;
 class Dialog;
 
 
-/**
- * Helper class that downloads a wallpaper image asynchronously to a suitable
- * temporary directory in the user's home folder, and applies it to the given
- * folderview containment when the download finishes.
- *
- * The class deletes itself automatically when the operation is completed.
- */
-class RemoteWallpaperSetter : public QObject
-{
-    Q_OBJECT
-
-public:
-    RemoteWallpaperSetter(const KUrl &url, FolderView *containment);
-
-private slots:
-    void result(KJob *job);
-};
-
-
-// ----------------------------------------------------------------------------
-
-
-
 class FolderView : public Plasma::Containment
 {
     Q_OBJECT

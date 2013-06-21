@@ -24,7 +24,8 @@ set(folderview_SRCS
     animator.cpp
     actionoverlay.cpp
     asyncfiletester.cpp
-    mimemodels.cpp)
+    mimemodels.cpp
+    remotewallpapersetter.cpp)
 
 kde4_add_ui_files(folderview_SRCS
                   folderviewFilterConfig.ui

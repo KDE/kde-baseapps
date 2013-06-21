@@ -42,8 +42,6 @@
 #include <KProtocolInfo>
 #include <KStandardShortcut>
 #include <KStringHandler>
-#include <KTemporaryFile>
-#include <KStandardDirs>
 #include <KMenu>
 
 #include <kio/copyjob.h>
@@ -107,39 +105,6 @@ public:
     }
 };
 
-
-
-// ---------------------------------------------------------------------------
-
-
-
-RemoteWallpaperSetter::RemoteWallpaperSetter(const KUrl &url, FolderView *containment)
-    : QObject(containment)
-{
-    const QString suffix = QFileInfo(url.fileName()).suffix();
-
-    KTemporaryFile file;
-    file.setPrefix(KGlobal::dirs()->saveLocation("wallpaper"));
-    file.setSuffix(QString(".") + suffix);
-    file.setAutoRemove(false);
-
-    if (file.open()) {
-        KIO::FileCopyJob *job = KIO::file_copy(url, KUrl::fromPath(file.fileName()), -1, KIO::Overwrite);
-        connect(job, SIGNAL(result(KJob*)), SLOT(result(KJob*)));
-    } else {
-        deleteLater();
-    }
-}
-
-void RemoteWallpaperSetter::result(KJob *job)
-{
-    if (!job->error()) {
-        FolderView *containment = static_cast<FolderView*>(parent());
-        KIO::FileCopyJob *copyJob = static_cast<KIO::FileCopyJob*>(job);
-        containment->setWallpaper(copyJob->destUrl());
-    }
-    deleteLater();
-}
 
 
 // ---------------------------------------------------------------------------

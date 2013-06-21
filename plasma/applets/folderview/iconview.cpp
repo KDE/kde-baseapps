@@ -53,6 +53,7 @@
 #include "tooltipwidget.h"
 #include "animator.h"
 #include "asyncfiletester.h"
+#include "remotewallpapersetter.h"
 
 #include <Plasma/Containment>
 #include <Plasma/ContainmentActions>
