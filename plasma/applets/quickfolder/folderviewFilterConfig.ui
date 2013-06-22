@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>folderviewFilterConfig</class>
+ <widget class="QWidget" name="folderviewFilterConfig">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>509</width>
+    <height>375</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>0</height>
+   </size>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QComboBox" name="filterCombo">
+     <property name="toolTip">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;If you have selected &quot;Show Files Matching&quot; or &quot;Hide Files Matching&quot;, only the files matching BOTH the conditions will be shown or hidden respectively.&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;For example, if you have &quot;*&quot; as your pattern, but have nothing selected in the MIME types, no files will be shown.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="whatsThis">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="fileFilters">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>10</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item row="0" column="1">
+       <layout class="QGridLayout" name="mimeTypeLayout">
+        <item row="5" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+          <item>
+           <widget class="QListView" name="filterFilesList">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::NoSelection</enum>
+            </property>
+            <property name="flow">
+             <enum>QListView::TopToBottom</enum>
+            </property>
+            <property name="uniformItemSizes">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QPushButton" name="selectAll">
+              <property name="text">
+               <string>Select All</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="deselectAll">
+              <property name="text">
+               <string>Deselect All</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="toolTip">
+               <string>Note that if you have selected &quot;Show Files Matching&quot; or &quot;Hide Files Matching&quot;,
+only the files matching BOTH the conditions will be shown or hidden respectively.
+For example, if you have &quot;*&quot; as your pattern, but have nothing selected in the MIME types, no files will be shown.</string>
+              </property>
+              <property name="text">
+               <string>&lt;a href=&quot;null&quot;&gt;Cannot See Any Files?&lt;/a&gt;</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item row="3" column="0">
+         <widget class="KLineEdit" name="searchMimetype">
+          <property name="clickMessage">
+           <string>Search file type</string>
+          </property>
+          <property name="showClearButton" stdset="0">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="fileTypesLabel">
+          <property name="text">
+           <string>File types:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="fileNameLabel">
+          <property name="text">
+           <string>File name pattern:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="KLineEdit" name="filterFilesPattern">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>Space-separated list of extensions, e.g. *.txt *.od*</string>
+          </property>
+          <property name="whatsThis">
+           <string>Space-separated list of extensions, e.g. *.txt *.od* to display only office- and text-files</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+          </property>
+          <property name="urlDropsEnabled">
+           <bool>false</bool>
+          </property>
+          <property name="clickMessage">
+           <string>Pattern filter</string>
+          </property>
+          <property name="showClearButton" stdset="0">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>klineedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <includes>
+  <include location="global">KDE/KUrlRequester</include>
+ </includes>
+ <resources/>
+ <connections/>
+</ui>

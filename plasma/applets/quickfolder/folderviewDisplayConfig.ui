@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>folderviewDisplayConfig</class>
+ <widget class="QWidget" name="folderviewDisplayConfig">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>570</width>
+    <height>703</height>
+   </rect>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="iconsTitle">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Sorting</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLabel" name="sortLabel">
+     <property name="text">
+      <string>Sort By:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>sortCombo</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="KComboBox" name="sortCombo">
+     <property name="whatsThis">
+      <string>Use this control to choose the criteria by which the icons will be sorted in the view.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="3">
+    <spacer name="horizontalSpacer_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>38</width>
+       <height>18</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="sortDescendingLabel">
+     <property name="text">
+      <string>Descending:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLabel" name="foldersFirstLabel">
+     <property name="text">
+      <string>Folders first:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QCheckBox" name="foldersFirst">
+     <property name="whatsThis">
+      <string>Check this option if you want folders to have sorting precedence. When this option is turned off, folders will be treated like regular files with respect to sorting.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Arrangement</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QLabel" name="layoutLabel">
+     <property name="text">
+      <string>Arrange In:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QComboBox" name="layoutCombo">
+     <property name="whatsThis">
+      <string>Use this control to choose whether the icons will be arranged horizontally (in rows) or vertically (in columns).</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QLabel" name="alignmentLabel">
+     <property name="text">
+      <string>Align:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="2">
+    <widget class="QComboBox" name="alignmentCombo">
+     <property name="whatsThis">
+      <string>Use this control to choose whether the icons will be aligned to the left or to the right side of the screen.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLabel" name="lockInPlaceLabel">
+     <property name="text">
+      <string>Lock in place:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="QCheckBox" name="lockInPlace">
+     <property name="whatsThis">
+      <string>Check this option if you do not want the icons to be moveable in the view.
+
+This option is useful if you want to avoid accidentally moving the icons while interacting with them.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLabel" name="alignToGridLabel">
+     <property name="text">
+      <string>Align to grid:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="2">
+    <widget class="QCheckBox" name="alignToGrid">
+     <property name="whatsThis">
+      <string>Check this option if you want the icons to be arranged in a grid.
+
+When this option is checked, icons will automatically snap to the nearest grid cell when you move them around in the view.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLabel" name="sizeSliderLabel">
+     <property name="text">
+      <string>Size:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>sizeSlider</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="2" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Small</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="sizeSlider">
+       <property name="whatsThis">
+        <string>Use this slider to increase or decrease the size of the icons in the view.</string>
+       </property>
+       <property name="maximum">
+        <number>6</number>
+       </property>
+       <property name="pageStep">
+        <number>1</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::TicksBelow</enum>
+       </property>
+       <property name="tickInterval">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Large</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Behavior</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
+    <widget class="QLabel" name="previewsAdvancedLabel">
+     <property name="text">
+      <string>Previews:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="2" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QCheckBox" name="showPreviews">
+       <property name="whatsThis">
+        <string>Check this option if you want to see previews of the file contents in the icons.</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="previewsAdvanced">
+       <property name="whatsThis">
+        <string>Click this button to choose for which types of files previews will be shown.</string>
+       </property>
+       <property name="text">
+        <string>More Preview Options...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="12" column="1">
+    <widget class="QLabel" name="clickToViewLabel">
+     <property name="text">
+      <string>Click to view folder:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="2">
+    <widget class="QCheckBox" name="clickToView">
+     <property name="whatsThis">
+      <string>Check this option if you want folder previews to appear only when clicked. When this option is turned off, folder previews will appear automatically when the mouse hovers over a folder.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="0">
+    <widget class="QLabel" name="iconTextTitle">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Icon Text</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="1">
+    <widget class="QLabel" name="numLinesEditLabel">
+     <property name="text">
+      <string>Lines:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>numLinesEdit</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="2">
+    <widget class="KIntSpinBox" name="numLinesEdit">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="whatsThis">
+      <string>Use this control to choose how many lines of text will be shown below the icons.</string>
+     </property>
+     <property name="specialValueText">
+      <string>1 line</string>
+     </property>
+     <property name="suffix">
+      <string> lines</string>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>10</number>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="1">
+    <widget class="QLabel" name="colorButtonLabel">
+     <property name="text">
+      <string>Color:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>colorButton</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="2">
+    <widget class="KColorButton" name="colorButton">
+     <property name="whatsThis">
+      <string>Click this button to choose the color which is used for the text labels in the view.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="1">
+    <widget class="QLabel" name="drawShadowsLabel">
+     <property name="text">
+      <string>Shadows:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>numLinesEdit</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="2">
+    <widget class="QCheckBox" name="drawShadows">
+     <property name="whatsThis">
+      <string>&lt;html&gt;&lt;body&gt;&lt;p&gt;Check this option if you want the text labels to cast a shadow on the background.&lt;/p&gt;
+&lt;p&gt;&lt;/p&gt;
+&lt;p&gt;Shadows help make the text easier to read by making it stand out more from the background.&lt;/p&gt;
+&lt;p&gt;&lt;/p&gt;
+&lt;p&gt;&lt;i&gt;Note that with dark text colors, this option will cause the text to glow with a bright halo, instead of casting a shadow.&lt;/i&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="17" column="4">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>44</width>
+       <height>216</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="2">
+    <widget class="QCheckBox" name="sortDescending">
+     <property name="whatsThis">
+      <string>Check this option if you want the icons to be sorted in a descending order.</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KColorButton</class>
+   <extends>QPushButton</extends>
+   <header>kcolorbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KComboBox</class>
+   <extends>QComboBox</extends>
+   <header>kcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KIntSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>knuminput.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>sortCombo</tabstop>
+  <tabstop>sortDescending</tabstop>
+  <tabstop>foldersFirst</tabstop>
+  <tabstop>layoutCombo</tabstop>
+  <tabstop>alignmentCombo</tabstop>
+  <tabstop>lockInPlace</tabstop>
+  <tabstop>alignToGrid</tabstop>
+  <tabstop>sizeSlider</tabstop>
+  <tabstop>showPreviews</tabstop>
+  <tabstop>previewsAdvanced</tabstop>
+  <tabstop>clickToView</tabstop>
+  <tabstop>numLinesEdit</tabstop>
+  <tabstop>colorButton</tabstop>
+  <tabstop>drawShadows</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
