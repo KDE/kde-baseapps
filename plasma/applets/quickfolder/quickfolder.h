@@ -38,6 +38,8 @@ public:
     void createConfigurationInterface(KConfigDialog *dialog) { Q_UNUSED(dialog) }
     void setPath(const QString& path) { Q_UNUSED(path) }
     void setWallpaper(const KUrl &url) { Q_UNUSED(url) }
+
+    void configChanged() {}
 };
 
 #endif
