@@ -17,7 +17,7 @@ include(KDECompilerSettings)
 include(ECMInstallIcons)
 
 find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Test Widgets)
-find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDE4Support Parts)
+find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDE4Support Parts Su)
 
 include(CTest)
 include(CTestConfig.cmake)
@@ -64,7 +64,7 @@ add_subdirectory( kfind )
 
 # if ( Q_WS_X11 )
 #   add_subdirectory( nsplugins )
-#   add_subdirectory( kdepasswd )
+  add_subdirectory( kdepasswd )
 # endif ( Q_WS_X11 )
 # macro_optional_add_subdirectory( doc )
 

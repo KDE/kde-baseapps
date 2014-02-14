@@ -26,7 +26,7 @@
 #include <kdeversion.h>
 #include <kuniqueapplication.h>
 #include <klocale.h>
-#include <kaboutdata.h>
+#include <k4aboutdata.h>
 #include <kcmdlineargs.h>
 #include <kmessagebox.h>
 #include <kuser.h>
@@ -38,9 +38,9 @@
 
 int main(int argc, char **argv)
 {
-    KAboutData aboutData("kdepasswd", 0, ki18n("KDE passwd"),
+    K4AboutData aboutData("kdepasswd", 0, ki18n("KDE passwd"),
             KDE_VERSION_STRING, ki18n("Changes a UNIX password."),
-            KAboutData::License_Artistic, ki18n("Copyright (c) 2000 Geert Jansen"));
+            K4AboutData::License_Artistic, ki18n("Copyright (c) 2000 Geert Jansen"));
     aboutData.addAuthor(ki18n("Geert Jansen"), ki18n("Maintainer"),
             "jansen@kde.org");
     aboutData.setProgramIconName( "preferences-desktop-user-password" );

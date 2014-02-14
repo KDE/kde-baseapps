@@ -5,9 +5,9 @@ set(kdepasswd_SRCS
     passwd.cpp
     passwddlg.cpp)
 
-kde4_add_executable(kdepasswd ${kdepasswd_SRCS})
+add_executable(kdepasswd ${kdepasswd_SRCS})
 
-target_link_libraries(kdepasswd ${KDE4_KIO_LIBS} ${KDE4_KDESU_LIBS})
+target_link_libraries(kdepasswd KF5::KIOWidgets KF5::Su KF5::KDE4Support)
 
 install(TARGETS kdepasswd ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(PROGRAMS kdepasswd.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})

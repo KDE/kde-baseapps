@@ -5,15 +5,15 @@ set(kcm_useraccount_PART_SRCS
     main.cpp
     chfacedlg.cpp)
 
-kde4_add_ui_files(kcm_useraccount_PART_SRCS
+qt5_wrap_ui(kcm_useraccount_PART_SRCS
     main_widget.ui
     faceDlg.ui)
 
-kde4_add_kcfg_files(kcm_useraccount_PART_SRCS settings.kcfgc pass.kcfgc)
+kconfig_add_kcfg_files(kcm_useraccount_PART_SRCS settings.kcfgc pass.kcfgc)
 
-kde4_add_plugin(kcm_useraccount ${kcm_useraccount_PART_SRCS})
+add_library(kcm_useraccount MODULE ${kcm_useraccount_PART_SRCS})
 
-target_link_libraries(kcm_useraccount konq ${KDE4_KIO_LIBS} ${KDE4_KDESU_LIBS})
+target_link_libraries(kcm_useraccount konq KF5::KIOWidgets KF5::Su)
 
 install(TARGETS kcm_useraccount DESTINATION ${PLUGIN_INSTALL_DIR})
 install(FILES kcm_useraccount.desktop DESTINATION  ${SERVICES_INSTALL_DIR})

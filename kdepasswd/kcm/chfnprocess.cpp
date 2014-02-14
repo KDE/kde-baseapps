@@ -65,7 +65,7 @@ int ChfnProcess::ConverseChfn(const char *pass)
 
     if ( line.contains( "Password: " )/*isPrompt( line, "password" )*/ )
     {
-      WaitSlave();
+      waitSlave();
       write(fd(), pass, strlen(pass));
       write(fd(), "\n", 1);
     }

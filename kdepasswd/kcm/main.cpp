@@ -41,11 +41,12 @@
 #include <kimageio.h>
 #include <kmimetype.h>
 #include <kstandarddirs.h>
-#include <kaboutdata.h>
+#include <k4aboutdata.h>
 #include <kmessagebox.h>
 #include <QProcess>
 #include <kio/netaccess.h>
 #include <kurl.h>
+#include <kdebug.h>
 
 #include "settings.h"
 #include "pass.h"
@@ -60,7 +61,7 @@ K_PLUGIN_FACTORY(Factory,
 K_EXPORT_PLUGIN(Factory("useraccount"))
 
 KCMUserAccount::KCMUserAccount( QWidget *parent, const QVariantList &)
-	: KCModule( Factory::componentData(), parent)
+    : KCModule(parent)
 {
 	QVBoxLayout *topLayout = new QVBoxLayout(this);
         topLayout->setSpacing(KDialog::spacingHint());
@@ -88,9 +89,9 @@ KCMUserAccount::KCMUserAccount( QWidget *parent, const QVariantList &)
 	_mw->lblUsername->setFont( font );
 	_mw->lblUID->setText( QString().number(_ku->uid()) );
 
-	KAboutData *about = new KAboutData("kcm_useraccount", 0,
+	K4AboutData *about = new K4AboutData("kcm_useraccount", 0,
 		ki18n("Password & User Information"), 0, KLocalizedString(),
-		KAboutData::License_GPL,
+		K4AboutData::License_GPL,
 		ki18n("(C) 2002, Braden MacDonald, "
 			"(C) 2004 Ravikiran Rajagopal"));
 
@@ -105,7 +106,6 @@ KCMUserAccount::KCMUserAccount( QWidget *parent, const QVariantList &)
 	about->addAuthor(ki18n("Alex Zepeda"));
 	about->addAuthor(ki18n("Hans Karlsson"), ki18n("Icons"), "karlsson.h@home.se");
 	about->addAuthor(ki18n("Hermann Thomas"), ki18n("Icons"), "h.thomas@gmx.de");
-	setAboutData(about);
 
 	setQuickHelp( i18n("<qt>Here you can change your personal information, which "
 			"will be used, for instance, in mail programs and word processors. You can "
