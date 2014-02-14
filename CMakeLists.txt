@@ -1,14 +1,27 @@
 project(KDEBASE_APPS)
 
+cmake_minimum_required(VERSION 2.8.6 FATAL_ERROR)
+set(QT_MIN_VERSION "5.2.0")
+
+find_package(ECM 0.0.8 REQUIRED NO_MODULE)
+
+include(FeatureSummary)
+
+
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules )
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules )
+
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings)
+include(ECMInstallIcons)
+
+find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Test Widgets)
+find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDE4Support Parts)
 
 include(CTest)
 include(CTestConfig.cmake)
 
-#search packages used by KDE
-find_package(KDE4 4.10.60 REQUIRED)
-include (KDE4Defaults)
 
 find_package(ZLIB)
 set_package_properties(ZLIB PROPERTIES DESCRIPTION "Support for gzip compressed files and data streams"
@@ -37,23 +50,23 @@ if ( KActivities_FOUND )
 endif ( KActivities_FOUND )
 
 add_subdirectory( lib )
-add_subdirectory( dolphin )
-add_subdirectory( kdialog )
-add_subdirectory( keditbookmarks )
-add_subdirectory( konqueror )
+# add_subdirectory( dolphin )
+# add_subdirectory( kdialog )
+# add_subdirectory( keditbookmarks )
+# add_subdirectory( konqueror )
 add_subdirectory( kfind )
-add_subdirectory( plasma )
-add_subdirectory( konq-plugins )
+# add_subdirectory( plasma )
+# add_subdirectory( konq-plugins )
 
-if ( Q_WS_MAC )
-  add_subdirectory( kdepasswd )
-endif ( Q_WS_MAC )
+# if ( Q_WS_MAC )
+#   add_subdirectory( kdepasswd )
+# endif ( Q_WS_MAC )
 
-if ( Q_WS_X11 )
-  add_subdirectory( nsplugins )
-  add_subdirectory( kdepasswd )
-endif ( Q_WS_X11 )
-macro_optional_add_subdirectory( doc )
+# if ( Q_WS_X11 )
+#   add_subdirectory( nsplugins )
+#   add_subdirectory( kdepasswd )
+# endif ( Q_WS_X11 )
+# macro_optional_add_subdirectory( doc )
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
