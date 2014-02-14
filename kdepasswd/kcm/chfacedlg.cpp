@@ -32,7 +32,7 @@
 #include <QPixmap>
 #include <QImage>
 #include <QPushButton>
-#include <QtCore/QDir>
+#include <QDir>
 #include <QCheckBox>
 
 #include <klocale.h>

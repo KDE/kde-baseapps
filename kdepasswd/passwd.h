@@ -26,7 +26,7 @@
 #ifndef PASSWD_H
 #define PASSWD_H
 
-#include <QtCore/QByteRef>
+#include <QByteRef>
 #include <kdesu/process.h>
 
 /**

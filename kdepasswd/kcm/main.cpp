@@ -25,9 +25,9 @@
 #include <QLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QtCore/QEvent>
+#include <QEvent>
 #include <QPixmap>
-#include <QtCore/QStringList>
+#include <QStringList>
 #include <QDragEnterEvent>
 #include <QDBusInterface>
 #include <QDBusReply>

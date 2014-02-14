@@ -28,7 +28,7 @@
 #ifndef CHFACEDLG_H
 #define CHFACEDLG_H
 
-#include <QtCore/QObject>
+#include <QObject>
 #include <QPixmap>
 
 #include <KDialog>
