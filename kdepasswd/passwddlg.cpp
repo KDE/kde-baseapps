@@ -120,6 +120,8 @@ void  KDEpasswd2Dialog::accept()
         return;
     }
 
+// Some older proprietary UNIX systems have an 8 character password length limit.
+#if defined(Q_OS_UNIX) && !(defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_NETBSD))
     if (p.length() > 8)
     {
         switch(KMessageBox::warningYesNoCancel(this,
@@ -145,6 +147,7 @@ void  KDEpasswd2Dialog::accept()
             default : return;
         }
     }
+#endif
 
     int ret = proc.exec(m_Pass, p.toLocal8Bit());
     switch (ret)
