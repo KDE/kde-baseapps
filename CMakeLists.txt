@@ -17,7 +17,7 @@ include(KDECompilerSettings)
 include(ECMInstallIcons)
 
 find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Test Widgets)
-find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDE4Support Parts Su)
+find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDE4Support Parts Su KActivities)
 
 include(CTest)
 include(CTestConfig.cmake)
@@ -28,13 +28,6 @@ set_package_properties(ZLIB PROPERTIES DESCRIPTION "Support for gzip compressed 
                        URL "http://www.zlib.net"
                        TYPE REQUIRED
                        PURPOSE "Required for building Konqueror"
-                      )
-
-find_package(KActivities 6.1.0)
-set_package_properties(KActivities PROPERTIES DESCRIPTION "Interface library for the activity manager"
-                       URL "https://projects.kde.org/kactivities"
-                       TYPE RECOMMENDED
-                       PURPOSE "Needed for Dolphin integration with activities"
                       )
 
 include(ConfigureChecks.cmake)
