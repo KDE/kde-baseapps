@@ -22,16 +22,6 @@
 
 #include "main.h"
 
-#include <QLayout>
-#include <QLabel>
-#include <QLineEdit>
-#include <QEvent>
-#include <QPixmap>
-#include <QStringList>
-#include <QDragEnterEvent>
-#include <QDBusInterface>
-#include <QDBusReply>
-
 #include <kpushbutton.h>
 #include <kguiitem.h>
 #include <kpassworddialog.h>
@@ -43,7 +33,6 @@
 #include <kstandarddirs.h>
 #include <k4aboutdata.h>
 #include <kmessagebox.h>
-#include <QProcess>
 #include <kio/netaccess.h>
 #include <kurl.h>
 #include <kdebug.h>
@@ -53,6 +42,18 @@
 #include "chfnprocess.h"
 #include <KPluginFactory>
 #include <KPluginLoader>
+
+#include <QDBusInterface>
+#include <QDBusReply>
+#include <QDragEnterEvent>
+#include <QEvent>
+#include <QLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPixmap>
+#include <QProcess>
+#include <QStandardPaths>
+#include <QStringList>
 
 
 K_PLUGIN_FACTORY(Factory,
@@ -267,8 +268,10 @@ void KCMUserAccount::changeFace(const QPixmap &pix)
 
 void KCMUserAccount::slotFaceButtonClicked()
 {
-  ChFaceDlg* pDlg = new ChFaceDlg( KGlobal::dirs()->resourceDirs("data").last() +
-	"/kdm/pics/users/", this );
+  QString picsdir = QStandardPaths::locate( QStandardPaths::GenericDataLocation,
+                                            "kdm/pics/users/",
+                                            QStandardPaths::LocateDirectory );
+  ChFaceDlg* pDlg = new ChFaceDlg( picsdir, this );
 
   if ( pDlg->exec() == QDialog::Accepted )
       changeFace( pDlg->getFaceImage() );
