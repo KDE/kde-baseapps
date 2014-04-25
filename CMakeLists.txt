@@ -42,6 +42,7 @@ if ( KActivities_FOUND )
   include_directories (${KACTIVITIES_INCLUDE_DIR})
 endif ( KActivities_FOUND )
 
+add_subdirectory( kioslave )
 add_subdirectory( lib )
 # add_subdirectory( dolphin )
 add_subdirectory( kdialog )
