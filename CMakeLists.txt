@@ -17,7 +17,7 @@ include(KDECompilerSettings)
 include(ECMInstallIcons)
 
 find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Test Widgets)
-find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDE4Support Parts Su Activities)
+find_package(KF5 REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDE4Support Parts Su Activities)
 
 include(CTest)
 include(CTestConfig.cmake)
