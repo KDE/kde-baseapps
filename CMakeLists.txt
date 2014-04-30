@@ -38,10 +38,6 @@ add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DDISABLE_NEPOMUK_LEGACY)
 add_definitions (-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/lib/konq ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES})
 
-if ( KActivities_FOUND )
-  include_directories (${KACTIVITIES_INCLUDE_DIR})
-endif ( KActivities_FOUND )
-
 add_subdirectory( kioslave )
 add_subdirectory( lib )
 add_subdirectory( dolphin )
