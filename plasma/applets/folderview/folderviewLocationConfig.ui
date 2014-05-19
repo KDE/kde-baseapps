@@ -42,16 +42,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QRadioButton" name="showActivity">
-         <property name="text">
-          <string>Show the files related to the current activity</string>
-         </property>
-         <attribute name="buttonGroup">
-          <string notr="true">locatgionButtonGroup</string>
-         </attribute>
-        </widget>
-       </item>
-       <item>
         <widget class="QRadioButton" name="showPlace">
          <property name="text">
           <string>Show a place:</string>
@@ -221,7 +211,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>showDesktopFolder</tabstop>
-  <tabstop>showActivity</tabstop>
   <tabstop>showPlace</tabstop>
   <tabstop>placesCombo</tabstop>
   <tabstop>showCustomFolder</tabstop>
