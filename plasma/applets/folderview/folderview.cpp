@@ -675,10 +675,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
         uiLocation.showDesktopFolder->setChecked(true);
         uiLocation.placesCombo->setEnabled(false);
         uiLocation.lineEdit->setEnabled(false);
-    } else if (m_url == KUrl("activities:/current/")) {
-        uiLocation.showActivity->setChecked(true);
-        uiLocation.placesCombo->setEnabled(false);
-        uiLocation.lineEdit->setEnabled(false);
     } else {
         QModelIndex index;
         for (int i = 0; i < placesFilter->rowCount(); i++) {
@@ -823,7 +819,6 @@ void FolderView::createConfigurationInterface(KConfigDialog *parent)
     connect(uiFilter.filterFilesList->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)), parent, SLOT(settingsModified()));
 
     connect(uiLocation.showDesktopFolder, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
-    connect(uiLocation.showActivity, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.showPlace, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(uiLocation.titleCombo, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
     connect(uiLocation.titleEdit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
@@ -838,8 +833,6 @@ void FolderView::configAccepted()
 
     if (uiLocation.showDesktopFolder->isChecked()) {
         url = KUrl("desktop:/");
-    } else if (uiLocation.showActivity->isChecked()) {
-        url = KUrl("activities:/current/");
     } else if (uiLocation.showPlace->isChecked()) {
         PlacesFilterModel *filter = static_cast<PlacesFilterModel*>(uiLocation.placesCombo->model());
         KFilePlacesModel *model = static_cast<KFilePlacesModel*>(filter->sourceModel());
