@@ -15,6 +15,9 @@ include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings)
 include(ECMInstallIcons)
+include(ECMSetupVersion)
+
+set(KDE_BASEAPPS_VERSION "4.97.0")
 
 find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Test Widgets)
 find_package(KF5 REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Su Activities)
