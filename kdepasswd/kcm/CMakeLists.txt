@@ -1,3 +1,5 @@
+add_definitions(-DTRANSLATION_DOMAIN=\"useraccount\")
+
 add_subdirectory(pics)
 
 set(kcm_useraccount_PART_SRCS

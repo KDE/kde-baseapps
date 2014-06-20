@@ -38,6 +38,8 @@
 
 int main(int argc, char **argv)
 {
+    KLocalizedString::setApplicationDomain("kdepasswd");
+
     K4AboutData aboutData("kdepasswd", 0, ki18n("KDE passwd"),
             KDE_VERSION_STRING, ki18n("Changes a UNIX password."),
             K4AboutData::License_Artistic, ki18n("Copyright (c) 2000 Geert Jansen"));
