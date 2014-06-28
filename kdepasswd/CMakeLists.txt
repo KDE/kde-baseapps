@@ -1,3 +1,4 @@
+include_directories(${KDE_BASEAPPS_BINARY_DIR})
 add_subdirectory(kcm)
 
 set(kdepasswd_SRCS
