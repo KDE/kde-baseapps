@@ -23,7 +23,6 @@
 
  */
 
-#include <kdeversion.h>
 #include <kuniqueapplication.h>
 #include <klocale.h>
 #include <k4aboutdata.h>
@@ -34,14 +33,14 @@
 
 #include "passwd.h"
 #include "passwddlg.h"
-
+#include "kdepasswd_version.h"
 
 int main(int argc, char **argv)
 {
     KLocalizedString::setApplicationDomain("kdepasswd");
 
     K4AboutData aboutData("kdepasswd", 0, ki18n("KDE passwd"),
-            KDE_VERSION_STRING, ki18n("Changes a UNIX password."),
+            KDEPASSWD_VERSION_STRING, ki18n("Changes a UNIX password."),
             K4AboutData::License_Artistic, ki18n("Copyright (c) 2000 Geert Jansen"));
     aboutData.addAuthor(ki18n("Geert Jansen"), ki18n("Maintainer"),
             "jansen@kde.org");

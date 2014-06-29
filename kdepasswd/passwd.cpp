@@ -26,8 +26,6 @@
 
 #include "passwd.h"
 
-#include <config-apps.h> // setenv
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

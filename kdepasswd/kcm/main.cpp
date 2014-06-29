@@ -21,6 +21,7 @@
  */
 
 #include "main.h"
+#include "kdepasswd_version.h"
 
 #include <kpushbutton.h>
 #include <kguiitem.h>
@@ -91,8 +92,8 @@ KCMUserAccount::KCMUserAccount( QWidget *parent, const QVariantList &)
 	_mw->lblUID->setText( QString().number(_ku->uid()) );
 
 	K4AboutData *about = new K4AboutData("kcm_useraccount", 0,
-		ki18n("Password & User Information"), 0, KLocalizedString(),
-		K4AboutData::License_GPL,
+		ki18n("Password & User Information"), KDEPASSWD_VERSION_STRING,
+		KLocalizedString(), K4AboutData::License_GPL,
 		ki18n("(C) 2002, Braden MacDonald, "
 			"(C) 2004 Ravikiran Rajagopal"));
 

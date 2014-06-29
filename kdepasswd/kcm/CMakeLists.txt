@@ -15,7 +15,14 @@ kconfig_add_kcfg_files(kcm_useraccount_PART_SRCS settings.kcfgc pass.kcfgc)
 
 add_library(kcm_useraccount MODULE ${kcm_useraccount_PART_SRCS})
 
-target_link_libraries(kcm_useraccount KF5::Konq KF5::KIOWidgets KF5::Su)
+target_include_directories(kcm_useraccount PUBLIC "$<BUILD_INTERFACE:${Kdepasswd_BINARY_DIR}>")
+
+target_link_libraries(kcm_useraccount
+    KF5::KDELibs4Support
+    KF5::Konq
+    KF5::KIOWidgets
+    KF5::Su
+)
 
 install(TARGETS kcm_useraccount DESTINATION ${PLUGIN_INSTALL_DIR})
 install(FILES kcm_useraccount.desktop DESTINATION  ${SERVICES_INSTALL_DIR})
