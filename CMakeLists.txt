@@ -42,21 +42,18 @@ add_subdirectory(lib)
 add_subdirectory(kioslave)
 add_subdirectory(dolphin)
 add_subdirectory(kdialog)
+if(NOT WIN32)
+    add_subdirectory(kdepasswd)
+endif()
+add_subdirectory(kfind)
+
 # add_subdirectory( keditbookmarks )
 # add_subdirectory( konqueror )
-add_subdirectory(kfind)
 # add_subdirectory( plasma )
 # add_subdirectory( konq-plugins )
-
-# if ( Q_WS_MAC )
-#   add_subdirectory( kdepasswd )
-# endif ( Q_WS_MAC )
-
 # if ( Q_WS_X11 )
 #   add_subdirectory( nsplugins )
-  add_subdirectory(kdepasswd)
-# endif ( Q_WS_X11 )
+# endif ()
 # macro_optional_add_subdirectory( doc )
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
-
