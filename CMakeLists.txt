@@ -39,7 +39,7 @@ add_definitions (-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/lib/konq ${CMAKE_CURRENT_BINARY_DIR} ${KDE4_INCLUDES})
 
 add_subdirectory(lib)
-add_subdirectory(kioslave)
+add_subdirectory(kioslave/about)
 add_subdirectory(dolphin)
 add_subdirectory(kdialog)
 if(NOT WIN32)
