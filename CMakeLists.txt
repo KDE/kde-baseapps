@@ -49,7 +49,6 @@ add_subdirectory(kfind)
 
 # add_subdirectory( keditbookmarks )
 # add_subdirectory( konqueror )
-# add_subdirectory( plasma )
 # add_subdirectory( konq-plugins )
 # if ( Q_WS_X11 )
 #   add_subdirectory( nsplugins )
