@@ -45,7 +45,6 @@ target_link_libraries(kdepasswd
 install(TARGETS kdepasswd ${KF5_INSTALL_TARGETS_DEFAULT_ARGS})
 install(PROGRAMS kdepasswd.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 
-add_subdirectory(kcm)
 add_subdirectory(docs)
 
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${Kdepasswd_SOURCE_DIR}")
