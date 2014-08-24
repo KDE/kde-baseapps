@@ -19,8 +19,8 @@ include(ECMSetupVersion)
 
 set(KDE_BASEAPPS_VERSION "4.97.0")
 
-find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Test Widgets)
-find_package(KF5 REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Su Activities)
+find_package(Qt5 CONFIG REQUIRED Core DBus Test Widgets)
+find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Su Activities)
 
 find_package(ZLIB)
 set_package_properties(ZLIB PROPERTIES DESCRIPTION "Support for gzip compressed files and data streams"
@@ -34,9 +34,6 @@ configure_file (config-apps.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-apps.h )
 
 add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DDISABLE_NEPOMUK_LEGACY)
 add_definitions (-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
-
-# TODO Remove ${KDE4_INCLUDES}
-include_directories (${CMAKE_CURRENT_SOURCE_DIR}/lib/konq ${CMAKE_CURRENT_BINARY_DIR} ${KDE4_INCLUDES})
 
 add_subdirectory(lib)
 add_subdirectory(kioslave/about)
