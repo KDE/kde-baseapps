@@ -20,7 +20,7 @@ include(ECMSetupVersion)
 set(KDE_BASEAPPS_VERSION "4.97.0")
 
 find_package(Qt5 CONFIG REQUIRED Core DBus Test Widgets)
-find_package(KF5 CONFIG REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Su Activities)
+find_package(KF5 REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Su Activities)
 
 find_package(ZLIB)
 set_package_properties(ZLIB PROPERTIES DESCRIPTION "Support for gzip compressed files and data streams"
