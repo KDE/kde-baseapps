@@ -1357,6 +1357,13 @@ void FolderView::updateScreenRegion()
     if (c->metaObject()->indexOfSlot("availableScreenRect(int)") != -1) {
         QMetaObject::invokeMethod(c, "availableScreenRect",
                                   Qt::DirectConnection, Q_RETURN_ARG(QRect, availRect), Q_ARG(int, screen()));
+
+        // Workaround for bug 294795. Some kind of memory corruption error can lead to
+        // availRect.bottom() being set to 0 after availableScreenRect returns. If this
+        // happens, use qdesktopwidget instead.
+        if (availRect.bottom() == 0) {
+             availRect = QApplication::desktop()->availableGeometry(screen());
+        }
     } else {
         kDebug() << "using qdesktopwidget";
         availRect = QApplication::desktop()->availableGeometry(screen());
