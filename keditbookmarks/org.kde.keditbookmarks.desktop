@@ -135,3 +135,4 @@ Comment[zh_CN]=书签组织和编辑器
 Comment[zh_TW]=書籤組織編輯器
 X-DocPath=konqueror/index.html#bookmarks
 Categories=Qt;KDE;Network;WebBrowser;
+X-DBUS-ServiceName=org.kde.keditbookmarks.desktop

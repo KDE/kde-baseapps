@@ -4,5 +4,7 @@ set( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR} )
 ###### kbookmarkmodeltest ######
 
 set(kbookmarkmodeltest_SRCS kbookmarkmodeltest.cpp)
-kde4_add_unit_test(kbookmarkmodeltest ${kbookmarkmodeltest_SRCS})
-target_link_libraries(kbookmarkmodeltest kbookmarkmodel_private ${KDE4_KIO_LIBS} ${QT_QTTEST_LIBRARY})
+add_executable(kbookmarkmodeltest ${kbookmarkmodeltest_SRCS})
+add_test(kbookmarkmodeltest kbookmarkmodeltest)
+ecm_mark_as_test(kbookmarkmodeltest)
+target_link_libraries(kbookmarkmodeltest kbookmarkmodel_private KF5::KIOCore Qt5::Test)
