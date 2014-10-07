@@ -50,6 +50,5 @@ add_subdirectory(konqueror)
 # if ( Q_WS_X11 )
 #   add_subdirectory( nsplugins )
 # endif ()
-# macro_optional_add_subdirectory( doc )
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

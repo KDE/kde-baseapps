@@ -97,3 +97,5 @@ Name[wa]=Candjî li scret
 Name[x-test]=xxChange Passwordxx
 Name[zh_CN]=更改密码
 Name[zh_TW]=改變密碼
+
+X-DBUS-ServiceName=org.kde.kdepasswd
