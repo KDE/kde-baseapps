@@ -214,7 +214,7 @@ void EditCommand::redo()
     else if(mCol==1)
     {
         if (mOldValue.isEmpty())
-            mOldValue = bk.url().prettyUrl();
+            mOldValue = bk.url().toDisplayString();
         const KUrl newUrl(mNewValue);
         if (!(newUrl.isEmpty() && !mNewValue.isEmpty())) // prevent emptied line if the currently entered url is invalid
             bk.setUrl(newUrl);

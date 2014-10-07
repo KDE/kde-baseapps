@@ -23,7 +23,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <kaboutdata.h>
+#include <K4AboutData>
 #include <kapplication.h>
 #include <kbookmarkmanager.h>
 #include <kcmdlineargs.h>
@@ -36,9 +36,9 @@
 
 int main( int argc, char**argv )
 {
-	KAboutData aboutData( "kbookmarkmerger", "keditbookmarks", ki18n( "KBookmarkMerger" ),
+	K4AboutData aboutData( "kbookmarkmerger", "keditbookmarks", ki18n( "KBookmarkMerger" ),
 	                      "1.0", ki18n( "Merges bookmarks installed by 3rd parties into the user's bookmarks" ),
-	                      KAboutData::License_BSD,
+	                      K4AboutData::License_BSD,
 	                      ki18n(  "Copyright © 2005 Frerich Raabe" ) );
 	aboutData.addAuthor( ki18n("Frerich Raabe"), ki18n( "Original author" ),
 	                     "raabe@kde.org" );

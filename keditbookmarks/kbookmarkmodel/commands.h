@@ -22,7 +22,7 @@
 #include <QUndoCommand>
 #include "kbookmarkmodel_export.h"
 #include <kbookmark.h>
-
+#include <KUrl>
 class KBookmarkModel;
 
 // Interface adds the affectedBookmarks method

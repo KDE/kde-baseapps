@@ -23,6 +23,9 @@
 
 #include <kparts/part.h>
 #include <kparts/browserinterface.h>
+#include <KParts/ReadOnlyPart>
+#include <KUrl>
+#include <KIO/Job>
 
 class FavIconWebGrabber : public QObject
 {

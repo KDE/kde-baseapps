@@ -122,7 +122,8 @@ QVariant KBookmarkModel::data(const QModelIndex &index, int role) const
             case NameColumnId:
                 return bk.fullText();
             case UrlColumnId:
-                return bk.url().pathOrUrl();
+                //PORT QT5 return bk.url().pathOrUrl();
+                return QString();
             case CommentColumnId:
                 return bk.description();
             case StatusColumnId: {
@@ -485,4 +486,4 @@ void KBookmarkModel::notifyManagers(const KBookmarkGroup& grp)
     bookmarkManager()->emitChanged(grp);
 }
 
-#include "model.moc"
+#include "moc_model.cpp"

@@ -52,7 +52,7 @@
 #include <klocale.h>
 #include <kmessagebox.h>
 #include <kstandardaction.h>
-
+#include <KGlobal>
 
 #include <QtDBus/QDBusConnection>
 KEBApp *KEBApp::s_topLevel = 0;
@@ -469,7 +469,7 @@ void KEBApp::notifyCommandExecuted() {
 /* -------------------------- */
 
 void KEBApp::slotConfigureToolbars() {
-    saveMainWindowSettings(KConfigGroup( KGlobal::config(), "MainWindow") );
+    //PORT TO QT5 saveMainWindowSettings(KConfigGroup( KGlobal::config(), "MainWindow") );
     KEditToolBar dlg(actionCollection(), this);
     connect(&dlg, SIGNAL(newToolBarConfig()),
                   SLOT(slotNewToolbarConfig()));

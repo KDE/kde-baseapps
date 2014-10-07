@@ -1,4 +1,8 @@
-include_directories( ${KDE4_KIO_INCLUDES} ../.. )
+include(ECMAddTests)
+
+set(QT_REQUIRED_VERSION "5.2.0")
+find_package(Qt5Test ${QT_REQUIRED_VERSION} CONFIG REQUIRED)
+
 set( EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR} )
 
 ###### kbookmarkmodeltest ######

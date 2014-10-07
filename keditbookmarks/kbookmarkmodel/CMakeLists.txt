@@ -9,7 +9,7 @@ set(kbookmarkmodel_SRCS
 )
 
 add_library(kbookmarkmodel_private SHARED ${kbookmarkmodel_SRCS})
-target_link_libraries(kbookmarkmodel_private KF5::KIOCore)
+target_link_libraries(kbookmarkmodel_private KF5::KIOCore KF5::KDELibs4Support)
 target_link_libraries(kbookmarkmodel_private LINK_INTERFACE_LIBRARIES KF5::KIOCore)
 
 set_target_properties(kbookmarkmodel_private PROPERTIES

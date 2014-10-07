@@ -86,7 +86,7 @@ void BookmarkInfoWidget::showBookmark(const KBookmark &bk)
         // created difficulties due to the ambiguity of converting URLs to text. (#172647)
         if (KUrl(m_url_le->text()) != bk.url()) {
             const int cursorPosition = m_url_le->cursorPosition();
-            m_url_le->setText(bk.url().pathOrUrl());
+            //PORT QT5 m_url_le->setText(bk.url().pathOrUrl());
             m_url_le->setCursorPosition(cursorPosition);
         }
     }

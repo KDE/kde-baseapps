@@ -44,7 +44,7 @@ if(NOT WIN32)
 endif()
 add_subdirectory(kfind)
 
-# add_subdirectory( keditbookmarks )
+add_subdirectory( keditbookmarks )
 add_subdirectory(konqueror)
 # add_subdirectory( konq-plugins )
 # if ( Q_WS_X11 )

@@ -62,7 +62,7 @@ bool FavIconsItr::isApplicable(const KBookmark &bk) const
 {
     if (bk.isGroup() || bk.isSeparator())
         return false;
-    return bk.url().protocol().startsWith("http");
+    return bk.url().scheme().startsWith("http");
 }
 
 void FavIconsItr::doAction()

@@ -31,7 +31,7 @@
 #include <kstandarddirs.h>
 
 #include <kcmdlineargs.h>
-#include <kaboutdata.h>
+#include <K4AboutData>
 #include <kuniqueapplication.h>
 
 #include <kmessagebox.h>
@@ -41,6 +41,7 @@
 #include <kbookmarkmanager.h>
 #include <kbookmarkexporter.h>
 #include <toplevel_interface.h>
+#include <KGlobal>
 
 // TODO - make this register() or something like that and move dialog into main
 static bool askUser(const QString& filename, bool &readonly) {
@@ -93,9 +94,9 @@ static bool askUser(const QString& filename, bool &readonly) {
 #include <kactioncollection.h>
 
 extern "C" KDE_EXPORT int kdemain(int argc, char **argv) {
-    KAboutData aboutData("keditbookmarks", 0, ki18n("Bookmark Editor"), KDE_VERSION_STRING,
+    K4AboutData aboutData("keditbookmarks", 0, ki18n("Bookmark Editor"), KDE_VERSION_STRING,
             ki18n("Bookmark Organizer and Editor"),
-            KAboutData::License_GPL,
+            K4AboutData::License_GPL,
             ki18n("Copyright 2000-2007, KDE developers") );
     aboutData.addAuthor(ki18n("David Faure"), ki18n("Initial author"), "faure@kde.org");
     aboutData.addAuthor(ki18n("Alexander Kellett"), ki18n("Author"), "lypanov@kde.org");
