@@ -33,6 +33,7 @@
 #include <kcmdlineargs.h>
 #include <K4AboutData>
 #include <kuniqueapplication.h>
+#include <kdelibs4configmigrator.h>
 
 #include <kmessagebox.h>
 #include <kwindowsystem.h>
@@ -91,9 +92,13 @@ static bool askUser(const QString& filename, bool &readonly) {
     return true;
 }
 
-#include <kactioncollection.h>
 
 extern "C" KDE_EXPORT int kdemain(int argc, char **argv) {
+    Kdelibs4ConfigMigrator migrate(QStringLiteral("keditbookmarks"));
+    migrate.setConfigFiles(QStringList() << QStringLiteral("keditbookmarksrc"));
+    migrate.setUiFiles(QStringList() << QStringLiteral("keditbookmarksuirc"));
+    migrate.migrate();
+
     K4AboutData aboutData("keditbookmarks", 0, ki18n("Bookmark Editor"), KDE_VERSION_STRING,
             ki18n("Bookmark Organizer and Editor"),
             K4AboutData::License_GPL,
