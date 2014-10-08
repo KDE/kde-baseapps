@@ -23,13 +23,13 @@
 #include <QTreeView>
 #include <QListView>
 #include <QLabel>
+#include <QHBoxLayout>
+#include <QContextMenuEvent>
 
 #include <kicon.h>
 #include <klocale.h>
 
 #include <QHeaderView>
-#include <QBoxLayout>
-#include <QKeyEvent>
 #include <QMenu>
 
 

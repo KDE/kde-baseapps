@@ -27,9 +27,7 @@
 #include <KIcon>
 #include <kdebug.h>
 #include <klocale.h>
-#include <QIcon>
 #include <QtCore/QVector>
-#include <QPixmap>
 #include <QtCore/QStringList>
 #include <QtCore/QMimeData>
 

@@ -25,11 +25,10 @@
 #include "kbookmarkmodel/commands.h"
 
 #include <QHeaderView>
+#include <QContextMenuEvent>
 #include <QItemSelection>
 #include <QMenu>
-#include <QKeyEvent>
 #include <QBrush>
-#include <QPalette>
 
 #include <kdebug.h>
 

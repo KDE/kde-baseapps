@@ -26,7 +26,6 @@
 #include <stdlib.h>
 
 #include <QtCore/QTimer>
-#include <QLabel>
 #include <QHBoxLayout>
 #include <QFormLayout>
 
