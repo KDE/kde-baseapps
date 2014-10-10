@@ -51,8 +51,8 @@ void KDEpasswd1Dialog::accept()
             {
                 QString msg = QString::fromLocal8Bit(proc.error());
                 if (!msg.isEmpty())
-                    msg = "<p>\"<i>" + msg + "</i>\"";
-                msg = "<qt>" + i18n("Conversation with 'passwd' failed.") + msg;
+                    msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+                msg = QLatin1Literal("<qt>") + i18n("Conversation with 'passwd' failed.") + msg;
                 KMessageBox::error(this, msg);
                 done(Rejected);
                 return;
@@ -157,8 +157,8 @@ void  KDEpasswd2Dialog::accept()
                 hide();
                 QString msg = QString::fromLocal8Bit(proc.error());
                 if (!msg.isEmpty())
-                    msg = "<p>\"<i>" + msg + "</i>\"";
-                msg = "<qt>" + i18n("Your password has been changed.") + msg;
+                    msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+                msg = QLatin1Literal("<qt>") + i18n("Your password has been changed.") + msg;
                 KMessageBox::information(0L, msg);
                 return KNewPasswordDialog::accept();
             }
@@ -167,8 +167,8 @@ void  KDEpasswd2Dialog::accept()
             {
                 QString msg = QString::fromLocal8Bit(proc.error());
                 if (!msg.isEmpty())
-                    msg = "<p>\"<i>" + msg + "</i>\"";
-                msg = "<qt>" + i18n("Your password has not been changed.") + msg;
+                    msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+                msg = QLatin1Literal("<qt>") + i18n("Your password has not been changed.") + msg;
 
                 // The pw change did not succeed. Print the error.
                 KMessageBox::sorry(this, msg);
@@ -178,8 +178,8 @@ void  KDEpasswd2Dialog::accept()
         default:
             QString msg = QString::fromLocal8Bit(proc.error());
             if (!msg.isEmpty())
-                msg = "<p>\"<i>" + msg + "</i>\"";
-            msg = "<qt>" + i18n("Conversation with 'passwd' failed.") + msg;
+                msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+            msg = QLatin1Literal("<qt>") + i18n("Conversation with 'passwd' failed.") + msg;
             KMessageBox::sorry(this, msg);
             done(Rejected);
             return;
