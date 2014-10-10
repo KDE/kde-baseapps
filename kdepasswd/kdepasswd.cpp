@@ -45,9 +45,9 @@ int main(int argc, char **argv)
             QLatin1String(KDEPASSWD_VERSION_STRING), i18n("Changes a UNIX password."),
             KAboutLicense::Artistic, i18n("Copyright (c) 2000 Geert Jansen"));
     aboutData.addAuthor(i18n("Geert Jansen"), i18n("Maintainer"), QLatin1String("jansen@kde.org"));
-    aboutData.setProgramIconName( "preferences-desktop-user-password" );
 
     QApplication app(argc, argv);
+    app.setWindowIcon(QIcon::fromTheme(QLatin1String("preferences-desktop-user-password")));
     QCommandLineParser parser;
     KAboutData::setApplicationData(aboutData);
     parser.addVersionOption();
@@ -58,7 +58,6 @@ int main(int argc, char **argv)
     aboutData.processCommandLine(&parser);
 
     KDBusService service(KDBusService::Unique);
- 
 
     KUser ku;
     QString user;
