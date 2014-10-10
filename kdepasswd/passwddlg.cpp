@@ -25,7 +25,7 @@
 #include "passwddlg.h"
 #include "passwd.h"
 
-#include <klocale.h>
+#include <KLocalizedString>
 #include <kmessagebox.h>
 
 KDEpasswd1Dialog::KDEpasswd1Dialog()

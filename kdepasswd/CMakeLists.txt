@@ -19,7 +19,7 @@ ecm_setup_version(${KDEPASSWD_VERSION} VARIABLE_PREFIX KDEPASSWD
 )
 
 # Build dependencies
-find_package(KF5 REQUIRED COMPONENTS KDELibs4Support DocTools KIO Su)
+find_package(KF5 REQUIRED COMPONENTS DocTools KIO Su DBusAddons I18n)
 
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${Kdepasswd_SOURCE_DIR}")
     find_package(KF5Konq CONFIG REQUIRED)
@@ -32,14 +32,17 @@ remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING)
 set(kdepasswd_SRCS
     kdepasswd.cpp
     passwd.cpp
-    passwddlg.cpp)
+    passwddlg.cpp
+    kdepassword_debug.cpp
+)
 
 add_executable(kdepasswd ${kdepasswd_SRCS})
 
 target_link_libraries(kdepasswd
     KF5::KIOWidgets
     KF5::Su
-    KF5::KDELibs4Support
+    KF5::DBusAddons
+    KF5::I18n
 )
 
 install(TARGETS kdepasswd ${KF5_INSTALL_TARGETS_DEFAULT_ARGS})
