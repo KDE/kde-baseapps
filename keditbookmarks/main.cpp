@@ -44,6 +44,8 @@
 #include <toplevel_interface.h>
 #include <KGlobal>
 
+#include <QGuiApplication>
+
 // TODO - make this register() or something like that and move dialog into main
 static bool askUser(const QString& filename, bool &readonly) {
 
@@ -69,7 +71,7 @@ static bool askUser(const QString& filename, bool &readonly) {
                 int ret = KMessageBox::warningYesNo(0,
                 i18n("Another instance of %1 is already running. Do you really "
                 "want to open another instance or continue work in the same instance?\n"
-                "Please note that, unfortunately, duplicate views are read-only.", KGlobal::caption()),
+                "Please note that, unfortunately, duplicate views are read-only.", QGuiApplication::applicationDisplayName()),
                 i18nc("@title:window", "Warning"),
                 KGuiItem(i18n("Run Another")),    /* yes */
                 KGuiItem(i18n("Continue in Same")) /*  no */);
