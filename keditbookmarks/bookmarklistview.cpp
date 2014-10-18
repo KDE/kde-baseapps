@@ -43,7 +43,7 @@ BookmarkFolderView::BookmarkFolderView( BookmarkListView * view, QWidget * paren
     setDropIndicatorShown(true);
     setCurrentIndex( mmodel->index(0,0, QModelIndex()));
 
-    connect(mmodel, SIGNAL(modelReset()), this, SLOT(slotReset()));
+    connect(mmodel, &BookmarkFolderViewFilterModel::modelReset, this, &BookmarkFolderView::slotReset);
 }
 
 

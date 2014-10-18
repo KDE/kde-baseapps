@@ -69,8 +69,7 @@ KViewSearchLine::KViewSearchLine(QWidget *parent, QAbstractItemView *v) :
     d->treeView = dynamic_cast<QTreeView *>(v);
     d->listView = dynamic_cast<QListView *>(v);
 
-    connect(this, SIGNAL(textChanged(QString)),
-            this, SLOT(queueSearch(QString)));
+    connect(this, &KViewSearchLine::textChanged, this, &KViewSearchLine::queueSearch);
 
     if(view()) {
         connect(view(), SIGNAL(destroyed()),
@@ -101,8 +100,7 @@ KViewSearchLine::KViewSearchLine(QWidget *parent) :
     d->treeView = 0;
     d->listView = 0;
 
-    connect(this, SIGNAL(textChanged(QString)),
-            this, SLOT(queueSearch(QString)));
+    connect(this, &KViewSearchLine::textChanged, this, &KViewSearchLine::queueSearch);
 
     setEnabled(false);
 }
@@ -301,7 +299,7 @@ void KViewSearchLine::contextMenuEvent( QContextMenuEvent*e )
                 allVisibleAct->setChecked(true);
                 d->searchColumns.clear();
             }
-            connect(submenu, SIGNAL(triggered(QAction*)), this, SLOT(searchColumnsMenuActivated(QAction*)));
+            connect(submenu, &QMenu::triggered, this, &KViewSearchLine::searchColumnsMenuActivated);
         }
     }
     popup->exec( e->globalPos() );

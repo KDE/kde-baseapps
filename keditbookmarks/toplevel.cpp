@@ -70,7 +70,7 @@ KEBApp::KEBApp(
 
     m_cmdHistory = new CommandHistory(this);
     m_cmdHistory->createActions(actionCollection());
-    connect(m_cmdHistory, SIGNAL(notifyCommandExecuted(KBookmarkGroup)), this, SLOT(notifyCommandExecuted()));
+    connect(m_cmdHistory, &CommandHistory::notifyCommandExecuted, this, &KEBApp::notifyCommandExecuted);
 
     GlobalBookmarkManager::self()->createManager(m_bookmarksFilename, m_dbusObjectName, m_cmdHistory);
 
@@ -471,8 +471,7 @@ void KEBApp::notifyCommandExecuted() {
 void KEBApp::slotConfigureToolbars() {
     //PORT TO QT5 saveMainWindowSettings(KConfigGroup( KGlobal::config(), "MainWindow") );
     KEditToolBar dlg(actionCollection(), this);
-    connect(&dlg, SIGNAL(newToolBarConfig()),
-                  SLOT(slotNewToolbarConfig()));
+    connect(&dlg, &KEditToolBar::newToolBarConfig, this, &KEBApp::slotNewToolbarConfig);
     dlg.exec();
 }
 

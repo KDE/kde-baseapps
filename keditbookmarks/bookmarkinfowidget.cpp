@@ -222,7 +222,7 @@ BookmarkInfoWidget::BookmarkInfoWidget(BookmarkListView * lv, KBookmarkModel* mo
 
     timer = new QTimer(this);
     timer->setSingleShot(true);
-    connect(timer, SIGNAL(timeout()), SLOT(commitChanges()));
+    connect(timer, &QTimer::timeout, this, &BookmarkInfoWidget::commitChanges);
 
     titlecmd = 0;
     urlcmd = 0;
@@ -238,25 +238,22 @@ BookmarkInfoWidget::BookmarkInfoWidget(BookmarkListView * lv, KBookmarkModel* mo
     m_title_le->setClearButtonShown(true);
     form1->addRow(i18n("Name:"), m_title_le);
 
-    connect(m_title_le, SIGNAL(textChanged(QString)),
-                        SLOT(slotTextChangedTitle(QString)));
-    connect(m_title_le, SIGNAL(editingFinished()), SLOT(commitTitle()));
+    connect(m_title_le, &KLineEdit::textChanged, this, &BookmarkInfoWidget::slotTextChangedTitle);
+    connect(m_title_le, &KLineEdit::editingFinished, this, &BookmarkInfoWidget::commitTitle);
 
     m_url_le = new KLineEdit(this);
     m_url_le->setClearButtonShown(true);
     form1->addRow(i18n("Location:"), m_url_le);
 
-    connect(m_url_le, SIGNAL(textChanged(QString)),
-                      SLOT(slotTextChangedURL(QString)));
-    connect(m_url_le, SIGNAL(editingFinished()), SLOT(commitURL()));
+    connect(m_url_le, &KLineEdit::textChanged, this, &BookmarkInfoWidget::slotTextChangedURL);
+    connect(m_url_le, &KLineEdit::editingFinished, this, &BookmarkInfoWidget::commitURL);
 
     m_comment_le = new KLineEdit(this);
     m_comment_le->setClearButtonShown(true);
     form1->addRow(i18n("Comment:"), m_comment_le);
 
-    connect(m_comment_le, SIGNAL(textChanged(QString)),
-                          SLOT(slotTextChangedComment(QString)));
-    connect(m_comment_le, SIGNAL(editingFinished()), SLOT(commitComment()));
+    connect(m_comment_le, &KLineEdit::textChanged, this, &BookmarkInfoWidget::slotTextChangedComment);
+    connect(m_comment_le, &KLineEdit::editingFinished, this, &BookmarkInfoWidget::commitComment);
 
     m_credate_le = new KLineEdit(this);
     form2->addRow(i18n("First viewed:"), m_credate_le);

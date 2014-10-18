@@ -72,8 +72,7 @@ void FavIconsItr::doAction()
     setStatus(i18n("Updating favicon..."));
     if (!m_updater) {
         m_updater = new FavIconUpdater(this);
-        connect(m_updater, SIGNAL(done(bool,QString)),
-                this,      SLOT(slotDone(bool,QString)) );
+        connect(m_updater, &FavIconUpdater::done, this, &FavIconsItr::slotDone);
     }
     m_updater->downloadIcon(currentBookmark());
 }
