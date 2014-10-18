@@ -27,10 +27,7 @@
 
 class ActionsImpl;
 class CommandHistory;
-class KBookmarkModel;
-class KBookmarkManager;
 class KToggleAction;
-class KBookmarkEditorIface;
 class BookmarkInfoWidget;
 class BookmarkListView;
 
