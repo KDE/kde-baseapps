@@ -142,7 +142,7 @@ void BookmarkListView::saveColumnSetting()
     KEBSettings::setURL( header()->sectionSize(KEBApp::UrlColumn));
     KEBSettings::setComment( header()->sectionSize(KEBApp::CommentColumn));
     KEBSettings::setStatus( header()->sectionSize(KEBApp::StatusColumn));
-    KEBSettings::self()->writeConfig();
+    KEBSettings::self()->save();
 }
 
 /************/

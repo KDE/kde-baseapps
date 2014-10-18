@@ -85,7 +85,8 @@ KEBApp::KEBApp(
     connect(qApp->clipboard(), SIGNAL(dataChanged()),
                                SLOT(slotClipboardDataChanged()));
 
-    KGlobal::locale()->insertCatalog("libkonq");
+    //KF5 port: remove this line and define TRANSLATION_DOMAIN in CMakeLists.txt instead
+//KLocale::global()->insertCatalog("libkonq");
 
     m_canPaste = false;
 
@@ -469,7 +470,7 @@ void KEBApp::notifyCommandExecuted() {
 /* -------------------------- */
 
 void KEBApp::slotConfigureToolbars() {
-    //PORT TO QT5 saveMainWindowSettings(KConfigGroup( KGlobal::config(), "MainWindow") );
+    //PORT TO QT5 saveMainWindowSettings(KConfigGroup( KSharedConfig::openConfig(), "MainWindow") );
     KEditToolBar dlg(actionCollection(), this);
     connect(&dlg, &KEditToolBar::newToolBarConfig, this, &KEBApp::slotNewToolbarConfig);
     dlg.exec();
@@ -478,7 +479,7 @@ void KEBApp::slotConfigureToolbars() {
 void KEBApp::slotNewToolbarConfig() {
     // called when OK or Apply is clicked
     createGUI();
-    applyMainWindowSettings(KConfigGroup(KGlobal::config(), "MainWindow") );
+    applyMainWindowSettings(KConfigGroup(KSharedConfig::openConfig(), "MainWindow") );
 }
 
 /* -------------------------- */
