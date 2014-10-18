@@ -26,7 +26,6 @@
 #include <QHBoxLayout>
 #include <QContextMenuEvent>
 
-#include <QIcon>
 #include <klocale.h>
 
 #include <QHeaderView>

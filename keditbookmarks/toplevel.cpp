@@ -52,7 +52,6 @@
 #include <klocale.h>
 #include <kmessagebox.h>
 #include <kstandardaction.h>
-#include <KGlobal>
 
 #include <QtDBus/QDBusConnection>
 KEBApp *KEBApp::s_topLevel = 0;

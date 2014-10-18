@@ -42,7 +42,6 @@
 #include <kbookmarkmanager.h>
 #include <kbookmarkexporter.h>
 #include <toplevel_interface.h>
-#include <KGlobal>
 
 #include <QGuiApplication>
 
