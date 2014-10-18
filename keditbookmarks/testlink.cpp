@@ -105,4 +105,4 @@ void TestLinkItr::cancel()
     setStatus(m_oldStatus);
 }
 
-#include "testlink.moc"
+

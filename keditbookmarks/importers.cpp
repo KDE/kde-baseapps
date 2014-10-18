@@ -304,4 +304,4 @@ void XBELImportCommand::doExecute(const KBookmarkGroup &/*bkGroup*/) {
     }
 }
 
-#include "importers.moc"
+

@@ -217,4 +217,4 @@ void FavIconWebGrabber::slotCanceled(const QString& errorString)
     emit done(false, errorString);
 }
 
-#include "faviconupdater.moc"
+

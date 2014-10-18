@@ -591,4 +591,4 @@ CommandHistory* ActionsImpl::commandHistory()
     return m_model->commandHistory();
 }
 
-#include "actionsimpl.moc"
+

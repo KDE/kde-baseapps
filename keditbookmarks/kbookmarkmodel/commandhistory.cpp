@@ -121,4 +121,4 @@ KBookmarkManager* CommandHistory::bookmarkManager()
     return d->m_manager;
 }
 
-#include "commandhistory.moc"
+

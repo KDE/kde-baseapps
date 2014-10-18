@@ -123,4 +123,4 @@ void BookmarkIteratorHolder::doIteratorListChanged()
     }
 }
 
-#include "bookmarkiterator.moc"
+
