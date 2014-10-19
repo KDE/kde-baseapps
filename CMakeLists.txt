@@ -32,13 +32,13 @@ set_package_properties(ZLIB PROPERTIES DESCRIPTION "Support for gzip compressed 
 configure_file (config-apps.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-apps.h )
 
 
-add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DDISABLE_NEPOMUK_LEGACY)
 add_definitions (-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 
 add_subdirectory(lib)
 add_subdirectory(kioslave/about)
 add_subdirectory(dolphin)
 add_subdirectory(kdialog)
+add_subdirectory(doc)
 if(NOT WIN32)
     add_subdirectory(kdepasswd)
 endif()
