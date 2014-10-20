@@ -24,14 +24,14 @@
 #include <kparts/part.h>
 #include <kparts/browserinterface.h>
 #include <KParts/ReadOnlyPart>
-#include <KUrl>
+#include <QUrl>
 #include <KIO/Job>
 
 class FavIconWebGrabber : public QObject
 {
     Q_OBJECT
 public:
-    FavIconWebGrabber(KParts::ReadOnlyPart *part, const KUrl &url);
+    FavIconWebGrabber(KParts::ReadOnlyPart *part, const QUrl &url);
     ~FavIconWebGrabber() {}
 
 Q_SIGNALS:
@@ -45,7 +45,7 @@ private Q_SLOTS:
 
 private:
     KParts::ReadOnlyPart *m_part;
-    KUrl m_url;
+    QUrl m_url;
 };
 
 class FavIconBrowserInterface;
@@ -61,7 +61,7 @@ public:
     void downloadIconUsingWebBrowser(const KBookmark &bk, const QString& currentError);
 
 private Q_SLOTS:
-    void setIconUrl(const KUrl &iconURL);
+    void setIconUrl(const QUrl &iconURL);
     void notifyChange(bool isHost, const QString& hostOrURL, const QString& iconName);
     void slotFavIconError(bool isHost, const QString& hostOrURL, const QString& errorString);
 

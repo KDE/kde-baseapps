@@ -100,8 +100,8 @@ void FavIconUpdater::downloadIconUsingWebBrowser(const KBookmark &bk, const QStr
         m_browserIface = new FavIconBrowserInterface(this);
         ext->setBrowserInterface(m_browserIface);
 
-        connect(ext, SIGNAL(setIconUrl(KUrl)),
-                this, SLOT(setIconUrl(KUrl)));
+        connect(ext, SIGNAL(setIconUrl(QUrl)),
+                this, SLOT(setIconUrl(QUrl)));
 
         m_part = part;
     }
@@ -114,7 +114,7 @@ void FavIconUpdater::downloadIconUsingWebBrowser(const KBookmark &bk, const QStr
 }
 
 // khtml callback
-void FavIconUpdater::setIconUrl(const KUrl &iconURL)
+void FavIconUpdater::setIconUrl(const QUrl &iconURL)
 {
     m_favIconModule.setIconForUrl(m_bk.url().url(), iconURL.url());
     // The above call will make the kded module start the download and emit iconChanged or error.
@@ -161,7 +161,7 @@ void FavIconUpdater::slotFavIconError(bool isHost, const QString& hostOrURL, con
 
 /* -------------------------- */
 
-FavIconWebGrabber::FavIconWebGrabber(KParts::ReadOnlyPart *part, const KUrl &url)
+FavIconWebGrabber::FavIconWebGrabber(KParts::ReadOnlyPart *part, const QUrl &url)
     : m_part(part), m_url(url) {
 
     //FIXME only connect to result?
