@@ -95,25 +95,25 @@ void KEBApp::createActions() {
     QAction* m_actionsImplDelete = actionCollection()->addAction("delete");
     m_actionsImplDelete->setIcon(QIcon::fromTheme("edit-delete"));
     m_actionsImplDelete->setText(i18n("&Delete"));
-    m_actionsImplDelete->setShortcut(Qt::Key_Delete);
+    actionCollection()->setDefaultShortcut(m_actionsImplDelete,Qt::Key_Delete);
     connect(m_actionsImplDelete, &QAction::triggered, m_actionsImpl, &ActionsImpl::slotDelete);
 
     QAction* m_actionsImplRename = actionCollection()->addAction("rename");
     m_actionsImplRename->setIcon(QIcon::fromTheme("edit-rename"));
     m_actionsImplRename->setText(i18n("Rename"));
-    m_actionsImplRename->setShortcut(Qt::Key_F2);
+    actionCollection()->setDefaultShortcut(m_actionsImplRename,Qt::Key_F2);
     connect(m_actionsImplRename, &QAction::triggered, m_actionsImpl, &ActionsImpl::slotRename);
 
     QAction* m_actionsImplChangeURL = actionCollection()->addAction("changeurl");
     m_actionsImplChangeURL->setIcon(QIcon::fromTheme("edit-rename"));
     m_actionsImplChangeURL->setText(i18n("C&hange Location"));
-    m_actionsImplChangeURL->setShortcut(Qt::Key_F3);
+    actionCollection()->setDefaultShortcut(m_actionsImplChangeURL,Qt::Key_F3);
     connect(m_actionsImplChangeURL, &QAction::triggered, m_actionsImpl, &ActionsImpl::slotChangeURL);
 
     QAction* m_actionsImplChangeComment = actionCollection()->addAction("changecomment");
     m_actionsImplChangeComment->setIcon(QIcon::fromTheme("edit-rename"));
     m_actionsImplChangeComment->setText(i18n("C&hange Comment"));
-    m_actionsImplChangeComment->setShortcut(Qt::Key_F4);
+    actionCollection()->setDefaultShortcut(m_actionsImplChangeComment, Qt::Key_F4);
     connect(m_actionsImplChangeComment, &QAction::triggered, m_actionsImpl, &ActionsImpl::slotChangeComment);
 
     QAction* m_actionsImplChangeIcon = actionCollection()->addAction("changeicon");
@@ -132,7 +132,7 @@ void KEBApp::createActions() {
     QAction* m_actionsImplNewFolder = actionCollection()->addAction("newfolder");
     m_actionsImplNewFolder->setIcon(QIcon::fromTheme("folder-new"));
     m_actionsImplNewFolder->setText(i18n("&New Folder..."));
-    m_actionsImplNewFolder->setShortcut(Qt::CTRL+Qt::Key_N);
+    actionCollection()->setDefaultShortcut(m_actionsImplNewFolder,Qt::CTRL+Qt::Key_N);
     connect(m_actionsImplNewFolder, &QAction::triggered, m_actionsImpl, &ActionsImpl::slotNewFolder);
 
     QAction* m_actionsImplNewBookmark = actionCollection()->addAction("newbookmark");
@@ -142,7 +142,7 @@ void KEBApp::createActions() {
 
     QAction* m_actionsImplInsertSeparator = actionCollection()->addAction("insertseparator");
     m_actionsImplInsertSeparator->setText(i18n("&Insert Separator"));
-    m_actionsImplInsertSeparator->setShortcut(Qt::CTRL+Qt::Key_I);
+    actionCollection()->setDefaultShortcut(m_actionsImplInsertSeparator, Qt::CTRL+Qt::Key_I);
     connect(m_actionsImplInsertSeparator, &QAction::triggered, m_actionsImpl, &ActionsImpl::slotInsertSeparator);
 
     QAction* m_actionsImplSort = actionCollection()->addAction("sort");
