@@ -28,7 +28,7 @@
 #include "kbookmarkmodel/model.h"
 
 #include <QtCore/QRegExp>
-#include <kdebug.h>
+#include <QDebug>
 #include <klocale.h>
 
 #include <kmessagebox.h>
@@ -70,7 +70,7 @@ ImportCommand* ImportCommand::importerFactory(KBookmarkModel* model, const QStri
     else if (type == "Moz") return new MozImportCommand(model);
     else if (type == "NS") return new NSImportCommand(model);
     else {
-        kError() << "ImportCommand::importerFactory() - invalid type (" << type << ")!" << endl;
+        qCritical() << "ImportCommand::importerFactory() - invalid type (" << type << ")!" << endl;
         return 0;
     }
 }

@@ -24,7 +24,7 @@
 #include "bookmarkiterator.h"
 #include "toplevel.h"
 
-#include <kdebug.h>
+#include <QDebug>
 #include <klocale.h>
 
 #include <kio/job.h>
@@ -53,14 +53,14 @@ void FavIconUpdater::downloadIcon(const KBookmark &bk)
     const QString url = bk.url().url();
     const QString favicon = KMimeType::favIconForUrl(url);
     if (!favicon.isEmpty()) {
-        kDebug() << "got favicon" << favicon;
+        //qDebug() << "got favicon" << favicon;
         m_bk.setIcon(favicon);
         KEBApp::self()->notifyCommandExecuted();
-        // kDebug() << "emit done(true)";
+        // //qDebug() << "emit done(true)";
         emit done(true, QString());
 
     } else {
-        kDebug() << "no favicon found";
+        //qDebug() << "no favicon found";
         webupdate = false;
         m_favIconModule.forceDownloadHostIcon(url);
     }
@@ -75,7 +75,7 @@ FavIconUpdater::~FavIconUpdater()
 
 void FavIconUpdater::downloadIconUsingWebBrowser(const KBookmark &bk, const QString& currentError)
 {
-    kDebug();
+    //qDebug();
     m_bk = bk;
     webupdate = true;
 
@@ -134,7 +134,7 @@ void FavIconUpdater::notifyChange(bool isHost,
                                   const QString& hostOrURL,
                                   const QString& iconName)
 {
-    kDebug() << hostOrURL << iconName;
+    //qDebug() << hostOrURL << iconName;
     if (isFavIconSignalRelevant(isHost, hostOrURL)) {
         if (iconName.isEmpty()) { // old version of the kded module could emit with an empty iconName on error
             slotFavIconError(isHost, hostOrURL, QString());
@@ -147,7 +147,7 @@ void FavIconUpdater::notifyChange(bool isHost,
 
 void FavIconUpdater::slotFavIconError(bool isHost, const QString& hostOrURL, const QString& errorString)
 {
-    kDebug() << hostOrURL << errorString;
+    //qDebug() << hostOrURL << errorString;
     if (isFavIconSignalRelevant(isHost, hostOrURL)) {
         if (!webupdate) {
             // no icon found, try webupdater
@@ -175,7 +175,7 @@ FavIconWebGrabber::FavIconWebGrabber(KParts::ReadOnlyPart *part, const QUrl &url
     // the use of KIO rather than directly using KHTML is to allow silently abort on error
     // TODO: an alternative would be to derive from KHTMLPart and reimplement showError(KJob*).
 
-    kDebug() << "starting KIO::get() on" << m_url;
+    //qDebug() << "starting KIO::get() on" << m_url;
     KIO::Job *job = KIO::get(m_url, KIO::NoReload, KIO::HideProgressInfo);
     job->addMetaData( QString("cookies"), QString("none") );
     connect(job, SIGNAL(result(KJob*)),
@@ -190,7 +190,7 @@ void FavIconWebGrabber::slotMimetype(KIO::Job *job, const QString & /*type*/) {
     sjob->putOnHold();
 
     // QString typeLocal = typeUncopied; // local copy
-    // kDebug() << "slotMimetype : " << typeLocal;
+    // //qDebug() << "slotMimetype : " << typeLocal;
     // TODO - what to do if typeLocal is not text/html ??
 
     m_part->openUrl(m_url);
@@ -199,7 +199,7 @@ void FavIconWebGrabber::slotMimetype(KIO::Job *job, const QString & /*type*/) {
 void FavIconWebGrabber::slotFinished(KJob *job)
 {
     if (job->error()) {
-        kDebug() << job->errorString();
+        //qDebug() << job->errorString();
         emit done(false, job->errorString());
     }
     // On success mimetype was emitted, so no need to do anything.
@@ -207,13 +207,13 @@ void FavIconWebGrabber::slotFinished(KJob *job)
 
 void FavIconWebGrabber::slotCompleted()
 {
-    kDebug();
+    //qDebug();
     emit done(true, QString());
 }
 
 void FavIconWebGrabber::slotCanceled(const QString& errorString)
 {
-    kDebug() << errorString;
+    //qDebug() << errorString;
     emit done(false, errorString);
 }
 

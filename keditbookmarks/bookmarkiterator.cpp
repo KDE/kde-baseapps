@@ -22,7 +22,7 @@
 #include "kbookmarkmodel/model.h"
 #include <kbookmarkmanager.h>
 
-#include <kdebug.h>
+#include <QDebug>
 #include <QtCore/QTimer>
 
 BookmarkIterator::BookmarkIterator(BookmarkIteratorHolder* holder, const QList<KBookmark>& bks)
@@ -47,7 +47,7 @@ KBookmark BookmarkIterator::currentBookmark()
 
 void BookmarkIterator::nextOne()
 {
-    // kDebug() << "BookmarkIterator::nextOne";
+    // //qDebug() << "BookmarkIterator::nextOne";
 
     // Look for an interesting bookmark
     while (!m_bookmarkList.isEmpty()) {
@@ -103,20 +103,20 @@ void BookmarkIteratorHolder::cancelAllItrs()
 
 void BookmarkIteratorHolder::addAffectedBookmark(const QString & address)
 {
-    kDebug() << address;
+    //qDebug() << address;
     if(m_affectedBookmark.isNull())
         m_affectedBookmark = address;
     else
         m_affectedBookmark = KBookmark::commonParent(m_affectedBookmark, address);
-    kDebug() << "m_affectedBookmark is now" << m_affectedBookmark;
+    //qDebug() << "m_affectedBookmark is now" << m_affectedBookmark;
 }
 
 void BookmarkIteratorHolder::doIteratorListChanged()
 {
-    kDebug() << count() << "iterators";
+    //qDebug() << count() << "iterators";
     emit setCancelEnabled(count() > 0);
     if(count() == 0) {
-        kDebug() << "Notifing managers" << m_affectedBookmark;
+        //qDebug() << "Notifing managers" << m_affectedBookmark;
         KBookmarkManager* mgr = m_model->bookmarkManager();
         model()->notifyManagers(mgr->findByAddress(m_affectedBookmark).toGroup());
         m_affectedBookmark.clear();

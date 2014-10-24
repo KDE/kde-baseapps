@@ -30,7 +30,7 @@
 #include <QMenu>
 #include <QBrush>
 
-#include <kdebug.h>
+#include <QDebug>
 
 BookmarkFolderView::BookmarkFolderView( BookmarkListView * view, QWidget * parent )
     : KBookmarkView(parent), mview(view)

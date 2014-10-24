@@ -38,7 +38,7 @@
 #include <QtCore/QMimeData>
 #include <QApplication>
 
-#include <kdebug.h>
+#include <QDebug>
 
 #include <kaction.h>
 #include <kactioncollection.h>

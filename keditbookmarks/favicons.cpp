@@ -24,7 +24,7 @@
 #include "kbookmarkmodel/commands.h"
 #include "kbookmarkmodel/model.h"
 
-#include <kdebug.h>
+#include <QDebug>
 #include <klocale.h>
 
 FavIconsItrHolder::FavIconsItrHolder(QObject* parent, KBookmarkModel* model)
@@ -52,7 +52,7 @@ void FavIconsItr::setStatus(const QString & status)
 
 void FavIconsItr::slotDone(bool succeeded, const QString& errorString)
 {
-    // kDebug() << "FavIconsItr::slotDone()";
+    // //qDebug() << "FavIconsItr::slotDone()";
     setStatus(succeeded ? i18n("OK") : errorString);
     holder()->addAffectedBookmark(KBookmark::parentAddress(currentBookmark().address()));
     delayedEmitNextOne();
@@ -67,7 +67,7 @@ bool FavIconsItr::isApplicable(const KBookmark &bk) const
 
 void FavIconsItr::doAction()
 {
-    // kDebug() << "FavIconsItr::doAction()";
+    // //qDebug() << "FavIconsItr::doAction()";
     m_oldStatus = currentBookmark().metaDataItem("favstate");
     setStatus(i18n("Updating favicon..."));
     if (!m_updater) {

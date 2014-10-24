@@ -26,7 +26,7 @@
 #include "kbookmarkmodel/commandhistory.h"
 
 #include <klocale.h>
-#include <kdebug.h>
+#include <QDebug>
 #include <kdeversion.h>
 #include <kstandarddirs.h>
 
@@ -81,7 +81,7 @@ static bool askUser(const QString& filename, bool &readonly) {
                     qlonglong id = 0;
                     if( value.isValid())
                         id = value;
-                    //kDebug()<<" id !!!!!!!!!!!!!!!!!!! :"<<id;
+                    ////qDebug()<<" id !!!!!!!!!!!!!!!!!!! :"<<id;
                     KWindowSystem::activateWindow((WId)id);
                     return false;
                 } else if (ret == KMessageBox::Yes) {

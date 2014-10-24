@@ -27,7 +27,7 @@
 #include <kapplication.h>
 #include <kbookmarkmanager.h>
 #include <kcmdlineargs.h>
-#include <kdebug.h>
+#include <QDebug>
 #include <kstandarddirs.h>
 #include <klocale.h>
 
@@ -54,7 +54,7 @@ int main( int argc, char**argv )
 
 	KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
 	if ( args->count() != 1 ) {
-		kError() << "No directory to scan for bookmarks specified." << endl;
+		qCritical() << "No directory to scan for bookmarks specified." << endl;
 		return 1;
 	}
 
@@ -79,7 +79,7 @@ int main( int argc, char**argv )
 	QString extraBookmarksDirName = args->arg( 0 );
 	QDir extraBookmarksDir( extraBookmarksDirName, "*.xml" );
 	if ( !extraBookmarksDir.isReadable() ) {
-		kError() << "Failed to read files in directory " << extraBookmarksDirName << endl;
+		qCritical() << "Failed to read files in directory " << extraBookmarksDirName << endl;
 		return 1;
 	}
 

@@ -22,7 +22,7 @@
 #include <kglobal.h>
 #include <klocale.h>
 #include <QDateTime>
-#include <kdebug.h>
+#include <QDebug>
 #include "kbookmarkmanager.h"
 #include "kbookmarkmodel/model.h"
 #include "kbookmarkmodel/commandhistory.h"
@@ -56,11 +56,11 @@ QString GlobalBookmarkManager::path() const { return mgr()->path(); }
 
 void GlobalBookmarkManager::createManager(const QString &filename, const QString &dbusObjectName, CommandHistory* commandHistory) {
     if (m_mgr) {
-        kDebug()<<"createManager called twice";
+        //qDebug()<<"createManager called twice";
         delete m_mgr;
     }
 
-    kDebug()<<"DBus Object name: "<<dbusObjectName;
+    //qDebug()<<"DBus Object name: "<<dbusObjectName;
     m_mgr = KBookmarkManager::managerForFile(filename, dbusObjectName);
 
     commandHistory->setBookmarkManager(m_mgr);
