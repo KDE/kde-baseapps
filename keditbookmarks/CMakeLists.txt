@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+project(keditbookmarks)
+
 # ECM setup
 find_package(ECM 1.2.0 CONFIG REQUIRED)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
@@ -16,6 +18,8 @@ include(CheckFunctionExists)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
+
+set(KEDITBOOKMARKS_VERSION "5.97.0")
 
 
 add_subdirectory(kbookmarkmodel)

@@ -13,8 +13,9 @@ target_link_libraries(kbookmarkmodel_private KF5::KIOCore KF5::KDELibs4Support)
 target_link_libraries(kbookmarkmodel_private LINK_INTERFACE_LIBRARIES KF5::KIOCore)
 
 set_target_properties(kbookmarkmodel_private PROPERTIES
-     VERSION ${GENERIC_LIB_VERSION}
-     SOVERSION ${GENERIC_LIB_SOVERSION}
+     VERSION ${KEDITBOOKMARKS_VERSION}
+     SOVERSION "6"
 )
+
 
 install(TARGETS kbookmarkmodel_private ${INSTALL_TARGETS_DEFAULT_ARGS})
