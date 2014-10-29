@@ -18,9 +18,22 @@ include(CheckFunctionExists)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
+include(KDEFrameworkCompilerSettings)
 
 set(KEDITBOOKMARKS_VERSION "5.97.0")
 
+find_package(Qt5 REQUIRED COMPONENTS Core)
+find_package(KF5 REQUIRED COMPONENTS KIO KDELibs4Support)
+
+
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${keditbookmarks_SOURCE_DIR}")
+    find_package(KF5Konq CONFIG REQUIRED)
+endif()
+
+add_definitions(-DQT_USE_FAST_CONCATENATION)
+remove_definitions(-DQT_NO_URL_CAST_FROM_STRING)
+
+############ sources ###################
 
 add_subdirectory(kbookmarkmodel)
 
@@ -74,3 +87,9 @@ install(TARGETS keditbookmarks          ${INSTALL_TARGETS_DEFAULT_ARGS})
 install( FILES keditbookmarks.kcfg  DESTINATION  ${KCFG_INSTALL_DIR} )
 install( FILES keditbookmarksui.rc  keditbookmarks-genui.rc  DESTINATION  ${KXMLGUI_INSTALL_DIR}/keditbookmarks )
 install( PROGRAMS org.kde.keditbookmarks.desktop DESTINATION ${XDG_APPS_INSTALL_DIR} )
+
+
+# TODO Remove the if/endif lines if keditbookmarks is split.
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${keditbookmarks_SOURCE_DIR}")
+    feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
+endif()
