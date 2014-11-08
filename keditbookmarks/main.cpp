@@ -94,7 +94,7 @@ static bool askUser(const QString& filename, bool &readonly) {
 }
 
 
-extern "C" KDE_EXPORT int kdemain(int argc, char **argv) {
+extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv) {
     Kdelibs4ConfigMigrator migrate(QStringLiteral("keditbookmarks"));
     migrate.setConfigFiles(QStringList() << QStringLiteral("keditbookmarksrc"));
     migrate.setUiFiles(QStringList() << QStringLiteral("keditbookmarksuirc"));
