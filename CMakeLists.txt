@@ -19,7 +19,7 @@ include(ECMSetupVersion)
 
 set(KDE_BASEAPPS_VERSION "4.97.0")
 
-find_package(Qt5 CONFIG REQUIRED COMPONENTS Core DBus Test Gui Widgets)
+find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core DBus Test Gui Widgets)
 find_package(KF5 REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Activities KDELibs4Support)
 if(NOT WIN32)
     find_package(KF5 REQUIRED Su)
