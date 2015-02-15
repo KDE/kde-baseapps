@@ -3,6 +3,7 @@ project(KDE_BASEAPPS)
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
 set(QT_MIN_VERSION "5.2.0")
+set(KF5_MIN_VERSION "5.7.0")
 
 find_package(ECM 1.2.0 REQUIRED CONFIG)
 
@@ -20,9 +21,9 @@ include(ECMSetupVersion)
 set(KDE_BASEAPPS_VERSION "4.97.0")
 
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core DBus Test Gui Widgets)
-find_package(KF5 REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Activities KDELibs4Support)
+find_package(KF5 ${KF5_MIN_VERSION} REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Activities KDELibs4Support)
 if(NOT WIN32)
-    find_package(KF5 REQUIRED Su)
+    find_package(KF5 ${KF5_MIN_VERSION} REQUIRED Su)
 endif()
 
 find_package(ZLIB)
