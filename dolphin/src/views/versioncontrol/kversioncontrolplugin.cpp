@@ -1,5 +1,6 @@
 /*****************************************************************************
- * Copyright (C) 2009 by Peter Penz <peter.penz19@gmail.com>                 *
+ * Copyright (C) 2011 by Vishesh Yadav <vishesh3y@gmail.com>                 *
+ * Copyright (C) 2011 by Peter Penz <peter.penz19@gmail.com>                 *
  *                                                                           *
  * This library is free software; you can redistribute it and/or             *
  * modify it under the terms of the GNU Library General Public               *
