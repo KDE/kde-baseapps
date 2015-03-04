@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(keditbookmarks)
 
 # ECM setup
-find_package(ECM 1.2.0 CONFIG REQUIRED)
+find_package(ECM 1.7.0 CONFIG REQUIRED)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 include(ECMOptionalAddSubdirectory)
@@ -14,6 +14,7 @@ include(ECMMarkNonGuiExecutable)
 
 include(CMakePackageConfigHelpers)
 include(FeatureSummary)
+include(ECMAddAppIcon)
 include(CheckFunctionExists)
 
 include(KDEInstallDirs)
@@ -45,7 +46,7 @@ add_executable(kbookmarkmerger ${kbookmarkmerger_SRCS})
 
 target_link_libraries(kbookmarkmerger  KF5::KIOCore KF5::KDELibs4Support)
 
-install(TARGETS kbookmarkmerger ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS kbookmarkmerger ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 
 
 ########### next target ###############
@@ -79,14 +80,14 @@ kde4_add_kdeinit_executable( keditbookmarks ${keditbookmarks_KDEINIT_SRCS})
 
 target_link_libraries(kdeinit_keditbookmarks kbookmarkmodel_private KF5::Konq KF5::Parts)
 
-install(TARGETS kdeinit_keditbookmarks  ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(TARGETS keditbookmarks          ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS kdeinit_keditbookmarks  ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS keditbookmarks          ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 
 ########### install files ###############
 
-install( FILES keditbookmarks.kcfg  DESTINATION  ${KCFG_INSTALL_DIR} )
-install( FILES keditbookmarksui.rc  keditbookmarks-genui.rc  DESTINATION  ${KXMLGUI_INSTALL_DIR}/keditbookmarks )
-install( PROGRAMS org.kde.keditbookmarks.desktop DESTINATION ${XDG_APPS_INSTALL_DIR} )
+install( FILES keditbookmarks.kcfg  DESTINATION  ${KDE_INSTALL_KCFGDIR} )
+install( FILES keditbookmarksui.rc  keditbookmarks-genui.rc  DESTINATION  ${KDE_INSTALL_KXMLGUI5DIR}/keditbookmarks )
+install( PROGRAMS org.kde.keditbookmarks.desktop DESTINATION ${KDE_INSTALL_APPDIR} )
 
 
 # TODO Remove the if/endif lines if keditbookmarks is split.

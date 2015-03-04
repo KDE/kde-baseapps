@@ -20,4 +20,4 @@ set_target_properties(kbookmarkmodel_private PROPERTIES
 )
 
 
-install(TARGETS kbookmarkmodel_private ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS kbookmarkmodel_private ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
