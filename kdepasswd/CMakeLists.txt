@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 2.8.12)
 project(Kdepasswd)
 
 # ECM setup
-find_package(ECM 1.2.0 CONFIG REQUIRED)
+find_package(ECM 1.7.0 CONFIG REQUIRED)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 include(ECMSetupVersion)
 include(FeatureSummary)
+include(ECMAddAppIcon)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDEFrameworkCompilerSettings)
@@ -46,7 +47,7 @@ target_link_libraries(kdepasswd
 )
 
 install(TARGETS kdepasswd ${KF5_INSTALL_TARGETS_DEFAULT_ARGS})
-install(PROGRAMS org.kde.kdepasswd.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
+install(PROGRAMS org.kde.kdepasswd.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 
 add_subdirectory(docs)
 
