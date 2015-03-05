@@ -40,7 +40,6 @@ add_definitions (-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 
 add_subdirectory(lib)
 add_subdirectory(kioslave/about)
-add_subdirectory(dolphin)
 add_subdirectory(kdialog)
 add_subdirectory(doc)
 if(NOT WIN32)
