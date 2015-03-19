@@ -38,7 +38,7 @@ class AbstractItemView;
  * in the view and resized to the size of the hovered item, so that the tooltip
  * will be positioned correctly when it's shown.
  *
- * It is also responsible for starting preview jobs and updating the the tooltip
+ * It is also responsible for starting preview jobs and updating the tooltip
  * contents when a preview has been generated.
  *
  * While the widget is created as a child widget of the view, it is always hidden.

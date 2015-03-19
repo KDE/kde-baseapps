@@ -1272,7 +1272,7 @@ void FolderView::constraintsEvent(Plasma::Constraints constraints)
                 // if we're coming out of an iconified state, let's reset to a reasonable sane state
                 // NOTE: usually one NEVER resizes outside of the constructor as that overrides the
                 // user settings, but in this case we are changing applet state completely and there
-                // is no user state for size in that case for folderview (by defintion)
+                // is no user state for size in that case for folderview (by definition)
                 resize(600, 400);
             }
             setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -1737,7 +1737,7 @@ QList<QAction*> FolderView::contextualActions()
         KFileItemListProperties itemList(KFileItemList() << item);
         m_itemActions->setItemListProperties(itemList);
 
-        // FIXME: The actions instanciated by KFileItemActions::preferredOpenWithAction()
+        // FIXME: The actions instantiated by KFileItemActions::preferredOpenWithAction()
         // (see below) are eventually deleted in its constructor, but it would be better
         // to find a way to not keep them around rather than just to hide them.
         if (m_openWithAction) {
