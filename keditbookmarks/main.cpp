@@ -32,7 +32,7 @@
 
 #include <kcmdlineargs.h>
 #include <K4AboutData>
-#include <kuniqueapplication.h>
+#include <kapplication.h>
 #include <kdelibs4configmigrator.h>
 
 #include <kmessagebox.h>
