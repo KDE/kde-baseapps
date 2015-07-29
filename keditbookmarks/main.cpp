@@ -144,6 +144,9 @@ extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv) {
     //KApplication::disableAutoDcopRegistration();
     KApplication app(isGui);
 
+    // enable high dpi support
+    app.setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
     bool gotFilenameArg = (args->count() == 1);
 
     QString filename = gotFilenameArg

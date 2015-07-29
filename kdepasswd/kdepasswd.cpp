@@ -47,6 +47,10 @@ int main(int argc, char **argv)
     aboutData.addAuthor(i18n("Geert Jansen"), i18n("Maintainer"), QLatin1String("jansen@kde.org"));
 
     QApplication app(argc, argv);
+
+    // enable high dpi support
+    app.setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
     app.setWindowIcon(QIcon::fromTheme(QLatin1String("preferences-desktop-user-password")));
     QCommandLineParser parser;
     KAboutData::setApplicationData(aboutData);
