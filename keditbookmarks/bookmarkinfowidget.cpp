@@ -83,9 +83,9 @@ void BookmarkInfoWidget::showBookmark(const KBookmark &bk)
         // Update the text if and only if the text represents a different URL to that
         // of the current bookmark - the old method, "m_url_le->text() != bk.url().pathOrUrl()",
         // created difficulties due to the ambiguity of converting URLs to text. (#172647)
-        if (KUrl(m_url_le->text()) != bk.url()) {
+        if (QUrl::fromUserInput(m_url_le->text()) != bk.url()) {
             const int cursorPosition = m_url_le->cursorPosition();
-            //PORT QT5 m_url_le->setText(bk.url().pathOrUrl());
+            m_url_le->setText(bk.url().url(QUrl::PreferLocalFile));
             m_url_le->setCursorPosition(cursorPosition);
         }
     }

@@ -120,8 +120,7 @@ QVariant KBookmarkModel::data(const QModelIndex &index, int role) const
             case NameColumnId:
                 return bk.fullText();
             case UrlColumnId:
-                //PORT QT5 return bk.url().pathOrUrl();
-                return QString();
+                return bk.url().url(QUrl::PreferLocalFile);
             case CommentColumnId:
                 return bk.description();
             case StatusColumnId: {
