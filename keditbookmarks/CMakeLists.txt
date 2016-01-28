@@ -19,7 +19,7 @@ include(CheckFunctionExists)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
-include(KDEFrameworkCompilerSettings)
+include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
 
 set(KEDITBOOKMARKS_VERSION "5.97.0")
 

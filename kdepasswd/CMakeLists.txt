@@ -11,7 +11,7 @@ include(FeatureSummary)
 include(ECMAddAppIcon)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
-include(KDEFrameworkCompilerSettings)
+include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
 
 set(KDEPASSWD_VERSION "4.70.0")
 
