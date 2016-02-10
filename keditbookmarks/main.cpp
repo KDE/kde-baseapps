@@ -32,7 +32,6 @@
 
 #include <kcmdlineargs.h>
 #include <K4AboutData>
-#include <kapplication.h>
 #include <kdelibs4configmigrator.h>
 
 #include <kmessagebox.h>
@@ -43,7 +42,7 @@
 #include <kbookmarkexporter.h>
 #include <toplevel_interface.h>
 
-#include <QGuiApplication>
+#include <QApplication>
 
 // TODO - make this register() or something like that and move dialog into main
 static bool askUser(const QString& filename, bool &readonly) {
@@ -94,7 +93,10 @@ static bool askUser(const QString& filename, bool &readonly) {
 }
 
 
-extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv) {
+extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv)
+{
+    QApplication app(argc, argv);
+
     Kdelibs4ConfigMigrator migrate(QStringLiteral("keditbookmarks"));
     migrate.setConfigFiles(QStringList() << QStringLiteral("keditbookmarksrc"));
     migrate.setUiFiles(QStringList() << QStringLiteral("keditbookmarksuirc"));
@@ -140,9 +142,6 @@ extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv) {
                 || args->isSet("importkde3") || args->isSet("importgaleon"));
 
     bool browser = args->isSet("browser");
-
-    //KApplication::disableAutoDcopRegistration();
-    KApplication app(isGui);
 
     // enable high dpi support
     app.setAttribute(Qt::AA_UseHighDpiPixmaps, true);

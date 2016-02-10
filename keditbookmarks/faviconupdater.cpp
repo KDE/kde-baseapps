@@ -28,20 +28,15 @@
 #include <klocale.h>
 
 #include <kio/job.h>
+#include <KIO/FavIconRequestJob>
 
-#include <kmimetype.h>
 #include <kparts/part.h>
 #include <kparts/browserextension.h>
 #include <kmimetypetrader.h>
 
 FavIconUpdater::FavIconUpdater(QObject *parent)
-    : QObject(parent),
-      m_favIconModule("org.kde.kded", "/modules/favicons", QDBusConnection::sessionBus())
+    : QObject(parent)
 {
-    connect(&m_favIconModule, SIGNAL(iconChanged(bool,QString,QString)),
-            this, SLOT(notifyChange(bool,QString,QString)) );
-    connect(&m_favIconModule, SIGNAL(error(bool,QString,QString)),
-            this, SLOT(slotFavIconError(bool,QString,QString)) );
     m_part = 0;
     m_webGrabber = 0;
     m_browserIface = 0;
@@ -50,8 +45,8 @@ FavIconUpdater::FavIconUpdater(QObject *parent)
 void FavIconUpdater::downloadIcon(const KBookmark &bk)
 {
     m_bk = bk;
-    const QString url = bk.url().url();
-    const QString favicon = KMimeType::favIconForUrl(url);
+    const QUrl url = bk.url();
+    const QString favicon = KIO::favIconForUrl(url);
     if (!favicon.isEmpty()) {
         //qDebug() << "got favicon" << favicon;
         m_bk.setIcon(favicon);
@@ -62,7 +57,8 @@ void FavIconUpdater::downloadIcon(const KBookmark &bk)
     } else {
         //qDebug() << "no favicon found";
         webupdate = false;
-        m_favIconModule.forceDownloadHostIcon(url);
+        KIO::FavIconRequestJob *job = new KIO::FavIconRequestJob(url, KIO::Reload);
+        connect(job, &KIO::FavIconRequestJob::result, this, &FavIconUpdater::slotResult);
     }
 }
 
@@ -116,47 +112,31 @@ void FavIconUpdater::downloadIconUsingWebBrowser(const KBookmark &bk, const QStr
 // khtml callback
 void FavIconUpdater::setIconUrl(const QUrl &iconURL)
 {
-    m_favIconModule.setIconForUrl(m_bk.url().url(), iconURL.url());
-    // The above call will make the kded module start the download and emit iconChanged or error.
+    KIO::FavIconRequestJob *job = new KIO::FavIconRequestJob(m_bk.url());
+    job->setIconUrl(iconURL);
+    connect(job, &KIO::FavIconRequestJob::result, this, &FavIconUpdater::slotResult);
 
     delete m_webGrabber;
     m_webGrabber = 0;
 }
 
-bool FavIconUpdater::isFavIconSignalRelevant(bool isHost, const QString& hostOrURL) const
+void FavIconUpdater::slotResult(KJob *job)
 {
-    // Is this signal interesting to us? (Don't react on an unrelated favicon)
-    return (isHost && hostOrURL == m_bk.url().host()) ||
-        (!isHost && hostOrURL == m_bk.url().url()); // should we use the api that ignores trailing slashes?
-}
-
-void FavIconUpdater::notifyChange(bool isHost,
-                                  const QString& hostOrURL,
-                                  const QString& iconName)
-{
-    //qDebug() << hostOrURL << iconName;
-    if (isFavIconSignalRelevant(isHost, hostOrURL)) {
-        if (iconName.isEmpty()) { // old version of the kded module could emit with an empty iconName on error
-            slotFavIconError(isHost, hostOrURL, QString());
-        } else {
-            m_bk.setIcon(iconName);
-            emit done(true, QString());
-        }
-    }
-}
-
-void FavIconUpdater::slotFavIconError(bool isHost, const QString& hostOrURL, const QString& errorString)
-{
-    //qDebug() << hostOrURL << errorString;
-    if (isFavIconSignalRelevant(isHost, hostOrURL)) {
+    KIO::FavIconRequestJob *requestJob = static_cast<KIO::FavIconRequestJob *>(job);
+    if (job->error()) {
         if (!webupdate) {
+            qDebug() << "favicon job failed, going to downloadIconUsingWebBrowser";
             // no icon found, try webupdater
-            downloadIconUsingWebBrowser(m_bk, errorString);
+            downloadIconUsingWebBrowser(m_bk, job->errorString());
         } else {
+            qDebug() << "favicon job failed, emit done";
             // already tried webupdater
-            emit done(false, errorString);
+            emit done(false, job->errorString());
         }
+        return;
     }
+    m_bk.setIcon(requestJob->iconFile());
+    emit done(true, QString());
 }
 
 /* -------------------------- */
@@ -178,19 +158,23 @@ FavIconWebGrabber::FavIconWebGrabber(KParts::ReadOnlyPart *part, const QUrl &url
     //qDebug() << "starting KIO::get() on" << m_url;
     KIO::Job *job = KIO::get(m_url, KIO::NoReload, KIO::HideProgressInfo);
     job->addMetaData( QString("cookies"), QString("none") );
+    job->addMetaData( QString("errorPage"), QString("false") );
     connect(job, SIGNAL(result(KJob*)),
             this, SLOT(slotFinished(KJob*)));
     connect(job, SIGNAL(mimetype(KIO::Job*,QString)),
             this, SLOT(slotMimetype(KIO::Job*,QString)));
 }
 
-void FavIconWebGrabber::slotMimetype(KIO::Job *job, const QString & /*type*/) {
+void FavIconWebGrabber::slotMimetype(KIO::Job *job, const QString &type)
+{
+    Q_ASSERT(!job->error()); // can't be set already, surely?
+
     KIO::SimpleJob *sjob = static_cast<KIO::SimpleJob *>(job);
     m_url = sjob->url(); // allow for redirection
     sjob->putOnHold();
 
     // QString typeLocal = typeUncopied; // local copy
-    // //qDebug() << "slotMimetype : " << typeLocal;
+    qDebug() << "slotMimetype " << type << "calling openUrl on" << m_url;
     // TODO - what to do if typeLocal is not text/html ??
 
     m_part->openUrl(m_url);
@@ -199,15 +183,16 @@ void FavIconWebGrabber::slotMimetype(KIO::Job *job, const QString & /*type*/) {
 void FavIconWebGrabber::slotFinished(KJob *job)
 {
     if (job->error()) {
-        //qDebug() << job->errorString();
+        qDebug() << job->errorString();
         emit done(false, job->errorString());
+        return;
     }
     // On success mimetype was emitted, so no need to do anything.
 }
 
 void FavIconWebGrabber::slotCompleted()
 {
-    //qDebug();
+    qDebug();
     emit done(true, QString());
 }
 

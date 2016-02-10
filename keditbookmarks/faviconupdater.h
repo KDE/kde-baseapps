@@ -19,7 +19,6 @@
 #define FAVICONUPDATER_H
 
 #include <kbookmark.h>
-#include "favicon_interface.h" // org::kde::FavIcon
 
 #include <kparts/part.h>
 #include <kparts/browserinterface.h>
@@ -62,14 +61,10 @@ public:
 
 private Q_SLOTS:
     void setIconUrl(const QUrl &iconURL);
-    void notifyChange(bool isHost, const QString& hostOrURL, const QString& iconName);
-    void slotFavIconError(bool isHost, const QString& hostOrURL, const QString& errorString);
+    void slotResult(KJob *job);
 
 Q_SIGNALS:
     void done(bool succeeded, const QString& error);
-
-private:
-    bool isFavIconSignalRelevant(bool isHost, const QString& hostOrURL) const;
 
 private:
     KParts::ReadOnlyPart *m_part;
@@ -77,7 +72,6 @@ private:
     FavIconWebGrabber *m_webGrabber;
     KBookmark m_bk;
     bool webupdate;
-    org::kde::FavIcon m_favIconModule;
 };
 
 class FavIconBrowserInterface : public KParts::BrowserInterface
