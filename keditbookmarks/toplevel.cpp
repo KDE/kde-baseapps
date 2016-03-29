@@ -83,9 +83,6 @@ KEBApp::KEBApp(
     connect(qApp->clipboard(), SIGNAL(dataChanged()),
                                SLOT(slotClipboardDataChanged()));
 
-    //KF5 port: remove this line and define TRANSLATION_DOMAIN in CMakeLists.txt instead
-//KLocale::global()->insertCatalog("libkonq");
-
     m_canPaste = false;
 
     mBookmarkListView = new BookmarkListView();

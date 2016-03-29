@@ -26,11 +26,6 @@ set(KEDITBOOKMARKS_VERSION "5.97.0")
 find_package(Qt5 REQUIRED COMPONENTS Core)
 find_package(KF5 REQUIRED COMPONENTS CoreAddons I18n KIO KDELibs4Support)
 
-
-if ("${CMAKE_SOURCE_DIR}" STREQUAL "${keditbookmarks_SOURCE_DIR}")
-    find_package(KF5Konq CONFIG REQUIRED)
-endif()
-
 add_definitions(-DQT_USE_FAST_CONCATENATION)
 remove_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
@@ -76,7 +71,7 @@ kconfig_add_kcfg_files(keditbookmarks_KDEINIT_SRCS settings.kcfgc )
 
 kde4_add_kdeinit_executable( keditbookmarks ${keditbookmarks_KDEINIT_SRCS})
 
-target_link_libraries(kdeinit_keditbookmarks kbookmarkmodel_private KF5::Konq KF5::Parts KF5::KIOGui)
+target_link_libraries(kdeinit_keditbookmarks kbookmarkmodel_private KF5::Parts KF5::KIOGui)
 
 install(TARGETS kdeinit_keditbookmarks  ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 install(TARGETS keditbookmarks          ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
