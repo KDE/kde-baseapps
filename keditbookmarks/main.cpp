@@ -31,7 +31,7 @@
 #include <QCommandLineOption>
 
 #include <kdeversion.h>
-#include <kstandarddirs.h>
+
 
 #include <KAboutData>
 #include <kdelibs4configmigrator.h>
@@ -43,6 +43,7 @@
 #include <kbookmarkmanager.h>
 #include <kbookmarkexporter.h>
 #include <toplevel_interface.h>
+#include <QStandardPaths>
 
 // TODO - make this register() or something like that and move dialog into main
 static bool askUser(const QString& filename, bool &readonly) {
@@ -157,7 +158,7 @@ extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv)
 
     QString filename = gotFilenameArg
         ? parser.positionalArguments().at(0)
-        : KStandardDirs::locateLocal("data", QLatin1String("konqueror/bookmarks.xml"));
+        : QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QLatin1String("/konqueror/bookmarks.xml");
 
     if (!isGui) {
         GlobalBookmarkManager::self()->createManager(filename, QString(), new CommandHistory());

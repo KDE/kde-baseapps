@@ -49,7 +49,7 @@
 #include <klocale.h>
 #include <kstandardaction.h>
 #include <krun.h>
-#include <kstandarddirs.h>
+
 
 #include <kbookmark.h>
 #include <kbookmarkmanager.h>

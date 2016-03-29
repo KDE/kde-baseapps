@@ -43,6 +43,7 @@
 //#include <kbookmarkimporter_crash.h>
 #include <kbookmarkdombuilder.h>
 #include <kbookmarkimporter_ns.h>
+#include <QStandardPaths>
 
 
 ImportCommand::ImportCommand(KBookmarkModel* model)
@@ -201,13 +202,11 @@ QString GaleonImportCommand::requestFilename() const {
             i18n("Galeon Bookmark Files (*.xbel)"));
 }
 
-#include "kstandarddirs.h"
-
 QString KDE2ImportCommand::requestFilename() const {
     return QFileDialog::getOpenFileName(
             KEBApp::self(),
             QString(),
-            KStandardDirs::locateLocal("data", "konqueror"),
+            QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QLatin1String("/konqueror"),
             i18n("KDE Bookmark Files (*.xml)"));
 }
 

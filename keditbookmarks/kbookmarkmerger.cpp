@@ -28,7 +28,7 @@
 #include <kbookmarkmanager.h>
 
 #include <QDebug>
-#include <kstandarddirs.h>
+
 
 #include <QtCore/QDir>
 #include <QtXml/qdom.h>

@@ -20,10 +20,11 @@
 
 #include <QAction>
 #include <kactioncollection.h>
-#include <kstandarddirs.h>
+
 #include <kdebug.h>
 #include <qtest_kde.h>
 #include <kbookmarkmanager.h>
+#include <QStandardPaths>
 
 #include "../../kbookmarkmodel/commandhistory.h"
 #include "../../kbookmarkmodel/model.h"
@@ -74,7 +75,7 @@ private:
 private Q_SLOTS:
     void initTestCase()
     {
-        const QString filename = KStandardDirs::locateLocal("data", QLatin1String("konqueror/bookmarks.xml"));
+        const QString filename = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QLatin1String("/konqueror/bookmarks.xml");
         QFile::remove(filename);
         m_bookmarkManager = KBookmarkManager::managerForFile(filename, QString());
         m_cmdHistory = new CommandHistory(this);
