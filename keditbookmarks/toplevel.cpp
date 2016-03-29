@@ -47,7 +47,6 @@
 #include <QDebug>
 #include <kdialog.h>
 #include <kedittoolbar.h>
-#include <kfiledialog.h>
 #include <klineedit.h>
 #include <klocale.h>
 #include <kmessagebox.h>

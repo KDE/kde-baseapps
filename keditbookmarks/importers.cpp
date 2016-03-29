@@ -27,12 +27,12 @@
 #include "toplevel.h" // for KEBApp
 #include "kbookmarkmodel/model.h"
 
+#include <QFileDialog>
 #include <QtCore/QRegExp>
 #include <QDebug>
 #include <klocale.h>
 
 #include <kmessagebox.h>
-#include <kfiledialog.h>
 
 #include <kbookmark.h>
 #include <kbookmarkmanager.h>
@@ -194,19 +194,21 @@ QString IEImportCommand::requestFilename() const {
 // following two are really just xbel
 
 QString GaleonImportCommand::requestFilename() const {
-    return KFileDialog::getOpenFileName(
+    return QFileDialog::getOpenFileName(
+            KEBApp::self(),
+            QString(),
             QString(QDir::homePath() + "/.galeon"),
-            i18n("*.xbel|Galeon Bookmark Files (*.xbel)"),
-            KEBApp::self());
+            i18n("Galeon Bookmark Files (*.xbel)"));
 }
 
 #include "kstandarddirs.h"
 
 QString KDE2ImportCommand::requestFilename() const {
-    return KFileDialog::getOpenFileName(
+    return QFileDialog::getOpenFileName(
+            KEBApp::self(),
+            QString(),
             KStandardDirs::locateLocal("data", "konqueror"),
-            i18n("*.xml|KDE Bookmark Files (*.xml)"),
-            KEBApp::self());
+            i18n("KDE Bookmark Files (*.xml)"));
 }
 
 /* -------------------------------------- */

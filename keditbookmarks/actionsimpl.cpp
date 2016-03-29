@@ -35,9 +35,9 @@
 #include <stdlib.h>
 
 #include <QClipboard>
+#include <QFileDialog>
 #include <QtCore/QMimeData>
 #include <QApplication>
-
 #include <QDebug>
 
 #include <kaction.h>
@@ -48,7 +48,6 @@
 #include <kinputdialog.h>
 #include <klocale.h>
 #include <kstandardaction.h>
-#include <kfiledialog.h>
 #include <krun.h>
 #include <kstandarddirs.h>
 
@@ -263,8 +262,8 @@ ActionsImpl::ActionsImpl(QObject* parent, KBookmarkModel* model)
 
 void ActionsImpl::slotLoad()
 {
-    QString bookmarksFile
-        = KFileDialog::getOpenFileName(QString(), "*.xml", KEBApp::self());
+    const QString bookmarksFile
+        = QFileDialog::getOpenFileName(KEBApp::self(), QString(), QString(), "KDE Bookmark Files (*.xml)");
     if (bookmarksFile.isNull())
         return;
     KEBApp::self()->reset(QString(), bookmarksFile);
@@ -272,8 +271,8 @@ void ActionsImpl::slotLoad()
 
 void ActionsImpl::slotSaveAs() {
     KEBApp::self()->bkInfo()->commitChanges();
-    QString saveFilename
-        = KFileDialog::getSaveFileName(QString(), "*.xml", KEBApp::self());
+    const QString saveFilename
+        = QFileDialog::getSaveFileName(KEBApp::self(), QString(), QString(), "KDE Bookmark Files (*.xml)");
     if (!saveFilename.isEmpty())
         GlobalBookmarkManager::self()->saveAs(saveFilename);
 }
@@ -293,10 +292,11 @@ void GlobalBookmarkManager::doExport(ExportType type, const QString & _path) {
 
     } else if (type == HTMLExport) {
         if (path.isNull())
-            path = KFileDialog::getSaveFileName(
+            path = QFileDialog::getSaveFileName(
+                        KEBApp::self(),
+                        QString(),
                         QDir::homePath(),
-                        i18n("*.html|HTML Bookmark Listing"),
-                        KEBApp::self() );
+                        i18n("HTML Bookmark Listing (*.html)"));
         HTMLExporter exporter;
         exporter.write(mgr()->root(), path);
         return;
