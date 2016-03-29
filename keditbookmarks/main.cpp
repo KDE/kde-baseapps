@@ -25,13 +25,15 @@
 #include "importers.h"
 #include "kbookmarkmodel/commandhistory.h"
 
-#include <klocale.h>
+#include <QApplication>
 #include <QDebug>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
+
 #include <kdeversion.h>
 #include <kstandarddirs.h>
 
-#include <kcmdlineargs.h>
-#include <K4AboutData>
+#include <KAboutData>
 #include <kdelibs4configmigrator.h>
 
 #include <kmessagebox.h>
@@ -41,8 +43,6 @@
 #include <kbookmarkmanager.h>
 #include <kbookmarkexporter.h>
 #include <toplevel_interface.h>
-
-#include <QApplication>
 
 // TODO - make this register() or something like that and move dialog into main
 static bool askUser(const QString& filename, bool &readonly) {
@@ -102,54 +102,61 @@ extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv)
     migrate.setUiFiles(QStringList() << QStringLiteral("keditbookmarksuirc"));
     migrate.migrate();
 
-    K4AboutData aboutData("keditbookmarks", 0, ki18n("Bookmark Editor"), KDE_VERSION_STRING,
-            ki18n("Bookmark Organizer and Editor"),
-            K4AboutData::License_GPL,
-            ki18n("Copyright 2000-2007, KDE developers") );
-    aboutData.addAuthor(ki18n("David Faure"), ki18n("Initial author"), "faure@kde.org");
-    aboutData.addAuthor(ki18n("Alexander Kellett"), ki18n("Author"), "lypanov@kde.org");
-    aboutData.setProgramIconName("bookmarks-organize");
+    KLocalizedString::setApplicationDomain("keditbookmarks");
 
-    KCmdLineArgs::init(argc, argv, &aboutData);
-    KCmdLineArgs::addStdCmdLineOptions();
+    KAboutData aboutData(QStringLiteral("keditbookmarks"),
+                         i18n("Bookmark Editor"),
+                         QStringLiteral("5.0"),
+                         i18n("Bookmark Organizer and Editor"),
+                         KAboutLicense::GPL,
+                         i18n("Copyright 2000-2007, KDE developers") );
+    aboutData.addAuthor(i18n("David Faure"), i18n("Initial author"), "faure@kde.org");
+    aboutData.addAuthor(i18n("Alexander Kellett"), i18n("Author"), "lypanov@kde.org");
+    KAboutData::setApplicationData(aboutData);
 
-    KCmdLineOptions options;
-    options.add("importmoz <filename>", ki18n("Import bookmarks from a file in Mozilla format"));
-    options.add("importns <filename>", ki18n("Import bookmarks from a file in Netscape (4.x and earlier) format"));
-    options.add("importie <filename>", ki18n("Import bookmarks from a file in Internet Explorer's Favorites format"));
-    options.add("importopera <filename>", ki18n("Import bookmarks from a file in Opera format"));
-    options.add("importkde3 <filename>", ki18n("Import bookmarks from a file in KDE2 format"));
-    options.add("importgaleon <filename>", ki18n("Import bookmarks from a file in Galeon format"));
-    options.add("exportmoz <filename>", ki18n("Export bookmarks to a file in Mozilla format"));
-    options.add("exportns <filename>", ki18n("Export bookmarks to a file in Netscape (4.x and earlier) format"));
-    options.add("exporthtml <filename>", ki18n("Export bookmarks to a file in a printable HTML format"));
-    options.add("exportie <filename>", ki18n("Export bookmarks to a file in Internet Explorer's Favorites format"));
-    options.add("exportopera <filename>", ki18n("Export bookmarks to a file in Opera format"));
-    options.add("address <address>", ki18n("Open at the given position in the bookmarks file"));
-    options.add("customcaption <caption>", ki18n("Set the user-readable caption, for example \"Konsole\""));
-    options.add("nobrowser", ki18n("Hide all browser related functions"));
-    options.add("dbusObjectName <name>", ki18n("A unique name that represents this bookmark collection, usually the kinstance name.\n"
+    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("bookmarks-organize")));
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription(aboutData.shortDescription());
+
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("importmoz"), i18n("Import bookmarks from a file in Mozilla format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("importns"), i18n("Import bookmarks from a file in Netscape (4.x and earlier) format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("importie"), i18n("Import bookmarks from a file in Internet Explorer's Favorites format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("importopera"), i18n("Import bookmarks from a file in Opera format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("importkde3"), i18n("Import bookmarks from a file in KDE2 format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("importgaleon"), i18n("Import bookmarks from a file in Galeon format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("exportmoz"), i18n("Export bookmarks to a file in Mozilla format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("exportns"), i18n("Export bookmarks to a file in Netscape (4.x and earlier) format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("exporthtml"), i18n("Export bookmarks to a file in a printable HTML format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("exportie"), i18n("Export bookmarks to a file in Internet Explorer's Favorites format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("exportopera"), i18n("Export bookmarks to a file in Opera format"), QLatin1String("filename")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("address"), i18n("Open at the given position in the bookmarks file"), QLatin1String("address")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("customcaption"), i18n("Set the user-readable caption, for example \"Konsole\""), QLatin1String("caption")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("nobrowser"), i18n("Hide all browser related functions")));
+    parser.addOption(QCommandLineOption(QStringList() << QLatin1String("dbusObjectName"), i18n("A unique name that represents this bookmark collection, usually the kinstance name.\n"
                                  "This should be \"konqueror\" for the Konqueror bookmarks, \"kfile\" for KFileDialog bookmarks, etc.\n"
-                                 "The final D-Bus object path is /KBookmarkManager/dbusObjectName"));
-    options.add("+[file]", ki18n("File to edit"));
-    KCmdLineArgs::addCmdLineOptions(options);
+                                 "The final D-Bus object path is /KBookmarkManager/<dbusObjectName>"), QLatin1String("name")));
+    parser.addPositionalArgument(QLatin1String("[file]"), i18n("File to edit"));
 
-    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
-    bool isGui = !(args->isSet("exportmoz") || args->isSet("exportns") || args->isSet("exporthtml")
-                || args->isSet("exportie") || args->isSet("exportopera")
-                || args->isSet("importmoz") || args->isSet("importns")
-                || args->isSet("importie") || args->isSet("importopera")
-                || args->isSet("importkde3") || args->isSet("importgaleon"));
+    aboutData.setupCommandLine(&parser);
+    parser.process(app);
+    aboutData.processCommandLine(&parser);
 
-    bool browser = args->isSet("browser");
+    const bool isGui = !(parser.isSet("exportmoz") || parser.isSet("exportns") || parser.isSet("exporthtml")
+                || parser.isSet("exportie") || parser.isSet("exportopera")
+                || parser.isSet("importmoz") || parser.isSet("importns")
+                || parser.isSet("importie") || parser.isSet("importopera")
+                || parser.isSet("importkde3") || parser.isSet("importgaleon"));
+
+    const bool browser = !parser.isSet("nobrowser");
 
     // enable high dpi support
     app.setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
-    bool gotFilenameArg = (args->count() == 1);
+    const bool gotFilenameArg = (parser.positionalArguments().count() == 1);
 
     QString filename = gotFilenameArg
-        ? args->arg(0)
+        ? parser.positionalArguments().at(0)
         : KStandardDirs::locateLocal("data", QLatin1String("konqueror/bookmarks.xml"));
 
     if (!isGui) {
@@ -157,28 +164,32 @@ extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv)
         GlobalBookmarkManager::ExportType exportType = GlobalBookmarkManager::MozillaExport; // uumm.. can i just set it to -1 ?
         int got = 0;
         const char *arg, *arg2 = 0, *importType = 0;
-        if (arg = "exportmoz",  args->isSet(arg)) { exportType = GlobalBookmarkManager::MozillaExport;  arg2 = arg; got++; }
-        if (arg = "exportns",   args->isSet(arg)) { exportType = GlobalBookmarkManager::NetscapeExport; arg2 = arg; got++; }
-        if (arg = "exporthtml", args->isSet(arg)) { exportType = GlobalBookmarkManager::HTMLExport;     arg2 = arg; got++; }
-        if (arg = "exportie",   args->isSet(arg)) { exportType = GlobalBookmarkManager::IEExport;       arg2 = arg; got++; }
-        if (arg = "exportopera", args->isSet(arg)) { exportType = GlobalBookmarkManager::OperaExport;    arg2 = arg; got++; }
-        if (arg = "importmoz",  args->isSet(arg)) { importType = "Moz";   arg2 = arg; got++; }
-        if (arg = "importns",   args->isSet(arg)) { importType = "NS";    arg2 = arg; got++; }
-        if (arg = "importie",   args->isSet(arg)) { importType = "IE";    arg2 = arg; got++; }
-        if (arg = "importopera", args->isSet(arg)) { importType = "Opera"; arg2 = arg; got++; }
-        if (arg = "importgaleon", args->isSet(arg)) { importType = "Galeon"; arg2 = arg; got++; }
-        if (arg = "importkde3", args->isSet(arg)) { importType = "KDE2"; arg2 = arg; got++; }
+        if (arg = "exportmoz",  parser.isSet(arg)) { exportType = GlobalBookmarkManager::MozillaExport;  arg2 = arg; got++; }
+        if (arg = "exportns",   parser.isSet(arg)) { exportType = GlobalBookmarkManager::NetscapeExport; arg2 = arg; got++; }
+        if (arg = "exporthtml", parser.isSet(arg)) { exportType = GlobalBookmarkManager::HTMLExport;     arg2 = arg; got++; }
+        if (arg = "exportie",   parser.isSet(arg)) { exportType = GlobalBookmarkManager::IEExport;       arg2 = arg; got++; }
+        if (arg = "exportopera", parser.isSet(arg)) { exportType = GlobalBookmarkManager::OperaExport;    arg2 = arg; got++; }
+        if (arg = "importmoz",  parser.isSet(arg)) { importType = "Moz";   arg2 = arg; got++; }
+        if (arg = "importns",   parser.isSet(arg)) { importType = "NS";    arg2 = arg; got++; }
+        if (arg = "importie",   parser.isSet(arg)) { importType = "IE";    arg2 = arg; got++; }
+        if (arg = "importopera", parser.isSet(arg)) { importType = "Opera"; arg2 = arg; got++; }
+        if (arg = "importgaleon", parser.isSet(arg)) { importType = "Galeon"; arg2 = arg; got++; }
+        if (arg = "importkde3", parser.isSet(arg)) { importType = "KDE2"; arg2 = arg; got++; }
         if (!importType && arg2) {
             Q_ASSERT(arg2);
             // TODO - maybe an xbel export???
-            if (got > 1) // got == 0 isn't possible as !isGui is dependant on "export.*"
-                KCmdLineArgs::usage(I18N_NOOP("You may only specify a single --export option."));
-            QString path = args->getOption(arg2);
+            if (got > 1) { // got == 0 isn't possible as !isGui is dependant on "export.*"
+                qWarning() << i18n("You may only specify a single --export option.");
+                return 1;
+            }
+            QString path = parser.value(arg2);
             GlobalBookmarkManager::self()->doExport(exportType, path);
         } else if (importType) {
-            if (got > 1) // got == 0 isn't possible as !isGui is dependant on "import.*"
-                KCmdLineArgs::usage(I18N_NOOP("You may only specify a single --import option."));
-            QString path = args->getOption(arg2);
+            if (got > 1) { // got == 0 isn't possible as !isGui is dependant on "import.*"
+                qWarning() << i18n("You may only specify a single --import option.");
+                return 1;
+            }
+            QString path = parser.value(arg2);
             KBookmarkModel* model = GlobalBookmarkManager::self()->model();
             ImportCommand *importer = ImportCommand::importerFactory(model, importType);
             importer->import(path, true);
@@ -189,18 +200,18 @@ extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv)
         return 0; // error flag on exit?, 1?
     }
 
-    QString address = args->isSet("address")
-        ? args->getOption("address")
+    QString address = parser.isSet("address")
+        ? parser.value("address")
         : QString("/0");
 
-    QString caption = args->isSet("customcaption")
-        ? args->getOption("customcaption")
+    QString caption = parser.isSet("customcaption")
+        ? parser.value("customcaption")
         : QString();
 
     QString dbusObjectName;
-    if(args->isSet("dbusObjectName"))
+    if(parser.isSet("dbusObjectName"))
     {
-        dbusObjectName = args->getOption("dbusObjectName");
+        dbusObjectName = parser.value("dbusObjectName");
     }
     else
     {
@@ -209,8 +220,6 @@ extern "C" Q_DECL_EXPORT int kdemain(int argc, char **argv)
         else
           dbusObjectName = "konqueror";
     }
-
-    args->clear();
 
     bool readonly = false; // passed by ref
 

@@ -24,7 +24,7 @@ include(KDEFrameworkCompilerSettings)
 set(KEDITBOOKMARKS_VERSION "5.97.0")
 
 find_package(Qt5 REQUIRED COMPONENTS Core)
-find_package(KF5 REQUIRED COMPONENTS KIO KDELibs4Support)
+find_package(KF5 REQUIRED COMPONENTS CoreAddons I18n KIO KDELibs4Support)
 
 
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${keditbookmarks_SOURCE_DIR}")
