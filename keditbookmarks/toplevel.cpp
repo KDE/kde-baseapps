@@ -39,16 +39,14 @@
 #include <QSplitter>
 #include <QApplication>
 
-#include <kaction.h>
 #include <kactioncollection.h>
 #include <ktoggleaction.h>
 #include <kbookmark.h>
 #include <kbookmarkmanager.h>
 #include <QDebug>
-#include <kdialog.h>
 #include <kedittoolbar.h>
 #include <klineedit.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kstandardaction.h>
 
@@ -104,7 +102,6 @@ KEBApp::KEBApp(
     listLayout->addWidget(mBookmarkListView);
 
     m_bkinfo = new BookmarkInfoWidget(mBookmarkListView, GlobalBookmarkManager::self()->model());
-    m_bkinfo->layout()->setContentsMargins(0, 0, KDialog::spacingHint(), KDialog::spacingHint());
 
     listLayout->addWidget(m_bkinfo);
 
@@ -289,7 +286,7 @@ QString KEBApp::insertAddress() const
         : KBookmark::nextAddress(current.address());
 }
 
-bool lessAddress(const QString& first, const QString& second)
+static bool lessAddress(const QString& first, const QString& second)
 {
     QString a = first;
     QString b = second;
@@ -339,7 +336,7 @@ bool lessAddress(const QString& first, const QString& second)
     }
 }
 
-bool lessBookmark(const KBookmark & first, const KBookmark & second) //FIXME Using internal represantation
+static bool lessBookmark(const KBookmark & first, const KBookmark & second) //FIXME Using internal represantation
 {
     return lessAddress(first.address(), second.address());
 }

@@ -40,16 +40,15 @@
 #include <QApplication>
 #include <QDebug>
 
-#include <kaction.h>
 #include <kactioncollection.h>
 #include <QIcon>
 #include <kicondialog.h>
 #include <kiconloader.h>
-#include <kinputdialog.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kstandardaction.h>
 #include <krun.h>
 
+#include <QInputDialog>
 
 #include <kbookmark.h>
 #include <kbookmarkmanager.h>
@@ -374,8 +373,10 @@ void ActionsImpl::slotNewFolder()
 {
     KEBApp::self()->bkInfo()->commitChanges();
     bool ok;
-    QString str = KInputDialog::getText( i18nc( "@title:window", "Create New Bookmark Folder" ),
-            i18n( "New folder:" ), QString(), &ok, KEBApp::self() );
+    QString str = QInputDialog::getText( KEBApp::self(),
+            i18n( "New folder:" ),
+            i18nc( "@title:window", "Create New Bookmark Folder" ),
+            QLineEdit::Normal, QString(), &ok );
     if (!ok)
         return;
 
@@ -391,7 +392,7 @@ void ActionsImpl::slotNewBookmark()
     // TODO - make a setCurrentItem(Command *) which uses finaladdress interface
     CreateCommand * cmd = new CreateCommand(m_model,
                                 KEBApp::self()->insertAddress(),
-                                QString(), "www", KUrl("http://"));
+                                QString(), "www", QUrl("http://"));
     commandHistory()->addCommand(cmd);
 }
 

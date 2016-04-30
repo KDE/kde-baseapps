@@ -20,7 +20,7 @@
 #include "exporters.h"
 
 #include <QDebug>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>

@@ -71,7 +71,12 @@ kconfig_add_kcfg_files(keditbookmarks_KDEINIT_SRCS settings.kcfgc )
 
 kde4_add_kdeinit_executable( keditbookmarks ${keditbookmarks_KDEINIT_SRCS})
 
-target_link_libraries(kdeinit_keditbookmarks kbookmarkmodel_private KF5::Parts KF5::KIOGui)
+target_link_libraries(kdeinit_keditbookmarks kbookmarkmodel_private
+   KF5::Parts
+   KF5::Bookmarks
+   KF5::WindowSystem
+   KF5::IconThemes
+   KF5::KIOGui)
 
 install(TARGETS kdeinit_keditbookmarks  ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 install(TARGETS keditbookmarks          ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

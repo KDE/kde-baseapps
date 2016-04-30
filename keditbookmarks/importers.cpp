@@ -30,7 +30,7 @@
 #include <QFileDialog>
 #include <QtCore/QRegExp>
 #include <QDebug>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include <kmessagebox.h>
 

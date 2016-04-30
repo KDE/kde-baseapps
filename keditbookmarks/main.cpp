@@ -30,9 +30,6 @@
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 
-#include <kdeversion.h>
-
-
 #include <KAboutData>
 #include <kdelibs4configmigrator.h>
 

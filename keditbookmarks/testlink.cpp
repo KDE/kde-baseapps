@@ -23,7 +23,7 @@
 
 // KDE
 #include <QDebug>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 // Local
 #include "kbookmarkmodel/commands.h"

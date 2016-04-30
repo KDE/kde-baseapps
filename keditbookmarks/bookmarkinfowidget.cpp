@@ -29,7 +29,7 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <QDebug>
 
 #include <klineedit.h>

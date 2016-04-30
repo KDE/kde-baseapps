@@ -21,18 +21,18 @@
 
 #include <kactioncollection.h>
 #include <kbookmarkmanager.h>
-#include <kdebug.h>
-#include <kundostack.h>
 
+#include <QDebug>
 #include <QAction>
 #include <QUndoCommand>
+#include <QUndoStack>
 
 class CommandHistory::Private
 {
 public:
     Private() : m_manager(0), m_undoStack() {}
     KBookmarkManager* m_manager;
-    KUndoStack m_undoStack;
+    QUndoStack m_undoStack;
 };
 
 CommandHistory::CommandHistory(QObject* parent)

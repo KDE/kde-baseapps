@@ -25,7 +25,7 @@
 #include "toplevel.h"
 
 #include <QDebug>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include <kio/job.h>
 #include <KIO/FavIconRequestJob>
@@ -93,7 +93,7 @@ void FavIconUpdater::downloadIconUsingWebBrowser(const KBookmark &bk, const QStr
         Q_ASSERT(ext);
 
         // TODO: what is this useful for?
-        m_browserIface = new FavIconBrowserInterface(this);
+        m_browserIface = new KParts::BrowserInterface(this);
         ext->setBrowserInterface(m_browserIface);
 
         connect(ext, SIGNAL(setIconUrl(QUrl)),

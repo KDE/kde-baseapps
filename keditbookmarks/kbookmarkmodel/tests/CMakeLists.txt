@@ -11,4 +11,7 @@ set(kbookmarkmodeltest_SRCS kbookmarkmodeltest.cpp)
 add_executable(kbookmarkmodeltest ${kbookmarkmodeltest_SRCS})
 add_test(kbookmarkmodeltest kbookmarkmodeltest)
 ecm_mark_as_test(kbookmarkmodeltest)
-target_link_libraries(kbookmarkmodeltest kbookmarkmodel_private KF5::KIOCore Qt5::Test)
+target_link_libraries(kbookmarkmodeltest kbookmarkmodel_private
+   KF5::Bookmarks
+   Qt5::Test
+)

@@ -24,12 +24,13 @@
 #include "commandhistory.h"
 
 #include <kbookmarkmanager.h>
-#include <KIcon>
-#include <kdebug.h>
-#include <klocale.h>
-#include <QtCore/QVector>
-#include <QtCore/QStringList>
-#include <QtCore/QMimeData>
+#include <klocalizedstring.h>
+
+#include <QIcon>
+#include <QDebug>
+#include <QVector>
+#include <QStringList>
+#include <QMimeData>
 
 class KBookmarkModel::Private
 {
@@ -140,8 +141,8 @@ QVariant KBookmarkModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DecorationRole && index.column() == NameColumnId) {
         KBookmark bk = bookmarkForIndex(index);
         if (bk.address().isEmpty())
-            return KIcon("bookmarks");
-        return KIcon(bk.icon());
+            return QIcon::fromTheme("bookmarks");
+        return QIcon::fromTheme(bk.icon());
     }
 
     //Special roles
@@ -199,7 +200,7 @@ bool KBookmarkModel::setData(const QModelIndex &index, const QVariant &value, in
 {
     if (index.isValid() && role == Qt::EditRole)
     {
-        kDebug() << value.toString();
+        qDebug() << value.toString();
         d->mCommandHistory->addCommand(new EditCommand(this, bookmarkForIndex(index).address(), index.column(), value.toString()));
         return true;
     }
@@ -293,7 +294,7 @@ QModelIndex KBookmarkModel::indexForBookmark(const KBookmark& bk) const
 void KBookmarkModel::emitDataChanged(const KBookmark& bk)
 {
     QModelIndex idx = indexForBookmark(bk);
-    kDebug() << idx;
+    qDebug() << idx;
     emit dataChanged(idx, idx.sibling(idx.row(), columnCount()-1));
 }
 
@@ -311,7 +312,7 @@ QMimeData * KBookmarkModel::mimeData(const QModelIndexList & indexes) const
             if (!addresses.isEmpty())
                 addresses.append(';');
             addresses.append(bookmarkForIndex(it).address().toLatin1());
-            kDebug() << "appended" << bookmarkForIndex(it).address();
+            qDebug() << "appended" << bookmarkForIndex(it).address();
         }
     }
 
@@ -371,14 +372,14 @@ bool KBookmarkModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
             qSort(addresses);
             Q_FOREACH(const QByteArray& address, addresses) {
                 KBookmark bk = bookmarkManager()->findByAddress(QString::fromLatin1(address));
-                kDebug() << "Extracted bookmark:" << bk.address();
+                qDebug() << "Extracted bookmark:" << bk.address();
                 bookmarks.prepend(bk); // reverse order, so that we don't invalidate addresses (#287038)
             }
 
             KEBMacroCommand * cmd = CmdGen::itemsMoved(this, bookmarks, addr, false);
             d->mCommandHistory->addCommand(cmd);
         } else {
-            kDebug()<<"NO FORMAT";
+            qDebug()<<"NO FORMAT";
             KEBMacroCommand * cmd = CmdGen::insertMimeSource(this, "Copy", data, addr);
             d->mCommandHistory->addCommand(cmd);
         }
@@ -464,13 +465,13 @@ void KBookmarkModel::Private::_kd_slotBookmarksChanged(const QString& groupAddre
 {
     Q_UNUSED(groupAddress);
     Q_UNUSED(caller);
-    //kDebug() << "_kd_slotBookmarksChanged" << groupAddress << "caller=" << caller << "mIgnoreNext=" << mIgnoreNext;
+    //qDebug() << "_kd_slotBookmarksChanged" << groupAddress << "caller=" << caller << "mIgnoreNext=" << mIgnoreNext;
     if (mIgnoreNext > 0) { // We ignore the first changed signal after every change we did
         --mIgnoreNext;
         return;
     }
 
-    //kDebug() << " setRoot!";
+    //qDebug() << " setRoot!";
     q->setRoot(q->bookmarkManager()->root());
 
     mCommandHistory->clearHistory();
@@ -479,7 +480,7 @@ void KBookmarkModel::Private::_kd_slotBookmarksChanged(const QString& groupAddre
 void KBookmarkModel::notifyManagers(const KBookmarkGroup& grp)
 {
     ++d->mIgnoreNext;
-    //kDebug() << "notifyManagers -> mIgnoreNext=" << d->mIgnoreNext;
+    //qDebug() << "notifyManagers -> mIgnoreNext=" << d->mIgnoreNext;
     bookmarkManager()->emitChanged(grp);
 }
 

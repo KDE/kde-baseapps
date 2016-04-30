@@ -68,22 +68,10 @@ Q_SIGNALS:
 
 private:
     KParts::ReadOnlyPart *m_part;
-    FavIconBrowserInterface *m_browserIface;
+    KParts::BrowserInterface *m_browserIface;
     FavIconWebGrabber *m_webGrabber;
     KBookmark m_bk;
     bool webupdate;
-};
-
-class FavIconBrowserInterface : public KParts::BrowserInterface
-{
-    Q_OBJECT
-public:
-    FavIconBrowserInterface(FavIconUpdater *view)
-        : KParts::BrowserInterface(view), m_view(view) {
-        ;
-    }
-private:
-    FavIconUpdater *m_view;
 };
 
 #endif

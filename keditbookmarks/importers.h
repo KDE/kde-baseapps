@@ -21,7 +21,7 @@
 #define __importers_h
 
 #include "kbookmarkmodel/commands.h"
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include <QtCore/QObject>
 
