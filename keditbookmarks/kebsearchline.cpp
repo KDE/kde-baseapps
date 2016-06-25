@@ -494,7 +494,6 @@ QAbstractItemModel * KViewSearchLine::model() const
 bool KViewSearchLine::anyVisible(const QModelIndex & first, const QModelIndex & last)
 {
     Q_ASSERT(d->treeView);
-    QModelIndex parent = first.parent();
     QModelIndex index = first;
     while(true)
     {

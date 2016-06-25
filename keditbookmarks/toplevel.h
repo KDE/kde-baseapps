@@ -55,7 +55,6 @@ public:
     void reset(const QString & caption, const QString & bookmarksFileName);
 
     void updateActions();
-    void updateStatus(const QString &url);
     SelcAbilities getSelectionAbilities() const;
     void setActionsEnabled(SelcAbilities);
 

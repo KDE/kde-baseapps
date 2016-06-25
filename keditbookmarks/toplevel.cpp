@@ -403,12 +403,6 @@ void KEBApp::selectedBookmarksExpandedHelper(const KBookmark& bk, KBookmark::Lis
     }
 }
 
-void KEBApp::updateStatus(const QString &url)
-{
-    if(m_bkinfo->bookmark().url() == url)
-        m_bkinfo->updateStatus();
-}
-
 KEBApp::~KEBApp() {
 
     // Save again, just in case the user expanded/collapsed folders (#131127)
