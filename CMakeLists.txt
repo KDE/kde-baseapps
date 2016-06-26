@@ -15,7 +15,7 @@ find_package(KF5Parts)
 find_package(KF5Sonnet)
 include(MacroLibrary)
 add_definitions(-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
-
+add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
 add_subdirectory(icons)
 add_subdirectory(src)
