@@ -27,12 +27,12 @@
 #include "toplevel.h" // for KEBApp
 #include "kbookmarkmodel/model.h"
 
+#include <QFileDialog>
 #include <QtCore/QRegExp>
-#include <kdebug.h>
-#include <klocale.h>
+#include <QDebug>
+#include <klocalizedstring.h>
 
 #include <kmessagebox.h>
-#include <kfiledialog.h>
 
 #include <kbookmark.h>
 #include <kbookmarkmanager.h>
@@ -43,6 +43,7 @@
 //#include <kbookmarkimporter_crash.h>
 #include <kbookmarkdombuilder.h>
 #include <kbookmarkimporter_ns.h>
+#include <QStandardPaths>
 
 
 ImportCommand::ImportCommand(KBookmarkModel* model)
@@ -70,7 +71,7 @@ ImportCommand* ImportCommand::importerFactory(KBookmarkModel* model, const QStri
     else if (type == "Moz") return new MozImportCommand(model);
     else if (type == "NS") return new NSImportCommand(model);
     else {
-        kError() << "ImportCommand::importerFactory() - invalid type (" << type << ")!" << endl;
+        qCritical() << "ImportCommand::importerFactory() - invalid type (" << type << ")!" << endl;
         return 0;
     }
 }
@@ -194,19 +195,19 @@ QString IEImportCommand::requestFilename() const {
 // following two are really just xbel
 
 QString GaleonImportCommand::requestFilename() const {
-    return KFileDialog::getOpenFileName(
+    return QFileDialog::getOpenFileName(
+            KEBApp::self(),
+            QString(),
             QString(QDir::homePath() + "/.galeon"),
-            i18n("*.xbel|Galeon Bookmark Files (*.xbel)"),
-            KEBApp::self());
+            i18n("Galeon Bookmark Files (*.xbel)"));
 }
 
-#include "kstandarddirs.h"
-
 QString KDE2ImportCommand::requestFilename() const {
-    return KFileDialog::getOpenFileName(
-            KStandardDirs::locateLocal("data", "konqueror"),
-            i18n("*.xml|KDE Bookmark Files (*.xml)"),
-            KEBApp::self());
+    return QFileDialog::getOpenFileName(
+            KEBApp::self(),
+            QString(),
+            QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QLatin1String("/konqueror"),
+            i18n("KDE Bookmark Files (*.xml)"));
 }
 
 /* -------------------------------------- */
@@ -304,4 +305,4 @@ void XBELImportCommand::doExecute(const KBookmarkGroup &/*bkGroup*/) {
     }
 }
 
-#include "importers.moc"
+

@@ -25,13 +25,12 @@
 #include "kbookmarkmodel/commands.h"
 
 #include <QHeaderView>
+#include <QContextMenuEvent>
 #include <QItemSelection>
 #include <QMenu>
-#include <QKeyEvent>
 #include <QBrush>
-#include <QPalette>
 
-#include <kdebug.h>
+#include <QDebug>
 
 BookmarkFolderView::BookmarkFolderView( BookmarkListView * view, QWidget * parent )
     : KBookmarkView(parent), mview(view)
@@ -44,7 +43,7 @@ BookmarkFolderView::BookmarkFolderView( BookmarkListView * view, QWidget * paren
     setDropIndicatorShown(true);
     setCurrentIndex( mmodel->index(0,0, QModelIndex()));
 
-    connect(mmodel, SIGNAL(modelReset()), this, SLOT(slotReset()));
+    connect(mmodel, &BookmarkFolderViewFilterModel::modelReset, this, &BookmarkFolderView::slotReset);
 }
 
 
@@ -143,7 +142,7 @@ void BookmarkListView::saveColumnSetting()
     KEBSettings::setURL( header()->sectionSize(KEBApp::UrlColumn));
     KEBSettings::setComment( header()->sectionSize(KEBApp::CommentColumn));
     KEBSettings::setStatus( header()->sectionSize(KEBApp::StatusColumn));
-    KEBSettings::self()->writeConfig();
+    KEBSettings::self()->save();
 }
 
 /************/
@@ -207,4 +206,4 @@ bool BookmarkFolderViewFilterModel::filterAcceptsRow ( int source_row, const QMo
     return bk.isGroup();
 }
 
-#include "bookmarklistview.moc"
+

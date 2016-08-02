@@ -18,18 +18,17 @@
 */
 
 #include "kebsearchline.h"
-#include <kdebug.h>
+#include <QDebug>
 #include <QTimer>
 #include <QTreeView>
 #include <QListView>
 #include <QLabel>
+#include <QHBoxLayout>
+#include <QContextMenuEvent>
 
-#include <kicon.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include <QHeaderView>
-#include <QBoxLayout>
-#include <QKeyEvent>
 #include <QMenu>
 
 
@@ -69,8 +68,7 @@ KViewSearchLine::KViewSearchLine(QWidget *parent, QAbstractItemView *v) :
     d->treeView = dynamic_cast<QTreeView *>(v);
     d->listView = dynamic_cast<QListView *>(v);
 
-    connect(this, SIGNAL(textChanged(QString)),
-            this, SLOT(queueSearch(QString)));
+    connect(this, &KViewSearchLine::textChanged, this, &KViewSearchLine::queueSearch);
 
     if(view()) {
         connect(view(), SIGNAL(destroyed()),
@@ -101,8 +99,7 @@ KViewSearchLine::KViewSearchLine(QWidget *parent) :
     d->treeView = 0;
     d->listView = 0;
 
-    connect(this, SIGNAL(textChanged(QString)),
-            this, SLOT(queueSearch(QString)));
+    connect(this, &KViewSearchLine::textChanged, this, &KViewSearchLine::queueSearch);
 
     setEnabled(false);
 }
@@ -301,7 +298,7 @@ void KViewSearchLine::contextMenuEvent( QContextMenuEvent*e )
                 allVisibleAct->setChecked(true);
                 d->searchColumns.clear();
             }
-            connect(submenu, SIGNAL(triggered(QAction*)), this, SLOT(searchColumnsMenuActivated(QAction*)));
+            connect(submenu, &QMenu::triggered, this, &KViewSearchLine::searchColumnsMenuActivated);
         }
     }
     popup->exec( e->globalPos() );
@@ -410,7 +407,7 @@ void KViewSearchLine::slotColumnsRemoved(const QModelIndex &, int first, int las
         if(d->listView->modelColumn() >= first && d->listView->modelColumn()<= last)
         {
             if(d->listView->modelColumn()>last)
-                kFatal()<<"Columns were removed, the modelColumn() doesn't exist anymore. "
+                qCritical()<<"Columns were removed, the modelColumn() doesn't exist anymore. "
                            "K4listViewSearchLine can't cope with that."<<endl;
             updateSearch();
         }
@@ -497,7 +494,6 @@ QAbstractItemModel * KViewSearchLine::model() const
 bool KViewSearchLine::anyVisible(const QModelIndex & first, const QModelIndex & last)
 {
     Q_ASSERT(d->treeView);
-    QModelIndex parent = first.parent();
     QModelIndex index = first;
     while(true)
     {
@@ -694,4 +690,4 @@ KViewSearchLine *KViewSearchLineWidget::searchLine() const
     return d->searchLine;
 }
 
-#include "kebsearchline.moc"
+

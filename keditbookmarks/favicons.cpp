@@ -24,8 +24,8 @@
 #include "kbookmarkmodel/commands.h"
 #include "kbookmarkmodel/model.h"
 
-#include <kdebug.h>
-#include <klocale.h>
+#include <QDebug>
+#include <klocalizedstring.h>
 
 FavIconsItrHolder::FavIconsItrHolder(QObject* parent, KBookmarkModel* model)
     : BookmarkIteratorHolder(parent, model)
@@ -52,7 +52,7 @@ void FavIconsItr::setStatus(const QString & status)
 
 void FavIconsItr::slotDone(bool succeeded, const QString& errorString)
 {
-    // kDebug() << "FavIconsItr::slotDone()";
+    // //qDebug() << "FavIconsItr::slotDone()";
     setStatus(succeeded ? i18n("OK") : errorString);
     holder()->addAffectedBookmark(KBookmark::parentAddress(currentBookmark().address()));
     delayedEmitNextOne();
@@ -62,18 +62,17 @@ bool FavIconsItr::isApplicable(const KBookmark &bk) const
 {
     if (bk.isGroup() || bk.isSeparator())
         return false;
-    return bk.url().protocol().startsWith("http");
+    return bk.url().scheme().startsWith("http");
 }
 
 void FavIconsItr::doAction()
 {
-    // kDebug() << "FavIconsItr::doAction()";
+    // //qDebug() << "FavIconsItr::doAction()";
     m_oldStatus = currentBookmark().metaDataItem("favstate");
     setStatus(i18n("Updating favicon..."));
     if (!m_updater) {
         m_updater = new FavIconUpdater(this);
-        connect(m_updater, SIGNAL(done(bool,QString)),
-                this,      SLOT(slotDone(bool,QString)) );
+        connect(m_updater, &FavIconUpdater::done, this, &FavIconsItr::slotDone);
     }
     m_updater->downloadIcon(currentBookmark());
 }
@@ -83,4 +82,4 @@ void FavIconsItr::cancel()
     setStatus(m_oldStatus);
 }
 
-#include "favicons.moc"
+

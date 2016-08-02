@@ -25,8 +25,8 @@
 #include "model.h"
 #include "kinsertionsort_p.h"
 
-#include <kdebug.h>
-#include <klocale.h>
+#include <QDebug>
+#include <klocalizedstring.h>
 #include <kbookmarkmanager.h>
 #include <kdesktopfile.h>
 
@@ -70,7 +70,7 @@ CreateCommand::CreateCommand(KBookmarkModel* model, const QString &address, QUnd
 
 CreateCommand::CreateCommand(KBookmarkModel* model, const QString &address,
                              const QString &text, const QString &iconPath,
-                             const KUrl &url, QUndoCommand* parent)
+                             const QUrl &url, QUndoCommand* parent)
     : QUndoCommand(parent), m_model(model), m_to(address), m_text(text), m_iconPath(iconPath), m_url(url),
       m_group(false), m_separator(false), m_originalBookmark(QDomElement())
 {
@@ -103,7 +103,7 @@ void CreateCommand::redo()
 
     QString previousSibling = KBookmark::previousAddress(m_to);
 
-    // kDebug() << "previousSibling=" << previousSibling;
+    // qDebug() << "previousSibling=" << previousSibling;
     KBookmark prev = (previousSibling.isEmpty())
         ? KBookmark(QDomElement())
         : m_model->bookmarkManager()->findByAddress(previousSibling);
@@ -166,12 +166,12 @@ QString CreateCommand::affectedBookmarks() const
 EditCommand::EditCommand(KBookmarkModel* model, const QString & address, int col, const QString & newValue, QUndoCommand* parent)
       : QUndoCommand(parent), m_model(model), mAddress(address), mCol(col)
 {
-    kDebug() << address << col << newValue;
+    qDebug() << address << col << newValue;
     if(mCol == 1)
     {
-        const KUrl u(newValue);
+        const QUrl u(newValue);
         if (!(u.isEmpty() && !newValue.isEmpty())) // prevent emptied line if the currently entered url is invalid
-            mNewValue = u.url(KUrl::LeaveTrailingSlash);
+            mNewValue = u.toString();
         else
             mNewValue = newValue;
     }
@@ -208,14 +208,14 @@ void EditCommand::redo()
     {
         if (mOldValue.isEmpty()) // only the first time, not when compressing changes in modify()
             mOldValue = bk.fullText();
-        kDebug() << "mOldValue=" << mOldValue;
+        qDebug() << "mOldValue=" << mOldValue;
         bk.setFullText(mNewValue);
     }
     else if(mCol==1)
     {
         if (mOldValue.isEmpty())
-            mOldValue = bk.url().prettyUrl();
-        const KUrl newUrl(mNewValue);
+            mOldValue = bk.url().toDisplayString();
+        const QUrl newUrl(mNewValue);
         if (!(newUrl.isEmpty() && !mNewValue.isEmpty())) // prevent emptied line if the currently entered url is invalid
             bk.setUrl(newUrl);
     }
@@ -230,7 +230,7 @@ void EditCommand::redo()
 
 void EditCommand::undo()
 {
-    kDebug() << "Setting old value" << mOldValue << "in bk" << mAddress << "col" << mCol;
+    qDebug() << "Setting old value" << mOldValue << "in bk" << mAddress << "col" << mCol;
     KBookmark bk = m_model->bookmarkManager()->findByAddress(mAddress);
     if(mCol==-2)
     {
@@ -246,7 +246,7 @@ void EditCommand::undo()
     }
     else if(mCol==1)
     {
-        bk.setUrl(KUrl(mOldValue));
+        bk.setUrl(QUrl(mOldValue));
     }
     else if(mCol==2)
     {
@@ -259,9 +259,9 @@ void EditCommand::modify(const QString &newValue)
 {
     if(mCol == 1)
     {
-        const KUrl u(newValue);
+        const QUrl u(newValue);
         if (!(u.isEmpty() && !newValue.isEmpty())) // prevent emptied line if the currently entered url is invalid
-            mNewValue = u.url(KUrl::LeaveTrailingSlash);
+            mNewValue = u.toString();
         else
             mNewValue = newValue;
     }
@@ -289,7 +289,7 @@ void DeleteCommand::redo()
         while (!n.isNull()) {
             QDomElement e = n.toElement();
             if (!e.isNull()) {
-                // kDebug() << e.tagName();
+                // qDebug() << e.tagName();
             }
             QDomNode next = n.nextSibling();
             groupRoot.removeChild(n);
@@ -322,7 +322,7 @@ void DeleteCommand::redo()
 
 void DeleteCommand::undo()
 {
-    // kDebug() << "DeleteCommand::undo " << m_from;
+    // qDebug() << "DeleteCommand::undo " << m_from;
 
     if (m_contentOnly) {
         // TODO - recover saved metadata
@@ -366,7 +366,7 @@ MoveCommand::MoveCommand(KBookmarkModel* model, const QString &from, const QStri
 
 void MoveCommand::redo()
 {
-    // kDebug() << "moving from=" << m_from << "to=" << m_to;
+    // qDebug() << "moving from=" << m_from << "to=" << m_to;
 
     KBookmark fromBk = m_model->bookmarkManager()->findByAddress( m_from );
 

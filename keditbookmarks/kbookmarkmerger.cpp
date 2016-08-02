@@ -23,38 +23,46 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <kaboutdata.h>
-#include <kapplication.h>
+#include <KAboutData>
+
 #include <kbookmarkmanager.h>
-#include <kcmdlineargs.h>
-#include <kdebug.h>
-#include <kstandarddirs.h>
-#include <klocale.h>
+
+#include <QDebug>
+
 
 #include <QtCore/QDir>
 #include <QtXml/qdom.h>
+#include <QApplication>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
+#include <KLocalizedString>
 
 int main( int argc, char**argv )
 {
-	KAboutData aboutData( "kbookmarkmerger", "keditbookmarks", ki18n( "KBookmarkMerger" ),
-	                      "1.0", ki18n( "Merges bookmarks installed by 3rd parties into the user's bookmarks" ),
-	                      KAboutData::License_BSD,
-	                      ki18n(  "Copyright © 2005 Frerich Raabe" ) );
-	aboutData.addAuthor( ki18n("Frerich Raabe"), ki18n( "Original author" ),
-	                     "raabe@kde.org" );
+	QApplication app(argc, argv);
 
-	KCmdLineArgs::init( argc, argv, &aboutData );
+	KLocalizedString::setApplicationDomain("keditbookmarks");
 
-	KCmdLineOptions cmdLineOptions;
-	cmdLineOptions.add("+directory", ki18n( "Directory to scan for extra bookmarks" ));
-	KCmdLineArgs::addCmdLineOptions( cmdLineOptions );
+	KAboutData aboutData( QStringLiteral("kbookmarkmerger"),
+	                      i18n( "KBookmarkMerger" ),
+	                      QStringLiteral("1.0"),
+	                      i18n("Merges bookmarks installed by 3rd parties into the user's bookmarks"),
+	                      KAboutLicense::BSDL,
+	                      i18n("Copyright © 2005 Frerich Raabe") );
+	aboutData.addAuthor( i18n("Frerich Raabe"), i18n("Original author"),
+	                     QStringLiteral("raabe@kde.org") );
 
-	KApplication app( false );
-	app.disableSessionManagement();
+	KAboutData::setApplicationData(aboutData);
 
-	KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
-	if ( args->count() != 1 ) {
-		kError() << "No directory to scan for bookmarks specified." << endl;
+	QCommandLineParser parser;
+	parser.addPositionalArgument(QLatin1String("directory"), i18n( "Directory to scan for extra bookmarks" ));
+
+	aboutData.setupCommandLine(&parser);
+	parser.process(app);
+	aboutData.processCommandLine(&parser);
+
+	if ( parser.positionalArguments().count() != 1 ) {
+		qCritical() << "No directory to scan for bookmarks specified." << endl;
 		return 1;
 	}
 
@@ -76,10 +84,10 @@ int main( int argc, char**argv )
 
 	bool didMergeBookmark = false;
 
-	QString extraBookmarksDirName = args->arg( 0 );
+	QString extraBookmarksDirName = parser.positionalArguments().at(0);
 	QDir extraBookmarksDir( extraBookmarksDirName, "*.xml" );
 	if ( !extraBookmarksDir.isReadable() ) {
-		kError() << "Failed to read files in directory " << extraBookmarksDirName << endl;
+		qCritical() << "Failed to read files in directory " << extraBookmarksDirName << endl;
 		return 1;
 	}
 

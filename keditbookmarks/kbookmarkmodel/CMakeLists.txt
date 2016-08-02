@@ -8,13 +8,22 @@ set(kbookmarkmodel_SRCS
   view.cpp
 )
 
-kde4_add_library(kbookmarkmodel_private SHARED ${kbookmarkmodel_SRCS})
-target_link_libraries(kbookmarkmodel_private ${KDE4_KIO_LIBS})
-target_link_libraries(kbookmarkmodel_private LINK_INTERFACE_LIBRARIES ${KDE4_KIO_LIBS})
-
-set_target_properties(kbookmarkmodel_private PROPERTIES
-     VERSION ${GENERIC_LIB_VERSION}
-     SOVERSION ${GENERIC_LIB_SOVERSION}
+add_library(kbookmarkmodel_private SHARED ${kbookmarkmodel_SRCS})
+target_link_libraries(kbookmarkmodel_private
+PUBLIC
+   Qt5::Widgets
+   KF5::XmlGui # KActionCollection
+PRIVATE
+   KF5::Bookmarks
+   KF5::I18n
 )
 
-install(TARGETS kbookmarkmodel_private ${INSTALL_TARGETS_DEFAULT_ARGS})
+generate_export_header(kbookmarkmodel_private BASE_NAME kbookmarkmodel EXPORT_FILE_NAME kbookmarkmodel_export.h)
+
+set_target_properties(kbookmarkmodel_private PROPERTIES
+     VERSION ${KEDITBOOKMARKS_VERSION}
+     SOVERSION "6"
+)
+
+
+install(TARGETS kbookmarkmodel_private ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

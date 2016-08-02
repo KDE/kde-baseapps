@@ -37,7 +37,6 @@ public:
     explicit BookmarkInfoWidget(BookmarkListView * lv, KBookmarkModel* model, QWidget * = 0);
 
     KBookmark bookmark() { return m_bk; }
-    void updateStatus(); //FIXME where was this called?
 
 public Q_SLOTS:
     void slotTextChangedURL(const QString &);
@@ -52,7 +51,9 @@ public Q_SLOTS:
     void commitComment();
 
 private:
+    void updateStatus();
     void showBookmark(const KBookmark &bk);
+
     EditCommand * titlecmd, * urlcmd, * commentcmd;
     QTimer * timer;
     KLineEdit *m_title_le, *m_url_le,

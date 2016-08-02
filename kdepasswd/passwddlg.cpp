@@ -25,13 +25,13 @@
 #include "passwddlg.h"
 #include "passwd.h"
 
-#include <klocale.h>
+#include <KLocalizedString>
 #include <kmessagebox.h>
 
 KDEpasswd1Dialog::KDEpasswd1Dialog()
     : KPasswordDialog()
 {
-    setCaption(i18nc("@title:window", "Change Password"));
+    setWindowTitle(i18nc("@title:window", "Change Password"));
     setPrompt(i18n("Please enter your current password:"));
 }
 
@@ -51,8 +51,8 @@ void KDEpasswd1Dialog::accept()
             {
                 QString msg = QString::fromLocal8Bit(proc.error());
                 if (!msg.isEmpty())
-                    msg = "<p>\"<i>" + msg + "</i>\"";
-                msg = "<qt>" + i18n("Conversation with 'passwd' failed.") + msg;
+                    msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+                msg = QLatin1Literal("<qt>") + i18n("Conversation with 'passwd' failed.") + msg;
                 KMessageBox::error(this, msg);
                 done(Rejected);
                 return;
@@ -98,7 +98,7 @@ KDEpasswd2Dialog::KDEpasswd2Dialog(const char *oldpass, const QByteArray &user)
     m_Pass = oldpass;
     m_User = user;
 
-    setCaption(i18nc("@title:window", "Change Password"));
+    setWindowTitle(i18nc("@title:window", "Change Password"));
     if (m_User.isEmpty())
         setPrompt(i18n("Please enter your new password:"));
     else
@@ -120,6 +120,8 @@ void  KDEpasswd2Dialog::accept()
         return;
     }
 
+// Some older proprietary UNIX systems have an 8 character password length limit.
+#if defined(Q_OS_UNIX) && !(defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_NETBSD))
     if (p.length() > 8)
     {
         switch(KMessageBox::warningYesNoCancel(this,
@@ -145,6 +147,7 @@ void  KDEpasswd2Dialog::accept()
             default : return;
         }
     }
+#endif
 
     int ret = proc.exec(m_Pass, p.toLocal8Bit());
     switch (ret)
@@ -154,8 +157,8 @@ void  KDEpasswd2Dialog::accept()
                 hide();
                 QString msg = QString::fromLocal8Bit(proc.error());
                 if (!msg.isEmpty())
-                    msg = "<p>\"<i>" + msg + "</i>\"";
-                msg = "<qt>" + i18n("Your password has been changed.") + msg;
+                    msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+                msg = QLatin1Literal("<qt>") + i18n("Your password has been changed.") + msg;
                 KMessageBox::information(0L, msg);
                 return KNewPasswordDialog::accept();
             }
@@ -164,8 +167,8 @@ void  KDEpasswd2Dialog::accept()
             {
                 QString msg = QString::fromLocal8Bit(proc.error());
                 if (!msg.isEmpty())
-                    msg = "<p>\"<i>" + msg + "</i>\"";
-                msg = "<qt>" + i18n("Your password has not been changed.") + msg;
+                    msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+                msg = QLatin1Literal("<qt>") + i18n("Your password has not been changed.") + msg;
 
                 // The pw change did not succeed. Print the error.
                 KMessageBox::sorry(this, msg);
@@ -175,8 +178,8 @@ void  KDEpasswd2Dialog::accept()
         default:
             QString msg = QString::fromLocal8Bit(proc.error());
             if (!msg.isEmpty())
-                msg = "<p>\"<i>" + msg + "</i>\"";
-            msg = "<qt>" + i18n("Conversation with 'passwd' failed.") + msg;
+                msg = QLatin1Literal("<p>\"<i>") + msg + QLatin1Literal("</i>\"");
+            msg = QLatin1Literal("<qt>") + i18n("Conversation with 'passwd' failed.") + msg;
             KMessageBox::sorry(this, msg);
             done(Rejected);
             return;
@@ -185,7 +188,4 @@ void  KDEpasswd2Dialog::accept()
     return KNewPasswordDialog::accept();
 
 }
-
-
-#include "passwddlg.moc"
 

@@ -23,50 +23,52 @@
 
  */
 
-#include <kdeversion.h>
-#include <kuniqueapplication.h>
-#include <klocale.h>
+#include <KLocalizedString>
 #include <kaboutdata.h>
-#include <kcmdlineargs.h>
+
 #include <kmessagebox.h>
 #include <kuser.h>
-#include <kdebug.h>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
+#include <KDBusService>
+#include <QApplication>
 
 #include "passwd.h"
 #include "passwddlg.h"
-
+#include "kdepasswd_version.h"
 
 int main(int argc, char **argv)
 {
-    KAboutData aboutData("kdepasswd", 0, ki18n("KDE passwd"),
-            KDE_VERSION_STRING, ki18n("Changes a UNIX password."),
-            KAboutData::License_Artistic, ki18n("Copyright (c) 2000 Geert Jansen"));
-    aboutData.addAuthor(ki18n("Geert Jansen"), ki18n("Maintainer"),
-            "jansen@kde.org");
-    aboutData.setProgramIconName( "preferences-desktop-user-password" );
+    KLocalizedString::setApplicationDomain("kdepasswd");
 
-    KCmdLineArgs::init(argc, argv, &aboutData);
+    KAboutData aboutData(QLatin1String("kdepasswd"), i18n("KDE passwd"),
+            QLatin1String(KDEPASSWD_VERSION_STRING), i18n("Changes a UNIX password."),
+            KAboutLicense::Artistic, i18n("Copyright (c) 2000 Geert Jansen"));
+    aboutData.addAuthor(i18n("Geert Jansen"), i18n("Maintainer"), QLatin1String("jansen@kde.org"));
 
-    KCmdLineOptions options;
-    options.add("+[user]", ki18n("Change password of this user"));
-    KCmdLineArgs::addCmdLineOptions(options);
-    KUniqueApplication::addCmdLineOptions();
+    QApplication app(argc, argv);
 
+    // enable high dpi support
+    app.setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
-    if (!KUniqueApplication::start()) {
-        kDebug() << "kdepasswd is already running";
-        return 2;
-    }
+    app.setWindowIcon(QIcon::fromTheme(QLatin1String("preferences-desktop-user-password")));
+    QCommandLineParser parser;
+    KAboutData::setApplicationData(aboutData);
+    parser.addVersionOption();
+    parser.addHelpOption();
+    parser.addOption(QCommandLineOption(QStringList() <<  QLatin1String("+[user]"), i18n("Change password of this user")));
+    aboutData.setupCommandLine(&parser);
+    parser.process(app);
+    aboutData.processCommandLine(&parser);
 
-    KUniqueApplication app;
+    KDBusService service(KDBusService::Unique);
 
     KUser ku;
     QString user;
     bool bRoot = ku.isSuperUser();
-    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
 
-    if (args->count())
-        user = args->arg(0);
+    if (parser.positionalArguments().count())
+        user = parser.positionalArguments().at(0);
 
     /* You must be able to run "kdepasswd loginName" */
     if ( !user.isEmpty() && user!=KUser().loginName() && !bRoot)

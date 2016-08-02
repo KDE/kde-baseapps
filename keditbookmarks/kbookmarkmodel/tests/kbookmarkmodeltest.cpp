@@ -20,14 +20,15 @@
 
 #include <QAction>
 #include <kactioncollection.h>
-#include <kstandarddirs.h>
-#include <kdebug.h>
-#include <qtest_kde.h>
-#include <kbookmarkmanager.h>
 
-#include "kbookmarkmodel/commandhistory.h"
-#include "kbookmarkmodel/model.h"
-#include "kbookmarkmodel/commands.h" // TODO provide public API in the model instead?
+#include <QTest>
+#include <kbookmarkmanager.h>
+#include <QStandardPaths>
+#include <QMimeData>
+
+#include "../../kbookmarkmodel/commandhistory.h"
+#include "../../kbookmarkmodel/model.h"
+#include "../../kbookmarkmodel/commands.h" // TODO provide public API in the model instead?
 
 // Return a list of all bookmark addresses or urls in a KBookmarkManager.
 class BookmarkLister : public KBookmarkGroupTraverser
@@ -74,7 +75,7 @@ private:
 private Q_SLOTS:
     void initTestCase()
     {
-        const QString filename = KStandardDirs::locateLocal("data", QLatin1String("konqueror/bookmarks.xml"));
+        const QString filename = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + QLatin1String("/konqueror/bookmarks.xml");
         QFile::remove(filename);
         m_bookmarkManager = KBookmarkManager::managerForFile(filename, QString());
         m_cmdHistory = new CommandHistory(this);
@@ -91,7 +92,7 @@ private Q_SLOTS:
     // The commands modify the model, so the test code uses the commands
     void testAddBookmark()
     {
-        CreateCommand* cmd = new CreateCommand(m_model, "/0", "test_bk", "www", KUrl("http://www.kde.org"));
+        CreateCommand* cmd = new CreateCommand(m_model, "/0", "test_bk", "www", QUrl("http://www.kde.org"));
         cmd->redo();
         QCOMPARE(BookmarkLister::addressList(m_bookmarkManager), QStringList() << "/0");
         QCOMPARE(BookmarkLister::urlList(m_bookmarkManager), QStringList() << "http://www.kde.org");
@@ -104,7 +105,7 @@ private Q_SLOTS:
 
     void testDeleteBookmark()
     {
-        CreateCommand* cmd = new CreateCommand(m_model, "/0", "test_bk", "www", KUrl("http://www.kde.org"));
+        CreateCommand* cmd = new CreateCommand(m_model, "/0", "test_bk", "www", QUrl("http://www.kde.org"));
         cmd->redo();
         QCOMPARE(BookmarkLister::addressList(m_bookmarkManager), QStringList() << "/0");
         DeleteCommand* deleteCmd = new DeleteCommand(m_model, "/0");
@@ -127,13 +128,13 @@ private Q_SLOTS:
         QCOMPARE(m_model->rowCount(m_rootIndex), 1);
 
         const QString kde = "http://www.kde.org";
-        CreateCommand* cmd = new CreateCommand(m_model, "/0/0", "test_bk", "www", KUrl(kde));
+        CreateCommand* cmd = new CreateCommand(m_model, "/0/0", "test_bk", "www", QUrl(kde));
         m_cmdHistory->addCommand(cmd); // calls redo
         QCOMPARE(BookmarkLister::addressList(m_bookmarkManager), QStringList() << "/0/" << "/0/0");
 
         // Insert before this bookmark
         const QString first = "http://first.example.com";
-        m_cmdHistory->addCommand(new CreateCommand(m_model, "/0/0", "first_bk", "www", KUrl(first)));
+        m_cmdHistory->addCommand(new CreateCommand(m_model, "/0/0", "first_bk", "www", QUrl(first)));
         QCOMPARE(BookmarkLister::addressList(m_bookmarkManager), QStringList() << "/0/" << "/0/0" << "/0/1");
         QCOMPARE(BookmarkLister::urlList(m_bookmarkManager), QStringList() << first << kde);
 
@@ -192,7 +193,7 @@ private Q_SLOTS:
         QStringList bookmarks;
         bookmarks << "Faure" << "Web" << "Kde" << "Avatar" << "David";
         for (int i = 0; i < bookmarks.count(); ++i) {
-            m_cmdHistory->addCommand(new CreateCommand(m_model, "/0/" + QString::number(i), bookmarks[i], "www", KUrl(kde)));
+            m_cmdHistory->addCommand(new CreateCommand(m_model, "/0/" + QString::number(i), bookmarks[i], "www", QUrl(kde)));
         }
         const QStringList addresses = BookmarkLister::addressList(m_bookmarkManager);
         //kDebug() << addresses;
@@ -241,6 +242,6 @@ private:
     QModelIndex m_rootIndex; // the index of the "Bookmarks" root
 };
 
-QTEST_KDEMAIN( KBookmarkModelTest, GUI /*needed by the kactions*/ )
+QTEST_MAIN( KBookmarkModelTest )
 
 #include "kbookmarkmodeltest.moc"

@@ -22,7 +22,7 @@
 #include <QUndoCommand>
 #include "kbookmarkmodel_export.h"
 #include <kbookmark.h>
-
+#include <QUrl>
 class KBookmarkModel;
 
 // Interface adds the affectedBookmarks method
@@ -64,7 +64,7 @@ public:
    // bookmark
    CreateCommand(KBookmarkModel* model, const QString &address,
                  const QString &text, const QString &iconPath,
-                 const KUrl &url, QUndoCommand* parent = 0);
+                 const QUrl &url, QUndoCommand* parent = 0);
 
    // folder
    CreateCommand(KBookmarkModel* model, const QString &address,
@@ -87,7 +87,7 @@ private: // TODO move it all to a d pointer
    QString m_to;
    QString m_text;
    QString m_iconPath;
-   KUrl m_url;
+   QUrl m_url;
    bool m_group:1;
    bool m_separator:1;
    bool m_open:1;

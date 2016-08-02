@@ -26,8 +26,6 @@
 
 #include "passwd.h"
 
-#include <config-apps.h> // setenv
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -41,9 +39,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <kdebug.h>
-#include <kstandarddirs.h>
-#include <kdefakes.h>
+#include <kdepassword_debug.h>
 
 #include <kdesu/process.h>
 
@@ -57,7 +53,7 @@ PasswdProcess::PasswdProcess(const QByteArray &user)
         pw = getpwuid(getuid());
         if (pw == 0L)
         {
-            kDebug(1512) << "You don't exist!\n";
+            qCDebug(KDEPASSWORD_LOG) << "You don't exist!\n";
             return;
         }
         m_User = pw->pw_name;
@@ -66,7 +62,7 @@ PasswdProcess::PasswdProcess(const QByteArray &user)
         pw = getpwnam(user);
         if (pw == 0L)
         {
-            kDebug(1512) << k_lineinfo << "User " << user << "does not exist.\n";
+            qCDebug(KDEPASSWORD_LOG) << "User " << user << "does not exist.\n";
             return;
         }
         m_User = user;
@@ -104,13 +100,13 @@ int PasswdProcess::exec(const char *oldpass, const char *newpass,
     int ret = KDESu::PtyProcess::exec("passwd", args);
     if (ret < 0)
     {
-        kDebug(1512) << k_lineinfo << "Passwd not found!\n";
+        qCDebug(KDEPASSWORD_LOG) << "Passwd not found!\n";
         return PasswdNotFound;
     }
 
     ret = ConversePasswd(oldpass, newpass, check);
     if (ret < 0)
-        kDebug(1512) << k_lineinfo << "Conversation with passwd failed. pid = " << pid();
+        qCDebug(KDEPASSWORD_LOG) << "Conversation with passwd failed. pid = " << pid();
 
     if ((waitForChild() != 0) && !check)
         return PasswordNotGood;
@@ -152,13 +148,13 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                 m_Error += line+'\n';
                 if (isPrompt(line, "password"))
                 {
-                    WaitSlave();
+                    waitSlave();
                     write(fd(), oldpass, strlen(oldpass));
                     write(fd(), "\n", 1);
                     state++;
                     break;
                 }
-                if (m_bTerminal)
+                if (m_terminal)
                     fputs(line, stdout);
                 break;
 
@@ -177,7 +173,7 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                 if( line.contains("again"))
                 {
                     m_Error = line;
-                    kill(m_Pid, SIGKILL);
+                    kill(m_pid, SIGKILL);
                     waitForChild();
                     return PasswordIncorrect;
                 }
@@ -189,7 +185,7 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                     if (line.isNull())
                     {
                         // We didn't get the new prompt so assume incorrect password.
-                        if (m_bTerminal)
+                        if (m_terminal)
                             fputs(errline, stdout);
                         m_Error = errline;
                         return PasswordIncorrect;
@@ -199,11 +195,11 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                 // we have the new prompt
                 if (check)
                 {
-                    kill(m_Pid, SIGKILL);
+                    kill(m_pid, SIGKILL);
                     waitForChild();
                     return 0;
                 }
-                WaitSlave();
+                waitSlave();
                 write(fd(), newpass, strlen(newpass));
                 write(fd(), "\n", 1);
                 state++;
@@ -213,14 +209,14 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                 // Wait for third prompt
                 if (isPrompt(line, "re"))
                 {
-                    WaitSlave();
+                    waitSlave();
                     write(fd(), newpass, strlen(newpass));
                     write(fd(), "\n", 1);
                     state += 2;
                     break;
                 }
                 // Warning or error about the new password
-                if (m_bTerminal)
+                if (m_terminal)
                     fputs(line, stdout);
                 m_Error = line + '\n';
                 state++;
@@ -230,7 +226,7 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                 // Wait for either a "Reenter password" or a "Enter password" prompt
                 if (isPrompt(line, "re"))
                 {
-                    WaitSlave();
+                    waitSlave();
                     write(fd(), newpass, strlen(newpass));
                     write(fd(), "\n", 1);
                     state++;
@@ -238,11 +234,11 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                 }
                 else if (isPrompt(line, "password"))
                 {
-                    kill(m_Pid, SIGKILL);
+                    kill(m_pid, SIGKILL);
                     waitForChild();
                     return PasswordNotGood;
                 }
-                if (m_bTerminal)
+                if (m_terminal)
                     fputs(line, stdout);
                 m_Error += line + '\n';
                 break;
@@ -263,14 +259,14 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
         if (isPrompt(line, "password"))
         {
             // Uh oh, another prompt. Not good!
-            kill(m_Pid, SIGKILL);
+            kill(m_pid, SIGKILL);
             waitForChild();
             return PasswordNotGood;
         }
         m_Error += line + '\n'; // Collect error message
     }
 
-    kDebug(1512) << k_lineinfo << "Conversation ended successfully.\n";
+    qCDebug(KDEPASSWORD_LOG) << "Conversation ended successfully.\n";
     return 0;
 }
 

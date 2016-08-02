@@ -15,10 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef KINSERTIONSORT_H
-#define KINSERTIONSORT_H
-
-#include <kdebug.h>
+#ifndef KINSERTIONSORT_P_H
+#define KINSERTIONSORT_P_H
 
 /**
  * A template-based insertion sort algorithm, but not really 100%
@@ -41,7 +39,7 @@ inline void kInsertionSort( Item& firstChild, SortHelper& sortHelper )
     while ( !j.isNull() )
     {
         Key key = Criteria::key(j);
-        //kDebug() << "Looking at j=" << key;
+        //qDebug() << "Looking at j=" << key;
         // Insert A[j] into the sorted sequence A[1..j-1]
         Item i = j.previousSibling();
         Item next = j.nextSibling();
@@ -52,11 +50,11 @@ inline void kInsertionSort( Item& firstChild, SortHelper& sortHelper )
             moved = true;
         }
         if ( moved ) {
-            //kDebug() << "moveAfter(" << Criteria::key(j) << "," << (i.isNull() ? "null" : Criteria::key(i)) << ")";
+            //qDebug() << "moveAfter(" << Criteria::key(j) << "," << (i.isNull() ? "null" : Criteria::key(i)) << ")";
             sortHelper.moveAfter( j, i ); // move j right after i. If i is null, move to first position.
         }
         j = next;
-        //kDebug() << "Now j is" << Criteria::key(next);
+        //qDebug() << "Now j is" << Criteria::key(next);
     }
 }
 

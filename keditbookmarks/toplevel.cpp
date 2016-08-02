@@ -39,20 +39,16 @@
 #include <QSplitter>
 #include <QApplication>
 
-#include <kaction.h>
 #include <kactioncollection.h>
 #include <ktoggleaction.h>
 #include <kbookmark.h>
 #include <kbookmarkmanager.h>
-#include <kdebug.h>
-#include <kdialog.h>
+#include <QDebug>
 #include <kedittoolbar.h>
-#include <kfiledialog.h>
 #include <klineedit.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kstandardaction.h>
-
 
 #include <QtDBus/QDBusConnection>
 KEBApp *KEBApp::s_topLevel = 0;
@@ -70,7 +66,7 @@ KEBApp::KEBApp(
 
     m_cmdHistory = new CommandHistory(this);
     m_cmdHistory->createActions(actionCollection());
-    connect(m_cmdHistory, SIGNAL(notifyCommandExecuted(KBookmarkGroup)), this, SLOT(notifyCommandExecuted()));
+    connect(m_cmdHistory, &CommandHistory::notifyCommandExecuted, this, &KEBApp::notifyCommandExecuted);
 
     GlobalBookmarkManager::self()->createManager(m_bookmarksFilename, m_dbusObjectName, m_cmdHistory);
 
@@ -84,8 +80,6 @@ KEBApp::KEBApp(
 
     connect(qApp->clipboard(), SIGNAL(dataChanged()),
                                SLOT(slotClipboardDataChanged()));
-
-    KGlobal::locale()->insertCatalog("libkonq");
 
     m_canPaste = false;
 
@@ -108,7 +102,6 @@ KEBApp::KEBApp(
     listLayout->addWidget(mBookmarkListView);
 
     m_bkinfo = new BookmarkInfoWidget(mBookmarkListView, GlobalBookmarkManager::self()->model());
-    m_bkinfo->layout()->setContentsMargins(0, 0, KDialog::spacingHint(), KDialog::spacingHint());
 
     listLayout->addWidget(m_bkinfo);
 
@@ -213,7 +206,7 @@ SelcAbilities KEBApp::getSelectionAbilities() const
     //FIXME check next line, if it actually works
     selctionAbilities.notEmpty = GlobalBookmarkManager::self()->root().first().hasParent();
 
-/*    kDebug()
+/*    //qDebug()
         <<"\nsa.itemSelected "<<selctionAbilities.itemSelected
         <<"\nsa.group        "<<selctionAbilities.group
         <<"\nsa.separator    "<<selctionAbilities.separator
@@ -268,7 +261,7 @@ void KEBApp::setActionsEnabled(SelcAbilities sa) {
     for ( QStringList::const_iterator it = toEnable.constBegin();
             it != toEnable.constEnd(); ++it )
     {
-        //kDebug() <<" enabling action "<<(*it);
+        ////qDebug() <<" enabling action "<<(*it);
         coll->action(*it)->setEnabled(true);
     }
 }
@@ -293,7 +286,7 @@ QString KEBApp::insertAddress() const
         : KBookmark::nextAddress(current.address());
 }
 
-bool lessAddress(const QString& first, const QString& second)
+static bool lessAddress(const QString& first, const QString& second)
 {
     QString a = first;
     QString b = second;
@@ -343,7 +336,7 @@ bool lessAddress(const QString& first, const QString& second)
     }
 }
 
-bool lessBookmark(const KBookmark & first, const KBookmark & second) //FIXME Using internal represantation
+static bool lessBookmark(const KBookmark & first, const KBookmark & second) //FIXME Using internal represantation
 {
     return lessAddress(first.address(), second.address());
 }
@@ -410,12 +403,6 @@ void KEBApp::selectedBookmarksExpandedHelper(const KBookmark& bk, KBookmark::Lis
     }
 }
 
-void KEBApp::updateStatus(const QString &url)
-{
-    if(m_bkinfo->bookmark().url() == url)
-        m_bkinfo->updateStatus();
-}
-
 KEBApp::~KEBApp() {
 
     // Save again, just in case the user expanded/collapsed folders (#131127)
@@ -451,7 +438,7 @@ void KEBApp::updateActions() {
 }
 
 void KEBApp::slotClipboardDataChanged() {
-    // kDebug() << "KEBApp::slotClipboardDataChanged";
+    // //qDebug() << "KEBApp::slotClipboardDataChanged";
     if (!m_readOnly) {
         m_canPaste = KBookmark::List::canDecode(
                         QApplication::clipboard()->mimeData());
@@ -462,27 +449,26 @@ void KEBApp::slotClipboardDataChanged() {
 /* -------------------------- */
 
 void KEBApp::notifyCommandExecuted() {
-    // kDebug() << "KEBApp::notifyCommandExecuted()";
+    // //qDebug() << "KEBApp::notifyCommandExecuted()";
     updateActions();
 }
 
 /* -------------------------- */
 
 void KEBApp::slotConfigureToolbars() {
-    saveMainWindowSettings(KConfigGroup( KGlobal::config(), "MainWindow") );
+    //PORT TO QT5 saveMainWindowSettings(KConfigGroup( KSharedConfig::openConfig(), "MainWindow") );
     KEditToolBar dlg(actionCollection(), this);
-    connect(&dlg, SIGNAL(newToolBarConfig()),
-                  SLOT(slotNewToolbarConfig()));
+    connect(&dlg, &KEditToolBar::newToolBarConfig, this, &KEBApp::slotNewToolbarConfig);
     dlg.exec();
 }
 
 void KEBApp::slotNewToolbarConfig() {
     // called when OK or Apply is clicked
     createGUI();
-    applyMainWindowSettings(KConfigGroup(KGlobal::config(), "MainWindow") );
+    applyMainWindowSettings(KConfigGroup(KSharedConfig::openConfig(), "MainWindow") );
 }
 
 /* -------------------------- */
 
-#include "toplevel.moc"
+
 

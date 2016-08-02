@@ -73,4 +73,4 @@ void KBookmarkView::slotCollapsed(const QModelIndex& index)
     }
 }
 
-#include "view.moc"
+
