@@ -56,10 +56,12 @@ void CommandHistory::createActions(KActionCollection *actionCollection)
     // TODO use QUndoView?
 
     QAction* undoAction = d->m_undoStack.createUndoAction(actionCollection);
+    actionCollection->addAction(KStandardAction::name(KStandardAction::Undo), undoAction);
     disconnect(undoAction, SIGNAL(triggered()), &d->m_undoStack, 0);
     connect(undoAction, SIGNAL(triggered()), this, SLOT(undo()));
 
     QAction* redoAction = d->m_undoStack.createRedoAction(actionCollection);
+    actionCollection->addAction(KStandardAction::name(KStandardAction::Redo), redoAction);
     disconnect(redoAction, SIGNAL(triggered()), &d->m_undoStack, 0);
     connect(redoAction, SIGNAL(triggered()), this, SLOT(redo()));
 }
