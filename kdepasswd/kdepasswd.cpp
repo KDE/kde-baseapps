@@ -85,7 +85,7 @@ int main(int argc, char **argv)
             return 1;
     }
 
-    KDEpasswd2Dialog *dlg = new KDEpasswd2Dialog(oldpass, user.toLocal8Bit());
+    KDEpasswd2Dialog *dlg = new KDEpasswd2Dialog(oldpass.constData(), user.toLocal8Bit().constData());
 
 
     dlg->exec();

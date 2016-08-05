@@ -28,7 +28,7 @@ else()
     include_directories(${LibKonq_SOURCE_DIR}/src)
 endif()
 
-remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING)
+add_definitions(-DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING)
 
 set(kdepasswd_SRCS
     kdepasswd.cpp

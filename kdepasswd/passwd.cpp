@@ -59,7 +59,7 @@ PasswdProcess::PasswdProcess(const QByteArray &user)
         m_User = pw->pw_name;
     } else
     {
-        pw = getpwnam(user);
+        pw = getpwnam(user.constData());
         if (pw == 0L)
         {
             qCDebug(KDEPASSWORD_LOG) << "User " << user << "does not exist.\n";
@@ -155,7 +155,7 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                     break;
                 }
                 if (m_terminal)
-                    fputs(line, stdout);
+                    fputs(line.constData(), stdout);
                 break;
 
             case 1: case 3: case 6:
@@ -186,7 +186,7 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                     {
                         // We didn't get the new prompt so assume incorrect password.
                         if (m_terminal)
-                            fputs(errline, stdout);
+                            fputs(errline.constData(), stdout);
                         m_Error = errline;
                         return PasswordIncorrect;
                     }
@@ -217,7 +217,7 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                 }
                 // Warning or error about the new password
                 if (m_terminal)
-                    fputs(line, stdout);
+                    fputs(line.constData(), stdout);
                 m_Error = line + '\n';
                 state++;
                 break;
@@ -239,7 +239,7 @@ int PasswdProcess::ConversePasswd(const char *oldpass, const char *newpass,
                     return PasswordNotGood;
                 }
                 if (m_terminal)
-                    fputs(line, stdout);
+                    fputs(line.constData(), stdout);
                 m_Error += line + '\n';
                 break;
         }
