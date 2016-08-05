@@ -131,7 +131,10 @@ void CreateCommand::redo()
     }
 
     // move to right position
-    parentGroup.moveBookmark(bk, prev);
+    bool ok = parentGroup.moveBookmark(bk, prev);
+    Q_UNUSED(ok);
+    // TODO (requires KBookmarks >= 5.25)
+    // Q_ASSERT(ok);
     if (!(text().isEmpty()) && !parentAddress.isEmpty() ) {
         // open the parent (useful if it was empty) - only for manual commands
         Q_ASSERT( parentGroup.internalElement().tagName() != "xbel" );
@@ -366,13 +369,16 @@ MoveCommand::MoveCommand(KBookmarkModel* model, const QString &from, const QStri
 
 void MoveCommand::redo()
 {
-    // qDebug() << "moving from=" << m_from << "to=" << m_to;
+    //qDebug() << "Moving from=" << m_from << "to=" << m_to;
 
     KBookmark fromBk = m_model->bookmarkManager()->findByAddress( m_from );
+    Q_ASSERT(fromBk.address() == m_from);
 
+    //qDebug() << "  1) creating" << m_to;
     m_cc = new CreateCommand(m_model, m_to, fromBk, QString());
     m_cc->redo();
 
+    //qDebug() << "  2) deleting" << fromBk.address();
     m_dc = new DeleteCommand(m_model, fromBk.address());
     m_dc->redo();
 }

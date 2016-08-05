@@ -71,6 +71,11 @@ void TreeItem::insertChildren(int first, int last)
 
 void TreeItem::deleteChildren(int first, int last)
 {
+    if (!mInitDone) {
+        return;
+    }
+    Q_ASSERT(first <= last);
+    Q_ASSERT(last < children.count());
     QList<TreeItem *>::iterator firstIt, lastIt, it;
     firstIt = children.begin() + first;
     lastIt = children.begin() + last + 1;
@@ -104,6 +109,9 @@ TreeItem * TreeItem::treeItemForBookmark(const KBookmark& bk)
 {
     if(bk.address() == mBookmark.address())
         return this;
+    if (!mInitDone) {
+        initChildren();
+    }
     QString commonParent = KBookmark::commonParent(bk.address(), mBookmark.address());
     if(commonParent == mBookmark.address()) //mBookmark is a parent of bk
     {

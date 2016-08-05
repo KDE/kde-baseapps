@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xbel>
+<xbel folded="no" xmlns:bookmark="http://www.freedesktop.org/standards/desktop-bookmarks" xmlns:mime="http://www.freedesktop.org/standards/shared-mime-info" xmlns:kdepriv="http://www.kde.org/kdepriv" dbusName="konqueror" toolbar="yes">
+ <folder folded="no">
+  <title>Cyclone V</title>
+  <folder folded="yes">
+   <title>cyclone lvds</title>
+   <desc/>
+   <bookmark href="https://www.google.co.uk/search?q=ad7180+cyclone&amp;gws_rd=cr&amp;oq=ad7180+cyclone&amp;gs_l=heirloom-serp.3...179748282.179748282.0.179751314.1.1.0.0.0.0.1341.1341.7-1.1.0....0...1ac.1.34.heirloom-serp..1.0.0.6XGTdOejlcE">
+    <title>ad7180 cyclone - Google Search</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.google.co.uk_images_branding_product_ico_googleg_lodp"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://www.mouser.com/ds/2/598/DE1-SoC_User_manual_v06-273156.pdf">
+    <title>http://www.mouser.com/ds/2/598/DE1-SoC_User_manual_v06-273156.pdf</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.google.co.uk/search?q=%22cyclone+v%22+%22lvds%22&amp;ie=UTF-8&amp;gws_rd=cr&amp;ei=jnZUVr-GHcPdUb7RqPgL">
+    <title>"cyclone v" "lvds" - Google Search</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.google.co.uk_images_branding_product_ico_googleg_lodp"/>
+     </metadata>
+    </info>
+   </bookmark>
+  </folder>
+  <folder>
+   <title>Rocketboards PCIe</title>
+   <desc/>
+   <bookmark href="http://rocketboards.org/foswiki/view/Documentation/GSRD131ProgrammingFPGA">
+    <title>GSRD v13.1 - Programming FPGA from HPS | Documentation | RocketBoards.org</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://rocketboards.org/foswiki/view/Documentation/?validation_key=ab93f2adc756910bd265d9e723ddb187">
+    <title>Documentation | RocketBoards.org</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/rocketboards.org_foswiki_pub_System_RocketBoardsPlugin_favicon"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://rocketboards.org/foswiki/view/Projects/PCIeRootPortWithMSI">
+    <title>PCIe Root Port with MSI | Projects | RocketBoards.org</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://rocketboards.org/foswiki/view/Documentation/EmbestSoCLarkEvaluationBoard">
+    <title>Embest SoC Lark Evaluation Board | Documentation | RocketBoards.org</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+  </folder>
+  <folder folded="yes">
+   <title>Qsys docs</title>
+   <desc/>
+   <bookmark href="https://www.altera.co.jp/ja_JP/pdfs/literature/hb/qts/qsys_intro.pdf">
+    <title>Creating a System With Qsys</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://www.cs.columbia.edu/~sedwards/classes/2014/4840/qsys.pdf">
+    <title>Qsys and IP Core Integration</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.altera.com/content/dam/altera-www/global/en_US/pdfs/literature/ug/archives/ug_intro_to_megafunctions_131.pdf">
+    <title>Introduction to Megafunction IP Cores</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.altera.com/content/dam/altera-www/global/en_US/pdfs/literature/ug/ug_intro_to_megafunctions.pdf">
+    <title>Introduction to Altera IP Cores</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+  </folder>
+  <folder folded="yes">
+   <title>Qsys Tutorials</title>
+   <desc/>
+   <bookmark href="https://www.google.co.uk/search?q=quartus+qsys&amp;gws_rd=cr&amp;oq=quartus+qsys&amp;gs_l=heirloom-serp.3..0l2j0i22i30l3.2541.3032.0.3718.14.5.0.0.0.3.248.646.2j2j1.5.0....0...1ac.1.34.heirloom-serp..12.2.378.su_W3Yvblho">
+    <title>quartus qsys - Google Search</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.google.co.uk_images_branding_product_ico_googleg_lodp"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.altera.com/products/design-software/fpga-design/quartus-prime/quartus-ii-subscription-edition/qts-qsys.html">
+    <title>Qsys - Altera’s System Integration Tool</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.altera.com/en_US/pdfs/literature/tt/tt_qsys_intro.pdf">
+    <title>Qsys System Design Tutorial</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.altera.com/support/support-resources/design-examples/design-software/qsys/exm-qsys-tut.html">
+    <title>Qsys Tutorial Design Example</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://scale.engin.brown.edu/classes/EN2911XF14/QSYS_COMP.pdf">
+    <title>Making Qsys Components Tutorial</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+  </folder>
+  <folder>
+   <title>Altera SoC design courses</title>
+   <desc/>
+   <bookmark href="http://wl.altera.com/education/training/courses/OSOC1000?elqTrackId=B15B5BAE3C535645BCDBD6A18C70CAF0&amp;elq=7da5209b08294a6b801a75e256c070b9&amp;elqCampaignId=1409&amp;elqaid=1943&amp;elqat=1">
+    <title>Hardware Design Flow for an ARM-based SoC</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://wl.altera.com/education/training/courses/OSOC2000?elqTrackId=CC1684903342E62684ED41010A5D3E5A&amp;elq=7da5209b08294a6b801a75e256c070b9&amp;elqCampaignId=1409&amp;elqaid=1943&amp;elqat=1">
+    <title>Software Design Flow for an ARM-based SoC</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/wl.altera.com"/>
+     </metadata>
+    </info>
+   </bookmark>
+  </folder>
+  <bookmark href="http://wl.altera.com/customertraining/webex/SoC_HW_Design_Flow/presentation_html5.html">
+   <title>Hardware Design Flow for an ARM based SoC (HTML5)</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="www"/>
+    </metadata>
+   </info>
+  </bookmark>
+  <bookmark href="http://www.mouser.com/ds/2/598/DE1-SoC_User_manual_v06-273156.pdf">
+   <title>http://www.mouser.com/ds/2/598/DE1-SoC_User_manual_v06-273156.pdf</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="text-html"/>
+    </metadata>
+   </info>
+   <desc/>
+  </bookmark>
+  <bookmark href="http://www.alteraforum.com/forum/forumdisplay.php?f=92&amp;pp=200">
+   <title>Altera forum: SoC Linux</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="favicons/www.alteraforum.com_forum_favicon"/>
+    </metadata>
+   </info>
+   <desc/>
+  </bookmark>
+  <bookmark href="http://alterawiki.com/wiki/Main_Page">
+   <title>Altera Wiki - Altera Wiki</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="text-html"/>
+    </metadata>
+   </info>
+   <desc/>
+  </bookmark>
+  <folder>
+   <title>Quartus on Linux</title>
+   <desc/>
+   <bookmark href="https://www.google.co.uk/search?q=quartus+%22usb+blaster%22+linux&amp;gws_rd=cr&amp;oq=quartus+%22usb+blaster%22+linux&amp;gs_l=heirloom-serp.3..0i22i30l6.9123.10307.0.11036.6.6.0.0.0.0.257.795.2j3j1.6.0....0...1ac.1.34.heirloom-serp..0.6.794.H2Ku9VDLriQ">
+    <title>quartus "usb blaster" linux - Google Search</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.google.co.uk_images_branding_product_ico_googleg_lodp"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://alterawiki.com/wiki/Quartus_for_Linux">
+    <title>Quartus for Linux - Altera Wiki</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://alterawiki.com/wiki/Quartus_for_Debian_Wheezy">
+    <title>Quartus for Debian Wheezy - Altera Wiki</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://fpga4u.epfl.ch/wiki/Install_Quartus_II">
+    <title>Install Quartus II - Fpga4u</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.google.co.uk/search?q=quartus+linux+%22configure.usb%22&amp;gws_rd=cr&amp;oq=quartus+linux+%22configure.usb%22&amp;gs_l=heirloom-serp.3...126438.126438.0.126773.1.1.0.0.0.0.0.0..0.0....0...1ac.1.34.heirloom-serp..1.0.0.1r071Og8RUI">
+    <title>quartus linux "configure.usb" - Google Search</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.google.co.uk_images_branding_product_ico_googleg_lodp"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://www.alteraforum.com/forum/showthread.php?t=27104&amp;highlight=configure.usb">
+    <title>How to configure USB-Blaster under the latest Linux kernel?</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.alteraforum.com_forum_favicon"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://www.alteraforum.com/forum/showthread.php?t=32179&amp;page=2&amp;highlight=configure.usb">
+    <title>Quartus II with ubuntu 11.04 - Page 2</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.alteraforum.com_forum_favicon"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.altera.com/support/support-resources/download/drivers/dri-usb_b-lnx.html">
+    <title>USB-Blaster Driver for Linux</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="https://www.altera.com/support/support-resources/download/drivers/dri-quartus.html">
+    <title>Setting up Programming Hardware in Quartus II Software</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+   </bookmark>
+   <bookmark href="http://forums.parallax.com/discussion/160968/quartus-ii-version-15-0/p2">
+    <title>Quartus II version 15.0 - Page 2 - Parallax Forums</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+    <desc/>
+   </bookmark>
+   <bookmark href="http://www.alteraforum.com/forum/archive/index.php/t-47420.html">
+    <title>Quartus II keeps crashing on Ubuntu 14.10 [Archive] - Altera Forums</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+    <desc/>
+   </bookmark>
+   <bookmark href="https://www.google.co.uk/search?q=%22Inconsistency+detected+by+ld.so%3A+dl-close.c%3A%22++%22_dl_close%3A+Assertion+%60map-%3El_init_called%27+failed%22&amp;gws_rd=cr&amp;oq=%22Inconsistency+detected+by+ld.so%3A+dl-close.c%3A%22++%22_dl_close%3A+Assertion+%60map-%3El_init_called%27+failed%22&amp;gs_l=heirloom-serp.3...4420.9380.0.9725.10.9.0.1.0.0.132.512.5j1.6.0....0...1ac.1.34.heirloom-serp..10.0.0.YLD_q-RxNE4">
+    <title>"Inconsistency detected by ld.so: dl-close.c:" "_dl_close: Assertion `map->l_init_called' failed" - Google Search</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="favicons/www.google.co.uk_images_branding_product_ico_googleg_lodp"/>
+     </metadata>
+    </info>
+    <desc/>
+   </bookmark>
+  </folder>
+  <bookmark href="http://rocketboards.org/foswiki/view/Documentation/">
+   <title>Documentation | RocketBoards.org</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="text-html"/>
+    </metadata>
+   </info>
+   <desc/>
+  </bookmark>
+  <bookmark href="http://rocketboards.org/foswiki/view/Documentation/AlteraSoCDevelopmentBoard">
+   <title>Altera Cyclone V SoC Board | Documentation | RocketBoards.org</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="text-html"/>
+    </metadata>
+   </info>
+   <desc/>
+  </bookmark>
+  <bookmark href="http://rocketboards.org/foswiki/view/Documentation/AlteraSoCWorkshopSeries">
+   <title>Altera SoC Workshop Series | Documentation | RocketBoards.org</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="text-html"/>
+    </metadata>
+   </info>
+   <desc/>
+  </bookmark>
+  <bookmark href="file:///home/nick/F/Component%20Datasheets/Altera/Software/Altera%20SoC%20Workshop%20Series%20_%20Documentation%20_%20RocketBoards.pdf">
+   <title>Altera SoC Workshop Series | Documentation | Local copy</title>
+   <info>
+    <metadata owner="http://freedesktop.org">
+     <bookmark:icon name="text-html"/>
+    </metadata>
+   </info>
+   <desc/>
+  </bookmark>
+  <folder folded="yes">
+   <title>FPGA</title>
+   <desc/>
+   <bookmark href="http://rocketboards.org/foswiki/view/Documentation/GSRD131ProgrammingFPGA">
+    <title>GSRD v13.1 - Programming FPGA from HPS | Documentation | RocketBoards.org</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+     <metadata owner="http://www.kde.org">
+      <time_added>1448377119</time_added>
+      <time_visited>1448377119</time_visited>
+      <visit_count>1</visit_count>
+     </metadata>
+    </info>
+    <desc/>
+   </bookmark>
+   <folder folded="no">
+    <title>IP</title>
+    <desc/>
+    <bookmark href="http://opencores.org/">
+     <title>Home :: OpenCores</title>
+     <info>
+      <metadata owner="http://freedesktop.org">
+       <bookmark:icon name="text-html"/>
+      </metadata>
+      <metadata owner="http://www.kde.org">
+       <time_added>1456479997</time_added>
+       <time_visited>1456480004</time_visited>
+       <visit_count>3</visit_count>
+      </metadata>
+     </info>
+    </bookmark>
+    <bookmark href="http://www.design-reuse.com/search/?area=full&amp;i=%22cyclone+v%22+%22pci-e%22">
+     <title>Design And Reuse, The System-On-Chip Design Resource - IP, Core, SoC</title>
+     <info>
+      <metadata owner="http://freedesktop.org">
+       <bookmark:icon name="favicons/www.design-reuse.com"/>
+      </metadata>
+     </info>
+    </bookmark>
+   </folder>
+   <bookmark href="https://zhehaomao.com/project/2014/01/02/fpga-series.html">
+    <title>Howard Mao (zhemao) - Cyclone V + SoCKit</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+     <metadata owner="http://www.kde.org">
+      <time_added>1449740606</time_added>
+      <time_visited>1455869285</time_visited>
+      <visit_count>12</visit_count>
+     </metadata>
+    </info>
+    <desc/>
+   </bookmark>
+  </folder>
+  <folder folded="yes">
+   <title>OpenCL</title>
+   <bookmark href="https://www.altera.com/content/dam/altera-www/global/en_US/pdfs/literature/hb/opencl-sdk/ug_aocl_c5soc_devkit_platform.pdf">
+    <title>https://www.altera.com/content/dam/altera-www/global/en_US/pdfs/literature/hb/opencl-sdk/ug_aocl_c5soc_devkit_platform.pdf</title>
+    <info>
+     <metadata owner="http://freedesktop.org">
+      <bookmark:icon name="text-html"/>
+     </metadata>
+    </info>
+    <desc/>
+   </bookmark>
+  </folder>
+ </folder>
+</xbel>

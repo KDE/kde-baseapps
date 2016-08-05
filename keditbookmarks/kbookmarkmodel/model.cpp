@@ -288,7 +288,12 @@ int KBookmarkModel::columnCount(const QModelIndex &) const
 
 QModelIndex KBookmarkModel::indexForBookmark(const KBookmark& bk) const
 {
-    return createIndex(KBookmark::positionInParent(bk.address()) , 0, d->mRootItem->treeItemForBookmark(bk));
+    TreeItem *item = d->mRootItem->treeItemForBookmark(bk);
+    if (!item) {
+        qWarning() << "Bookmark not found" << bk.address();
+        Q_ASSERT(item);
+    }
+    return createIndex(KBookmark::positionInParent(bk.address()) , 0, item);
 }
 
 void KBookmarkModel::emitDataChanged(const KBookmark& bk)
@@ -441,9 +446,11 @@ void KBookmarkModel::removeBookmark(KBookmark bookmark)
 {
     KBookmarkGroup parentGroup = bookmark.parentGroup();
     const QModelIndex parentIndex = indexForBookmark(parentGroup);
+    Q_ASSERT(parentIndex.isValid());
     const int pos = bookmark.positionInParent();
     beginRemoveRows(parentIndex, pos, pos);
     TreeItem* parentItem = static_cast<TreeItem *>(parentIndex.internalPointer());
+    Q_ASSERT(parentItem);
 
     parentGroup.deleteBookmark(bookmark);
 

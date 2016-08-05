@@ -25,6 +25,7 @@
 #include <kbookmarkmanager.h>
 #include <QStandardPaths>
 #include <QMimeData>
+#include <QTemporaryFile>
 
 #include "../../kbookmarkmodel/commandhistory.h"
 #include "../../kbookmarkmodel/model.h"
@@ -212,6 +213,53 @@ private Q_SLOTS:
         QCOMPARE(BookmarkLister::titleList(m_bookmarkManager), origTitleList);
         sortCmd->redo();
         undoAll();
+    }
+
+    void testSortBug258505()
+    {
+        // Given a specific set of bookmarks from XML
+        const QString testFile(QFINDTESTDATA("kde-bug-258505-bookmarks.xml"));
+        QVERIFY(!testFile.isEmpty());
+        //  (copied to a temp file to avoid saving the sorted bookmarks)
+        QFile xmlFile(testFile);
+        QVERIFY(xmlFile.open(QIODevice::ReadOnly));
+        const QByteArray data = xmlFile.readAll();
+        QTemporaryFile tempFile;
+        QVERIFY(tempFile.open());
+        const QString fileName = tempFile.fileName();
+        tempFile.write(data);
+        tempFile.close();
+        KBookmarkManager *bookmarkManager = KBookmarkManager::managerForFile(fileName, QString());
+        QVERIFY(bookmarkManager);
+
+        const QStringList addresses = BookmarkLister::addressList(bookmarkManager);
+        const QStringList origTitleList = BookmarkLister::titleList(bookmarkManager);
+        //qDebug() << addresses << origTitleList;
+        QCOMPARE(addresses.count(), 53);
+
+        CommandHistory cmdHistory;
+        cmdHistory.setBookmarkManager(bookmarkManager);
+        KBookmarkModel *model = new KBookmarkModel(bookmarkManager->root(), &cmdHistory, this);
+        QCOMPARE(model->rowCount(), 1); // the toplevel "Bookmarks" toplevel item
+
+        // When sorting
+        SortCommand* sortCmd = new SortCommand(model, "Sort", "/0");
+        cmdHistory.addCommand(sortCmd);
+
+        // Then the contents should be correctly sorted
+        const QStringList sortedTitles = BookmarkLister::titleList(bookmarkManager);
+        QCOMPARE(sortedTitles.at(0), QStringLiteral("Cyclone V"));
+        QCOMPARE(sortedTitles.at(1), QStringLiteral("Altera SoC design courses"));
+        QCOMPARE(sortedTitles.at(2), QStringLiteral("Hardware Design Fl...r an ARM-based SoC"));
+        // ...
+
+        // And when undoing
+        sortCmd->undo();
+
+        // Then the contents should revert to the orig order
+        QCOMPARE(BookmarkLister::titleList(bookmarkManager), origTitleList);
+
+        QFile::remove(fileName + QLatin1String(".bak"));
     }
 
 private:
