@@ -24,10 +24,11 @@ include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
 set(KEDITBOOKMARKS_VERSION "5.97.0")
 
 find_package(Qt5 REQUIRED COMPONENTS Core)
-find_package(KF5 REQUIRED COMPONENTS CoreAddons I18n KIO KDELibs4Support)
+find_package(KF5 REQUIRED COMPONENTS CoreAddons I18n KIO Bookmarks)
 
 add_definitions(-DQT_USE_FAST_CONCATENATION)
-remove_definitions(-DQT_NO_URL_CAST_FROM_STRING)
+remove_definitions(-DQT_NO_CAST_FROM_ASCII)
+add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
 ############ sources ###################
 
@@ -39,7 +40,11 @@ set(kbookmarkmerger_SRCS kbookmarkmerger.cpp )
 
 add_executable(kbookmarkmerger ${kbookmarkmerger_SRCS})
 
-target_link_libraries(kbookmarkmerger  KF5::KIOCore KF5::KDELibs4Support)
+target_link_libraries(kbookmarkmerger
+   KF5::KIOCore
+   KF5::I18n
+   KF5::Bookmarks
+)
 
 install(TARGETS kbookmarkmerger ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 
