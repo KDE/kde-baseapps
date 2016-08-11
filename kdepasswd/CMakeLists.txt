@@ -49,8 +49,6 @@ target_link_libraries(kdepasswd
 install(TARGETS kdepasswd ${KF5_INSTALL_TARGETS_DEFAULT_ARGS})
 install(PROGRAMS org.kde.kdepasswd.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 
-add_subdirectory(docs)
-
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${Kdepasswd_SOURCE_DIR}")
   feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 endif()
