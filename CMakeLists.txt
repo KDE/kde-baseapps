@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.9)
-project(kwebkitpart)
+project(qwebenginepart)
 
 # search packages used by KDE
 find_package(ECM REQUIRED)
@@ -9,8 +9,8 @@ include(KDECMakeSettings)
 include(KDECompilerSettings)
 include(FeatureSummary)
 
-find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core DBus Gui Widgets WebKit WebKitWidgets UiTools)
-find_package(KF5 ${KF5_MIN_VERSION} REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Activities WebKit I18n)
+find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core DBus Gui Widgets WebEngineWidgets)
+find_package(KF5 ${KF5_MIN_VERSION} REQUIRED Archive Bookmarks CoreAddons Config ConfigWidgets DBusAddons KIO KDELibs4Support Parts Activities I18n)
 find_package(KF5Parts)
 find_package(KF5Sonnet)
 include(MacroLibrary)
