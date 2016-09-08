@@ -9,8 +9,6 @@ find_package(ECM 1.7.0 REQUIRED CONFIG)
 
 include(FeatureSummary)
 
-cmake_minimum_required(VERSION 2.8.9)
-
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 
