@@ -18,6 +18,7 @@ PRIVATE
    KF5::I18n
 )
 
+include(GenerateExportHeader)
 generate_export_header(kbookmarkmodel_private BASE_NAME kbookmarkmodel EXPORT_FILE_NAME kbookmarkmodel_export.h)
 
 set_target_properties(kbookmarkmodel_private PROPERTIES
