@@ -17,6 +17,5 @@ add_subdirectory(kfind)
 
 add_subdirectory(keditbookmarks)
 add_subdirectory(konqueror)
-add_subdirectory(konq-plugins)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
