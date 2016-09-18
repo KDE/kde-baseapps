@@ -9,7 +9,6 @@ include(FeatureSummary)
 
 add_subdirectory(lib)
 add_subdirectory(kdialog)
-add_subdirectory(doc)
 if(NOT WIN32)
     add_subdirectory(kdepasswd)
 endif()
