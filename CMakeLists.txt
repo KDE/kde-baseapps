@@ -7,7 +7,6 @@ set(KF5_MIN_VERSION "5.24.0")
 
 include(FeatureSummary)
 
-add_subdirectory(lib)
 add_subdirectory(kdialog)
 if(NOT WIN32)
     add_subdirectory(kdepasswd)
