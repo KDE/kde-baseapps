@@ -22,12 +22,6 @@ ecm_setup_version(${KDEPASSWD_VERSION} VARIABLE_PREFIX KDEPASSWD
 # Build dependencies
 find_package(KF5 REQUIRED COMPONENTS DocTools KIO Su DBusAddons I18n)
 
-if ("${CMAKE_SOURCE_DIR}" STREQUAL "${Kdepasswd_SOURCE_DIR}")
-    find_package(KF5Konq CONFIG REQUIRED)
-else()
-    include_directories(${LibKonq_SOURCE_DIR}/src)
-endif()
-
 add_definitions(-DQT_NO_CAST_FROM_BYTEARRAY -DQT_NO_URL_CAST_FROM_STRING)
 
 set(kdepasswd_SRCS
