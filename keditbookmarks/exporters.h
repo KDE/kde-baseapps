@@ -29,9 +29,9 @@ public:
    QString toString(const KBookmarkGroup &, bool showAddress = false);
    void write(const KBookmarkGroup &, const QString &, bool showAddress = false);
 private:
-   virtual void visit(const KBookmark &);
-   virtual void visitEnter(const KBookmarkGroup &);
-   virtual void visitLeave(const KBookmarkGroup &);
+   void visit(const KBookmark &) Q_DECL_OVERRIDE;
+   void visitEnter(const KBookmarkGroup &) Q_DECL_OVERRIDE;
+   void visitLeave(const KBookmarkGroup &) Q_DECL_OVERRIDE;
 private:
    QString m_string;
    QTextStream m_out;

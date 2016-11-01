@@ -45,7 +45,7 @@ public:
    explicit KEBMacroCommand(const QString &name, QUndoCommand* parent = 0)
       : QUndoCommand(name, parent) {}
    virtual ~KEBMacroCommand() {}
-   virtual QString affectedBookmarks() const;
+   QString affectedBookmarks() const Q_DECL_OVERRIDE;
 };
 
 class KBOOKMARKMODEL_EXPORT DeleteManyCommand : public KEBMacroCommand
@@ -78,9 +78,9 @@ public:
    QString finalAddress() const;
 
    virtual ~CreateCommand() {}
-   virtual void redo();
-   virtual void undo();
-   virtual QString affectedBookmarks() const;
+   void redo() Q_DECL_OVERRIDE;
+   void undo() Q_DECL_OVERRIDE;
+   QString affectedBookmarks() const Q_DECL_OVERRIDE;
 
 private: // TODO move it all to a d pointer
    KBookmarkModel* m_model;
@@ -100,9 +100,9 @@ class KBOOKMARKMODEL_EXPORT EditCommand : public QUndoCommand, public IKEBComman
 public:
    EditCommand(KBookmarkModel* model, const QString & address, int col, const QString & newValue, QUndoCommand* parent = 0);
    virtual ~EditCommand() {}
-   virtual void redo();
-   virtual void undo();
-   virtual QString affectedBookmarks() const { return KBookmark::parentAddress(mAddress); }
+   void redo() Q_DECL_OVERRIDE;
+   void undo() Q_DECL_OVERRIDE;
+   QString affectedBookmarks() const Q_DECL_OVERRIDE { return KBookmark::parentAddress(mAddress); }
    void modify(const QString &newValue);
 private:
    KBookmarkModel* m_model;
@@ -117,9 +117,9 @@ class KBOOKMARKMODEL_EXPORT DeleteCommand : public QUndoCommand, public IKEBComm
 public:
    explicit DeleteCommand(KBookmarkModel* model, const QString &from, bool contentOnly = false, QUndoCommand* parent = 0);
    virtual ~DeleteCommand() { delete m_cmd; delete m_subCmd; }
-   virtual void redo();
-   virtual void undo();
-   virtual QString affectedBookmarks() const;
+   void redo() Q_DECL_OVERRIDE;
+   void undo() Q_DECL_OVERRIDE;
+   QString affectedBookmarks() const Q_DECL_OVERRIDE;
    static KEBMacroCommand* deleteAll(KBookmarkModel* model, const KBookmarkGroup &parentGroup);
 
 private: // TODO d pointer
@@ -138,9 +138,9 @@ public:
    SortCommand(KBookmarkModel* model, const QString &name, const QString &groupAddress, QUndoCommand* parent = 0);
    virtual ~SortCommand()
    {}
-   virtual void redo();
-   virtual void undo();
-   virtual QString affectedBookmarks() const;
+   void redo() Q_DECL_OVERRIDE;
+   void undo() Q_DECL_OVERRIDE;
+   QString affectedBookmarks() const Q_DECL_OVERRIDE;
    // internal
    void moveAfter(const SortItem &moveMe, const SortItem &afterMe);
 private:

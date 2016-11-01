@@ -40,15 +40,15 @@ public:
    TestLinkItr(BookmarkIteratorHolder* holder, const QList<KBookmark>& bks);
    ~TestLinkItr();
 
-   virtual void cancel();
+   void cancel() Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
    void slotJobResult(KJob *job);
 
 private:
    void setStatus(const QString & text);
-   virtual void doAction();
-   virtual bool isApplicable(const KBookmark &bk) const;
+   void doAction() Q_DECL_OVERRIDE;
+   bool isApplicable(const KBookmark &bk) const Q_DECL_OVERRIDE;
 
    KIO::TransferJob *m_job;
    QString m_oldStatus;

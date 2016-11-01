@@ -34,8 +34,8 @@ class BookmarkFolderView : public KBookmarkView
 public:
     explicit BookmarkFolderView( BookmarkListView * view, QWidget * parent = 0 );
     virtual ~BookmarkFolderView();
-    virtual void selectionChanged ( const QItemSelection & selected, const QItemSelection & deselected );
-    virtual KBookmark bookmarkForIndex(const QModelIndex & idx) const;
+    void selectionChanged ( const QItemSelection & selected, const QItemSelection & deselected ) Q_DECL_OVERRIDE;
+    KBookmark bookmarkForIndex(const QModelIndex & idx) const Q_DECL_OVERRIDE;
 private Q_SLOTS:
     void slotReset();
 private:
@@ -51,11 +51,11 @@ public:
     virtual ~BookmarkListView();
     void loadColumnSetting();
     void saveColumnSetting();
-    virtual void setModel(QAbstractItemModel * model);
-    virtual KBookmark bookmarkForIndex(const QModelIndex & idx) const;
+    void setModel(QAbstractItemModel * model) Q_DECL_OVERRIDE;
+    KBookmark bookmarkForIndex(const QModelIndex & idx) const Q_DECL_OVERRIDE;
     KBookmarkModel * bookmarkModel() const;
 protected:
-    virtual void contextMenuEvent ( QContextMenuEvent * e );
+    void contextMenuEvent ( QContextMenuEvent * e ) Q_DECL_OVERRIDE;
 };
 
 
@@ -65,13 +65,13 @@ class BookmarkFolderViewFilterModel : public QSortFilterProxyModel
 public:
     BookmarkFolderViewFilterModel(QObject * parent = 0);
     virtual ~BookmarkFolderViewFilterModel();
-    virtual QStringList mimeTypes() const;
-    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
+    QStringList mimeTypes() const Q_DECL_OVERRIDE;
+    bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) Q_DECL_OVERRIDE;
 protected:
-    bool filterAcceptsColumn ( int source_column, const QModelIndex & source_parent ) const;
-    bool filterAcceptsRow ( int source_row, const QModelIndex & source_parent ) const;
+    bool filterAcceptsColumn ( int source_column, const QModelIndex & source_parent ) const Q_DECL_OVERRIDE;
+    bool filterAcceptsRow ( int source_row, const QModelIndex & source_parent ) const Q_DECL_OVERRIDE;
     //FIXME check
-    virtual Qt::DropActions supportedDropActions() const
+    Qt::DropActions supportedDropActions() const Q_DECL_OVERRIDE
         { return sourceModel()->supportedDropActions(); }
 };
 #endif

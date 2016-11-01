@@ -50,12 +50,12 @@ public:
         BookmarkLister lister(mgr->root());
         return lister.m_titleList;
     }
-    virtual void visit(const KBookmark& bk) {
+    void visit(const KBookmark& bk) Q_DECL_OVERRIDE {
         m_addressList.append(bk.address());
         m_urlList.append(bk.url().url());
         m_titleList.append(bk.text());
     }
-    virtual void visitEnter(const KBookmarkGroup& group) {
+    void visitEnter(const KBookmarkGroup& group) Q_DECL_OVERRIDE {
         m_addressList.append(group.address() + '/');
         m_titleList.append(group.text());
     }

@@ -40,7 +40,7 @@ public:
 
     static int getPassword(QByteArray &password);
 
-    void accept();
+    void accept() Q_DECL_OVERRIDE;
 };
 
 
@@ -53,7 +53,7 @@ public:
     KDEpasswd2Dialog(const char *oldpass, const QByteArray &user);
     ~KDEpasswd2Dialog();
 
-    void accept();
+    void accept() Q_DECL_OVERRIDE;
 
 private:
     const char *m_Pass;
